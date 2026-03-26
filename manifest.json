@@ -1,0 +1,21 @@
+{
+  "name": "YMLS Anime",
+  "short_name": "YMLS",
+  "description": "Watch Anime for Free",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#0b0e14",
+  "theme_color": "#6366f1",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3665/3665931.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3665/3665931.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
