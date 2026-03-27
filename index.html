@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YmlsFlix | v43.0</title>
+    <title>YmlsFlix | v44.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <style>
@@ -36,10 +36,13 @@
         .page-view { display: none; }
         .active-view { display: block; }
 
-        /* TOGGLE SWITCH */
         .switch-box { display: flex; background: #111827; border-radius: 20px; padding: 4px; gap: 4px; }
         .switch-opt { flex: 1; text-align: center; padding: 6px; border-radius: 16px; font-size: 9px; font-weight: 900; cursor: pointer; transition: 0.2s; }
         .switch-active { background: #ef4444; color: white; }
+
+        .ep-btn { min-width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 11px; font-weight: 900; transition: 0.2s; background: #1f2937; position: relative; }
+        .ep-watched { border: 2px solid #ef4444; color: #ef4444; }
+        .ep-active { background: #ef4444 !important; color: white !important; }
     </style>
 </head>
 <body>
@@ -50,21 +53,13 @@
                 <h1 class="text-2xl font-black tracking-tighter logo-text cursor-pointer" onclick="showPage('home')">YmlsFlix</h1>
                 <div class="flex items-center gap-6">
                     <i id="wishNav" onclick="showPage('wishlist')" class="fa fa-heart icon-btn"></i>
-                    <div class="relative">
-                        <i onclick="toggleDropdown('notifDrop')" class="fa fa-bell icon-btn"></i>
-                        <div id="notifDrop" class="dropdown-content">
-                            <h4 class="text-[10px] font-black uppercase text-red-500 mb-4">Alerts</h4>
-                            <div id="notifList" class="text-xs text-gray-400 space-y-3">No new updates.</div>
-                        </div>
-                    </div>
                     <div class="relative"><i onclick="toggleDropdown('genreDrop')" class="fa fa-th-large icon-btn"></i>
                         <div id="genreDrop" class="dropdown-content">
                             <div class="flex mb-4 border-b border-gray-800">
-                                <button onclick="switchTab('genres')" id="tabGen" class="flex-1 pb-2 font-black text-[10px] uppercase border-b-2 border-red-600">Genres</button>
-                                <button onclick="switchTab('years')" id="tabYear" class="flex-1 pb-2 font-black text-[10px] uppercase text-gray-500">Years</button>
+                                <button onclick="switchTab('genres')" class="flex-1 pb-2 font-black text-[10px] uppercase border-b-2 border-red-600">Genres</button>
+                                <button onclick="switchTab('years')" class="flex-1 pb-2 font-black text-[10px] uppercase text-gray-500">Years</button>
                             </div>
-                            <div id="genreList" class="grid-compact"></div>
-                            <div id="yearList" class="grid-compact hidden"></div>
+                            <div id="genreList" class="grid-compact"></div><div id="yearList" class="grid-compact hidden"></div>
                         </div>
                     </div>
                     <i onclick="showPage('home')" class="fa fa-home icon-btn"></i>
@@ -73,27 +68,21 @@
                             <div id="authBox">
                                 <div id="signupView">
                                     <h4 class="font-black text-[10px] uppercase text-red-500 mb-4 text-center">Create Account</h4>
-                                    <input type="text" id="regUser" placeholder="Username or Email">
-                                    <input type="password" id="regPass" placeholder="Password">
-                                    <input type="password" id="regConfirm" placeholder="Confirm Password">
+                                    <input type="text" id="regUser" placeholder="Email"><input type="password" id="regPass" placeholder="Password"><input type="password" id="regConfirm" placeholder="Confirm Password">
                                     <button onclick="handleRegister()" class="btn-red mb-3">Register</button>
-                                    <p class="text-[9px] text-gray-500 text-center uppercase font-black cursor-pointer" onclick="toggleAuthMode('signin')">Already have an account? <span class="text-white">Sign In</span></p>
+                                    <p class="text-[9px] text-gray-500 text-center uppercase font-black cursor-pointer" onclick="toggleAuthMode('signin')">Sign In</p>
                                 </div>
                                 <div id="signinView" class="hidden">
-                                    <h4 class="font-black text-[10px] uppercase text-blue-500 mb-4 text-center">Welcome Back</h4>
-                                    <input type="text" id="loginUser" placeholder="Username or Email">
-                                    <input type="password" id="loginPass" placeholder="Password">
-                                    <div class="flex items-center gap-2 mb-3">
-                                        <input type="checkbox" id="rememberMe" class="w-3 h-3 accent-blue-600">
-                                        <label class="text-[9px] font-black text-gray-500 uppercase">Remember Me</label>
-                                    </div>
-                                    <button onclick="handleLogin()" class="btn-red mb-3 bg-blue-600">Sign In</button>
-                                    <p class="text-[9px] text-gray-500 text-center uppercase font-black cursor-pointer" onclick="toggleAuthMode('signup')">Need an account? <span class="text-white">Sign Up</span></p>
+                                    <h4 class="font-black text-[10px] uppercase text-blue-500 mb-4 text-center">Sign In</h4>
+                                    <input type="text" id="loginUser" placeholder="Email"><input type="password" id="loginPass" placeholder="Password">
+                                    <button onclick="handleLogin()" class="btn-red mb-3 bg-blue-600">Login</button>
+                                    <p class="text-[9px] text-gray-500 text-center uppercase font-black cursor-pointer" onclick="toggleAuthMode('signup')">Sign Up</p>
                                 </div>
                             </div>
                             <div id="userBox" class="hidden text-center">
                                 <h4 id="userDisplay" class="font-black text-[12px] uppercase text-white mb-2"></h4>
-                                <button onclick="handleLogout()" class="w-full bg-gray-800 py-2 rounded-lg text-[9px] font-black uppercase">Sign Out / Switch</button>
+                                <button onclick="clearOnlyHistory()" class="w-full border border-gray-800 py-2 rounded-lg text-[9px] font-black uppercase text-red-500 mb-2">Clear History (Keep Progress)</button>
+                                <button onclick="handleLogout()" class="w-full bg-gray-800 py-2 rounded-lg text-[9px] font-black uppercase">Logout</button>
                             </div>
                         </div>
                     </div>
@@ -118,18 +107,17 @@
             <section class="mb-10"><h2 class="text-[10px] font-black mb-4 uppercase text-green-500 tracking-widest">Upcoming Releases</h2><div id="upcomingGrid" class="flex gap-4 overflow-x-auto no-scrollbar pb-4"></div></section>
             <section class="mb-10"><h2 class="text-[10px] font-black mb-4 uppercase text-blue-500 tracking-widest">Airing Now</h2><div id="airingGrid" class="flex gap-4 overflow-x-auto no-scrollbar pb-4"></div></section>
             <section class="mb-10"><h2 class="text-[10px] font-black mb-4 uppercase text-purple-500 tracking-widest">Most Popular</h2><div id="popularGrid" class="flex gap-4 overflow-x-auto no-scrollbar pb-4"></div></section>
-            <section class="mb-10"><h2 class="text-[10px] font-black mb-4 uppercase text-yellow-500 tracking-widest">Top Rated</h2><div id="ratedGrid" class="flex gap-4 overflow-x-auto no-scrollbar pb-4"></div></section>
         </main>
     </div>
 
-    <div id="page-wishlist" class="page-view container mx-auto p-4 pt-[140px]"><h2 class="text-xl font-black mb-6 uppercase tracking-tighter">My <span class="text-red-600">Watchlist</span></h2><div id="wishlistGrid" class="grid-full"></div></div>
-    <div id="page-filter" class="page-view container mx-auto p-4 pt-[140px]"><h2 id="filterTitle" class="text-xl font-black mb-6 uppercase tracking-tighter">Results</h2><div id="filterGrid" class="grid-full"></div></div>
+    <div id="page-wishlist" class="page-view container mx-auto p-4 pt-[140px]"><div id="wishlistGrid" class="grid-full"></div></div>
+    <div id="page-filter" class="page-view container mx-auto p-4 pt-[140px]"><div id="filterGrid" class="grid-full"></div></div>
 
     <div id="playerView" class="fixed inset-0 z-[4000] bg-[#05070a] hidden overflow-y-auto">
         <div class="p-4 flex justify-between items-center glass sticky top-0">
             <button onclick="closePlayer()" class="text-lg"><i class="fa fa-chevron-left"></i></button>
             <div class="flex flex-col items-center">
-                <h3 id="playerTitle" class="font-black text-[9px] uppercase truncate max-w-[150px]"></h3>
+                <h3 id="playerTitle" class="font-black text-[9px] uppercase truncate max-w-[120px]"></h3>
                 <div class="switch-box mt-1">
                     <div id="subBtn" onclick="setMode('sub')" class="switch-opt switch-active">SUB</div>
                     <div id="dubBtn" onclick="setMode('dub')" class="switch-opt">DUB</div>
@@ -137,13 +125,13 @@
             </div>
             <button id="trailerBtn" class="bg-red-600 text-[9px] font-black px-3 py-1 rounded-full uppercase">Trailer</button>
         </div>
-        <div class="w-full aspect-video bg-black"><iframe id="videoFrame" src="" class="w-full h-full" frameborder="0" allowfullscreen></iframe></div>
-        
+        <div class="w-full aspect-video bg-black" id="videoWrapper">
+            <iframe id="videoFrame" src="" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+        </div>
         <div class="p-6 container mx-auto">
             <h2 class="text-[10px] font-black mb-4 uppercase text-gray-500 tracking-widest">Episodes</h2>
             <div id="epList" class="flex gap-2 overflow-x-auto no-scrollbar mb-10"></div>
-            
-            <h2 class="text-[10px] font-black mb-4 uppercase text-red-500 tracking-widest">Recommended For You</h2>
+            <h2 class="text-[10px] font-black mb-4 uppercase text-red-500 tracking-widest">Recommended Anime</h2>
             <div id="recommendGrid" class="flex gap-4 overflow-x-auto no-scrollbar pb-10"></div>
         </div>
     </div>
@@ -151,78 +139,96 @@
     <script>
         const API = 'https://graphql.anilist.co';
         let currentUser = JSON.parse(localStorage.getItem('ymls_active_user')) || null;
-        let playMode = 'sub';
-        let currentAnime = null;
+        let playMode = 'sub', currentAnime = null, currentEp = 1;
 
         window.onload = () => { setupUI(); fetchHero(); loadHome(); genFilters(); };
 
         function setupUI() { if(currentUser) { document.getElementById('authBox').classList.add('hidden'); document.getElementById('userBox').classList.remove('hidden'); document.getElementById('userDisplay').innerText = currentUser.name; } }
-        
-        // AUTH
         function toggleAuthMode(m) { document.getElementById('signupView').classList.toggle('hidden', m === 'signin'); document.getElementById('signinView').classList.toggle('hidden', m === 'signup'); }
-        function handleRegister() { const u=document.getElementById('regUser').value, p=document.getElementById('regPass').value, cp=document.getElementById('regConfirm').value; if(p!==cp) return alert("Match Error"); let users=JSON.parse(localStorage.getItem('ymls_users'))||{}; users[u]={name:u,pass:p,wishlist:[]}; localStorage.setItem('ymls_users',JSON.stringify(users)); alert("Registered!"); toggleAuthMode('signin'); }
+        function handleRegister() { const u=document.getElementById('regUser').value, p=document.getElementById('regPass').value, cp=document.getElementById('regConfirm').value; if(p!==cp) return alert("Error"); let users=JSON.parse(localStorage.getItem('ymls_users'))||{}; users[u]={name:u,pass:p,wishlist:[],progress:{}}; localStorage.setItem('ymls_users',JSON.stringify(users)); toggleAuthMode('signin'); }
         function handleLogin() { const u=document.getElementById('loginUser').value, p=document.getElementById('loginPass').value; let users=JSON.parse(localStorage.getItem('ymls_users'))||{}; if(users[u]?.pass===p) { localStorage.setItem('ymls_active_user',JSON.stringify(users[u])); location.reload(); } }
         function handleLogout() { localStorage.removeItem('ymls_active_user'); location.reload(); }
 
-        // PLAYER LOGIC
-        function setMode(m) {
-            playMode = m;
-            document.getElementById('subBtn').classList.toggle('switch-active', m==='sub');
-            document.getElementById('dubBtn').classList.toggle('switch-active', m==='dub');
-            if(currentAnime) openPlayer(currentAnime);
+        function clearOnlyHistory() {
+            localStorage.removeItem('ymls_hist');
+            alert("History cleared! Your episode progress is safe.");
+            location.reload();
         }
 
+        function setMode(m) { playMode = m; document.getElementById('subBtn').classList.toggle('switch-active', m==='sub'); document.getElementById('dubBtn').classList.toggle('switch-active', m==='dub'); if(currentAnime) openPlayer(currentAnime, currentEp); }
+
         async function openPlayer(a, ep = 1) {
-            currentAnime = a;
+            currentAnime = a; currentEp = ep;
             document.getElementById('playerView').classList.remove('hidden');
             document.getElementById('playerTitle').innerText = a.title.english || a.title.romaji;
             
-            // Sub/Dub logic (Mocked URL param for example)
+            // Player Source
             const type = playMode === 'dub' ? '?dub=true' : '';
             document.getElementById('videoFrame').src = `https://win-anime.vercel.app/embed/${a.idMal || a.id}/${ep}${type}`;
             
-            // Trailer logic
-            const trailerBtn = document.getElementById('trailerBtn');
-            if(a.trailer && a.trailer.site === 'youtube') {
-                trailerBtn.style.display = 'block';
-                trailerBtn.onclick = () => window.open(`https://youtube.com/watch?v=${a.trailer.id}`);
-            } else trailerBtn.style.display = 'none';
+            // Trailer Logic
+            const tBtn = document.getElementById('trailerBtn');
+            if(a.trailer?.site === 'youtube') {
+                tBtn.style.display = 'block';
+                tBtn.onclick = () => { document.getElementById('videoFrame').src = `https://www.youtube.com/embed/${a.trailer.id}?autoplay=1`; };
+            } else tBtn.style.display = 'none';
 
-            // Ep List
-            document.getElementById('epList').innerHTML = Array.from({length: a.episodes || 12}, (_, i) => `<button onclick="openPlayer(currentAnime, ${i+1})" class="min-w-[40px] bg-gray-800 p-2 rounded text-[10px]">${i+1}</button>`).join('');
-            
-            // Fetch Recommendations
+            // Save History & Progress
+            if(currentUser) {
+                let users = JSON.parse(localStorage.getItem('ymls_users'));
+                if(!users[currentUser.name].progress) users[currentUser.name].progress = {};
+                users[currentUser.name].progress[a.id] = users[currentUser.name].progress[a.id] || [];
+                if(!users[currentUser.name].progress[a.id].includes(ep)) users[currentUser.name].progress[a.id].push(ep);
+                localStorage.setItem('ymls_users', JSON.stringify(users));
+                currentUser = users[currentUser.name]; localStorage.setItem('ymls_active_user', JSON.stringify(currentUser));
+            }
+            saveToHistory(a);
+            renderEpisodes(a);
             fetchRecommendations(a.id);
+        }
+
+        function renderEpisodes(a) {
+            const watched = currentUser?.progress?.[a.id] || [];
+            document.getElementById('epList').innerHTML = Array.from({length: a.episodes || 12}, (_, i) => {
+                const epNum = i + 1;
+                const isWatched = watched.includes(epNum);
+                const isActive = currentEp === epNum;
+                return `<button onclick="openPlayer(currentAnime, ${epNum})" class="ep-btn ${isWatched ? 'ep-watched' : ''} ${isActive ? 'ep-active' : ''}">${epNum}</button>`;
+            }).join('');
         }
 
         async function fetchRecommendations(id) {
             const query = `query($id:Int){Media(id:$id){recommendations(perPage:10){nodes{mediaRecommendation{id idMal title{english romaji} coverImage{large} episodes trailer{id site}}}}}}`;
             const res = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query, variables:{id}})});
-            const json = await res.json();
-            const list = json.data.Media.recommendations.nodes.map(n => n.mediaRecommendation);
-            render(list, 'recommendGrid');
+            const json = await res.json(); render(json.data.Media.recommendations.nodes.map(n => n.mediaRecommendation), 'recommendGrid');
+        }
+
+        function saveToHistory(a) {
+            let hist = JSON.parse(localStorage.getItem('ymls_hist')) || [];
+            hist = hist.filter(x => x.id !== a.id);
+            hist.unshift(a);
+            localStorage.setItem('ymls_hist', JSON.stringify(hist.slice(0, 10)));
         }
 
         function closePlayer() { document.getElementById('playerView').classList.add('hidden'); document.getElementById('videoFrame').src = ""; }
-
-        // NAVIGATION & CORE DATA
         function toggleDropdown(id) { const drop=document.getElementById(id); const s=drop.classList.contains('show'); document.querySelectorAll('.dropdown-content').forEach(d=>d.classList.remove('show')); if(!s) drop.classList.add('show'); }
-        function showPage(p) { document.querySelectorAll('.page-view').forEach(v=>v.classList.remove('active-view')); document.getElementById(`page-${p}`).classList.add('active-view'); if(p==='wishlist') renderWishlist(); window.scrollTo(0,0); }
+        function showPage(p) { document.querySelectorAll('.page-view').forEach(v=>v.classList.remove('active-view')); document.getElementById(`page-${p}`).classList.add('active-view'); window.scrollTo(0,0); }
         function genFilters() {
-            const genres = ["Action", "Adventure", "Comedy", "Drama", "Ecchi", "Fantasy", "Horror", "Mahou Shoujo", "Mecha", "Music", "Mystery", "Psychological", "Romance", "Sci-Fi", "Slice of Life", "Sports", "Supernatural", "Thriller"];
-            document.getElementById('genreList').innerHTML = genres.map(g => `<button onclick="fetchByFilter({genre:'${g}'})" class="bg-gray-900 py-2 rounded text-[9px] font-bold hover:bg-red-600">${g}</button>`).join('');
-            let yH = ''; for(let y=2026; y>=2000; y--) yH += `<button onclick="fetchByFilter({year:${y}})" class="bg-gray-900 py-2 rounded text-[9px] font-bold hover:bg-red-600">${y}</button>`;
+            const genres = ["Action", "Comedy", "Drama", "Fantasy", "Horror", "Romance", "Sci-Fi", "Sports", "Thriller"];
+            document.getElementById('genreList').innerHTML = genres.map(g => `<button onclick="fetchByFilter({genre:'${g}'})" class="bg-gray-900 py-2 rounded text-[9px] font-bold">${g}</button>`).join('');
+            let yH = ''; for(let y=2026; y>=2000; y--) yH += `<button onclick="fetchByFilter({year:${y}})" class="bg-gray-900 py-2 rounded text-[9px] font-bold">${y}</button>`;
             document.getElementById('yearList').innerHTML = yH;
         }
 
         async function loadHome() {
-            fetchGrid("TRENDING_DESC", "trendingGrid"); fetchGrid("POPULARITY_DESC", "popularGrid"); fetchGrid("SCORE_DESC", "ratedGrid");
+            fetchGrid("TRENDING_DESC", "trendingGrid"); fetchGrid("POPULARITY_DESC", "popularGrid");
             const uQ = `query{Page(perPage:12){media(status:NOT_YET_RELEASED,type:ANIME,sort:POPULARITY_DESC){id idMal title{english romaji} coverImage{large} episodes trailer{id site}}}}`;
             const uR = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query:uQ})});
             const uJ = await uR.json(); render(uJ.data.Page.media, "upcomingGrid");
             const aQ = `query{Page(perPage:12){airingSchedules(airingAt_greater:${Math.floor(Date.now()/1000)},sort:TIME){media{id idMal title{english romaji} coverImage{large} episodes trailer{id site}}}}}`;
             const aR = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query:aQ})});
             const aJ = await aR.json(); render(aJ.data.Page.airingSchedules.map(s => s.media), "airingGrid");
+            renderContinue();
         }
 
         async function fetchGrid(sort, target) {
@@ -242,37 +248,16 @@
         }
 
         function render(list, target, isGrid = false) {
-            const wishes = currentUser ? currentUser.wishlist : [];
             document.getElementById(target).innerHTML = list.map(a => {
                 if(!a) return '';
-                const isSaved = wishes.some(w => w.id === a.id);
                 return `<div class="anime-card ${isGrid ? 'w-full' : ''}" onclick='openPlayer(${JSON.stringify(a)})'>
-                    <i class="fa fa-heart absolute top-2 right-2 z-10 ${isSaved ? 'text-red-500' : 'text-gray-400'}" onclick='toggleWish(event, ${JSON.stringify(a)})'></i>
                     <img src="${a.coverImage.large}" class="card-img"><div class="p-2 truncate text-[9px] font-black uppercase text-gray-500">${a.title.english || a.title.romaji}</div>
                 </div>`;
             }).join('');
         }
 
-        function toggleWish(e, anime) {
-            e.stopPropagation(); if(!currentUser) return alert("Login required");
-            let users = JSON.parse(localStorage.getItem('ymls_users'));
-            let list = users[currentUser.name].wishlist || [];
-            const idx = list.findIndex(i => i.id === anime.id);
-            idx === -1 ? list.unshift(anime) : list.splice(idx, 1);
-            users[currentUser.name].wishlist = list;
-            localStorage.setItem('ymls_users', JSON.stringify(users));
-            if(currentUser.name === users[currentUser.name].name) { currentUser.wishlist = list; localStorage.setItem('ymls_active_user', JSON.stringify(currentUser)); }
-            location.reload();
-        }
-
-        function renderWishlist() { render(currentUser ? currentUser.wishlist : [], 'wishlistGrid', true); }
-        async function fetchByFilter(params) {
-            showPage('filter'); toggleDropdown('genreDrop');
-            document.getElementById('filterTitle').innerText = params.genre || params.year;
-            const query = `query($g:String,$y:Int){Page(perPage:24){media(genre:$g,seasonYear:$y,type:ANIME,sort:POPULARITY_DESC){id idMal title{english romaji} coverImage{large} episodes trailer{id site}}}}`;
-            const res = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query, variables:{g:params.genre, y:params.year}})});
-            const json = await res.json(); render(json.data.Page.media, "filterGrid", true);
-        }
+        function renderContinue() { const list = JSON.parse(localStorage.getItem('ymls_hist')) || []; if(list.length) { document.getElementById('continueSection').classList.remove('hidden'); render(list, 'continueGrid'); } }
+        async function fetchByFilter(params) { showPage('filter'); const query = `query($g:String,$y:Int){Page(perPage:24){media(genre:$g,seasonYear:$y,type:ANIME,sort:POPULARITY_DESC){id idMal title{english romaji} coverImage{large} episodes trailer{id site}}}}`; const res = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query, variables:{g:params.genre, y:params.year}})}); const json = await res.json(); render(json.data.Page.media, "filterGrid", true); }
         async function handleSearch(term) { if(term.length < 2) return; showPage('filter'); fetchByFilter({genre: term}); }
         function switchTab(t) { document.getElementById('genreList').classList.toggle('hidden', t !== 'genres'); document.getElementById('yearList').classList.toggle('hidden', t !== 'years'); }
     </script>
