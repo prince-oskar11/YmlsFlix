@@ -3,86 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YMLS Premium</title>
+    <title>YMLS Premium | Anime & Movies</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
     <style>
-        body { background: #080a0f; color: #e2e8f0; font-family: sans-serif; overflow-x: hidden; }
-        .glass { background: rgba(11, 14, 20, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid #1f2937; }
-        .anime-card { transition: 0.3s; cursor: pointer; }
-        .anime-card:hover { transform: translateY(-5px); filter: brightness(1.2); }
+        body { background: #080a0f; color: #e2e8f0; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .glass { background: rgba(11, 14, 20, 0.9); backdrop-filter: blur(15px); border-bottom: 1px solid #1f2937; }
+        .anime-card { transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; position: relative; }
+        .anime-card:hover { transform: translateY(-8px); filter: brightness(1.2); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .genre-btn { white-space: nowrap; background: #1f2937; padding: 5px 15px; border-radius: 20px; font-size: 12px; }
-        .genre-btn:hover { background: #6366f1; }
-        .modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; }
+        .genre-btn { white-space: nowrap; background: #131924; padding: 6px 18px; border-radius: 50px; font-size: 12px; font-weight: 700; transition: 0.2s; border: 1px solid #1f2937; }
+        .genre-btn:hover { background: #6366f1; border-color: #6366f1; }
+        .modal { display: none; position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.95); align-items: center; justify-content: center; backdrop-blur: 10px; }
+        .history-card { background: #131924; border-radius: 10px; padding: 10px; display: flex; align-items: center; gap: 10px; border: 1px solid #1f2937; }
+        #profileSidebar { box-shadow: -10px 0 30px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
 
     <nav class="sticky top-0 z-50 glass p-4">
-        <div class="container mx-auto flex flex-wrap items-center justify-between gap-4">
-            <h1 class="text-3xl font-black text-indigo-500" onclick="location.reload()">YMLS</h1>
+        <div class="container mx-auto flex items-center justify-between gap-4">
+            <h1 class="text-3xl font-black text-indigo-500 tracking-tighter cursor-pointer" onclick="location.reload()">YMLS</h1>
             
-            <div class="flex-1 max-w-sm relative">
-                <input type="text" id="searchBar" placeholder="Search..." class="w-full bg-gray-900 border border-gray-700 rounded-full py-2 px-10 focus:ring-2 focus:ring-indigo-500 outline-none">
+            <div class="flex-1 max-w-md relative">
+                <input type="text" id="searchBar" placeholder="Search anime..." class="w-full bg-gray-900 border border-gray-700 rounded-full py-2 px-10 focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
                 <i class="fa fa-search absolute left-4 top-3 text-gray-500"></i>
+                <button onclick="toggleMenu('filterMenu')" class="absolute right-3 top-2 text-indigo-400 p-1 hover:text-white transition">
+                    <i class="fa fa-sliders"></i>
+                </button>
+                <div id="filterMenu" class="absolute right-0 mt-4 w-48 bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl p-4 hidden z-50">
+                    <h4 class="text-[10px] font-bold text-gray-500 uppercase mb-3">Sort Content</h4>
+                    <div class="flex flex-col gap-1">
+                        <button onclick="applySort('TRENDING_DESC')" class="text-left text-xs p-2 rounded hover:bg-indigo-600 transition">Trending</button>
+                        <button onclick="applySort('SCORE_DESC')" class="text-left text-xs p-2 rounded hover:bg-indigo-600 transition">Top Rated</button>
+                        <button onclick="applySort('POPULARITY_DESC')" class="text-left text-xs p-2 rounded hover:bg-indigo-600 transition">Most Popular</button>
+                        <button onclick="applySort('START_DATE_DESC')" class="text-left text-xs p-2 rounded hover:bg-indigo-600 transition">Newest</button>
+                    </div>
+                </div>
             </div>
 
-            <div id="authSection">
-                <button onclick="openModal('authModal')" class="bg-indigo-600 px-4 py-2 rounded-lg font-bold text-xs">Login</button>
+            <div id="authSection" class="flex items-center gap-3">
+                <button onclick="openModal('authModal')" class="bg-indigo-600 px-5 py-2 rounded-full font-bold text-xs shadow-lg shadow-indigo-500/20 active:scale-95 transition">Login</button>
             </div>
         </div>
     </nav>
 
-    <div class="flex gap-2 overflow-x-auto p-4 no-scrollbar container mx-auto" id="genreBar">
-        </div>
+    <div class="flex gap-3 overflow-x-auto p-4 no-scrollbar container mx-auto" id="genreBar"></div>
 
     <main class="container mx-auto p-4">
-        <section id="favSection" class="mb-10 hidden">
-            <h2 class="text-xl font-bold mb-4 text-red-500"><i class="fa fa-heart"></i> My Favorites</h2>
-            <div id="favGrid" class="grid grid-cols-2 md:grid-cols-6 gap-4"></div>
+        <section id="favSection" class="mb-12 hidden">
+            <h2 class="text-xl font-bold mb-6 text-red-500 flex items-center gap-2"><i class="fa fa-heart"></i> My Favorites</h2>
+            <div id="favGrid" class="grid grid-cols-2 md:grid-cols-6 gap-6"></div>
         </section>
 
-        <h2 id="gridTitle" class="text-xl font-bold mb-6 uppercase tracking-wider text-indigo-400">Trending Now</h2>
-        <div id="mainGrid" class="grid grid-cols-2 md:grid-cols-6 gap-6"></div>
+        <h2 id="gridTitle" class="text-2xl font-black mb-8 uppercase tracking-tighter text-gray-400">Trending Now</h2>
+        <div id="mainGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8"></div>
     </main>
 
-    <div id="authModal" class="modal">
-        <div class="bg-gray-900 p-8 rounded-2xl w-full max-w-md border border-gray-800 relative">
-            <button onclick="closeModal('authModal')" class="absolute top-4 right-4"><i class="fa fa-times"></i></button>
-            <h2 class="text-2xl font-bold mb-6 text-center">Sign In</h2>
-            <button onclick="loginWithGoogle()" class="w-full bg-white text-black font-bold py-3 rounded-xl mb-4 flex items-center justify-center gap-2">
-                <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png" class="w-5"> Google Login
-            </button>
-            <input type="email" id="email" placeholder="Email" class="w-full bg-gray-800 p-3 rounded mb-2 border border-gray-700">
-            <input type="password" id="pass" placeholder="Password" class="w-full bg-gray-800 p-3 rounded mb-4 border border-gray-700">
-            <button onclick="handleEmailAuth()" class="w-full bg-indigo-600 py-3 rounded font-bold">Sign In / Sign Up</button>
+    <div id="profileSidebar" class="fixed inset-y-0 right-0 w-80 bg-[#0b0e14] z-[600] transform translate-x-full transition-transform duration-300 border-l border-gray-800 flex flex-col">
+        <div class="p-6 flex-1 overflow-y-auto no-scrollbar">
+            <div class="flex justify-between items-center mb-10">
+                <h2 class="text-xl font-black text-indigo-500">ACCOUNT</h2>
+                <button onclick="toggleProfile()" class="text-gray-500 hover:text-white"><i class="fa fa-times text-xl"></i></button>
+            </div>
+            <div class="text-center mb-10">
+                <img id="userAvatar" src="https://ui-avatars.com/api/?name=User" class="w-24 h-24 rounded-full border-4 border-indigo-600 mx-auto mb-4 shadow-xl shadow-indigo-500/10">
+                <input type="text" id="userNameInput" class="bg-transparent text-center font-black text-xl w-full outline-none focus:text-indigo-400" placeholder="Display Name">
+                <p id="userEmailDisplay" class="text-xs text-gray-500 mt-1"></p>
+                <button onclick="updateProfileName()" class="text-[10px] text-indigo-500 mt-3 font-bold uppercase tracking-widest hover:text-white transition">Save Changes</button>
+            </div>
+            <div>
+                <h3 class="text-xs font-black text-gray-600 uppercase mb-4 tracking-widest">Recent History</h3>
+                <div id="historyList" class="space-y-3"></div>
+            </div>
+        </div>
+        <div class="p-6 border-t border-gray-800">
+            <button onclick="auth.signOut(); toggleProfile();" class="w-full bg-red-900/10 text-red-500 font-black py-4 rounded-2xl hover:bg-red-900/20 transition">LOG OUT</button>
         </div>
     </div>
 
-    <div id="playerView" class="fixed inset-0 z-[200] bg-black hidden flex flex-col">
+    <div id="playerView" class="fixed inset-0 z-[700] bg-black hidden flex flex-col">
         <div class="p-4 flex justify-between items-center glass">
-            <button onclick="closePlayer()" class="text-xl"><i class="fa fa-arrow-left"></i></button>
-            <h3 id="playerTitle" class="font-bold truncate px-4"></h3>
-            <button id="favBtn" class="text-2xl text-gray-500"><i class="fa fa-heart"></i></button>
+            <div class="flex items-center gap-4">
+                <button onclick="closePlayer()" class="text-2xl"><i class="fa fa-arrow-left"></i></button>
+                <h3 id="playerTitle" class="font-black truncate max-w-[150px] md:max-w-md uppercase tracking-tight"></h3>
+            </div>
+            <div class="flex items-center gap-4">
+                <button id="favBtn" class="text-2xl text-gray-600 transition"><i class="fa fa-heart"></i></button>
+            </div>
         </div>
-        <div class="flex-1 bg-black">
-            <iframe id="videoFrame" src="" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+        <div class="flex-1 bg-black relative">
+            <iframe id="videoFrame" src="" class="w-full h-full" frameborder="0" allowfullscreen allow="autoplay; encrypted-media"></iframe>
         </div>
-        <div class="p-4 bg-gray-900 flex flex-wrap gap-2">
-            <select id="serverSelect" onchange="changeServer(this.value)" class="bg-gray-800 p-2 rounded text-xs outline-none">
-                <option value="https://vidlink.pro/anime/">Server 1</option>
-                <option value="https://vidsrc.me/anime/">Server 2</option>
-                <option value="https://embed.su/embed/anime/">Server 3</option>
-            </select>
+        <div class="p-4 bg-[#080a0f] border-t border-gray-800 space-y-4">
+            <div class="flex items-center justify-between">
+                <select id="serverSelect" onchange="changeServer(this.value)" class="bg-gray-900 border border-gray-700 p-2 rounded-lg text-xs font-bold outline-none">
+                    <option value="https://vidlink.pro/anime/">SERVER 1 (VIDLINK)</option>
+                    <option value="https://vidsrc.me/anime/">SERVER 2 (VIDSRC)</option>
+                    <option value="https://vidsrc.to/embed/anime/">SERVER 3 (VIDSRC.TO)</option>
+                    <option value="https://embed.su/embed/anime/">SERVER 4 (EMBED.SU)</option>
+                    <option value="https://autoembed.to/anime/anilist/">SERVER 5 (AUTO)</option>
+                </select>
+                <button id="subDubToggle" class="bg-indigo-600 px-4 py-2 rounded-lg text-[10px] font-black uppercase">SUB</button>
+            </div>
             <div id="epList" class="flex gap-2 overflow-x-auto no-scrollbar py-2"></div>
         </div>
     </div>
 
+    <div id="authModal" class="modal">
+        <div class="bg-gray-900 p-8 rounded-[2rem] w-full max-w-md border border-gray-800 relative mx-4">
+            <button onclick="closeModal('authModal')" class="absolute top-6 right-6 text-gray-500"><i class="fa fa-times"></i></button>
+            <h2 class="text-3xl font-black mb-2 text-center tracking-tighter uppercase">Join YMLS</h2>
+            <p class="text-gray-500 text-center mb-8 text-sm">Sync your history & favorites.</p>
+            
+            <button onclick="loginWithGoogle()" class="w-full bg-white text-black font-black py-4 rounded-2xl mb-4 flex items-center justify-center gap-3 active:scale-95 transition">
+                <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png" class="w-5"> CONTINUE WITH GOOGLE
+            </button>
+            
+            <div class="relative my-8"><hr class="border-gray-800"><span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-900 px-4 text-[10px] text-gray-500 font-bold">OR EMAIL</span></div>
+
+            <input type="email" id="email" placeholder="Email" class="w-full bg-gray-800 p-4 rounded-2xl mb-3 border border-gray-700 outline-none focus:border-indigo-500">
+            <input type="password" id="pass" placeholder="Password" class="w-full bg-gray-800 p-4 rounded-2xl mb-6 border border-gray-700 outline-none focus:border-indigo-500">
+            <button onclick="handleEmailAuth()" class="w-full bg-indigo-600 py-4 rounded-2xl font-black tracking-widest uppercase shadow-lg shadow-indigo-500/20 active:scale-95 transition">Enter App</button>
+        </div>
+    </div>
+
     <script>
-        // --- CONFIG (FIX THIS) ---
+        // --- 1. FIREBASE CONFIG ---
         const firebaseConfig = {
             apiKey: "PASTE_YOUR_API_KEY",
             authDomain: "PASTE_YOUR_PROJECT.firebaseapp.com",
@@ -94,11 +144,13 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
+        // --- 2. APP STATE ---
         const ANILIST = 'https://graphql.anilist.co';
         let currentAnime = null;
+        let isDub = false;
         let favorites = JSON.parse(localStorage.getItem('ymls_favs')) || [];
 
-        // --- LOAD DATA ---
+        // --- 3. DATA FETCHING ---
         window.onload = () => {
             fetchList({ sort: "TRENDING_DESC" });
             renderGenres();
@@ -110,62 +162,108 @@
             const res = await fetch(ANILIST, {
                 method:'POST',
                 headers:{'Content-Type':'application/json'},
-                body: JSON.stringify({query, variables: { s: vars.sort, search: vars.search, g: vars.genre }})
+                body: JSON.stringify({query, variables: { s: [vars.sort || "TRENDING_DESC"], search: vars.search, g: vars.genre }})
             });
             const data = await res.json();
             renderGrid(data.data.Page.media);
         }
 
         function renderGrid(list) {
-            document.getElementById('mainGrid').innerHTML = list.map(a => `
+            const grid = document.getElementById('mainGrid');
+            grid.innerHTML = list.map(a => `
                 <div class="anime-card" onclick='openPlayer(${JSON.stringify(a)})'>
-                    <img src="${a.coverImage.large}" class="rounded-xl aspect-[3/4] object-cover w-full">
-                    <h4 class="mt-2 text-xs font-bold truncate">${a.title.english || a.title.romaji}</h4>
+                    <div class="relative overflow-hidden rounded-[1.5rem] aspect-[3/4] shadow-2xl">
+                        <img src="${a.coverImage.large}" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent flex items-end p-4">
+                            <span class="bg-indigo-600 px-2 py-1 rounded-lg text-[10px] font-black">★ ${a.averageScore/10 || '7.5'}</span>
+                        </div>
+                    </div>
+                    <h4 class="mt-4 text-[11px] font-black uppercase tracking-tight truncate">${a.title.english || a.title.romaji}</h4>
                 </div>
             `).join('');
         }
 
-        // --- SEARCH & GENRES ---
-        document.getElementById('searchBar').addEventListener('keypress', (e) => {
-            if(e.key === 'Enter') {
-                fetchList({ search: e.target.value });
-                document.getElementById('gridTitle').innerText = "Results for: " + e.target.value;
-            }
-        });
-
-        function renderGenres() {
-            const list = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Romance", "Sci-Fi"];
-            document.getElementById('genreBar').innerHTML = list.map(g => `<button onclick="fetchList({genre:'${g}'})" class="genre-btn">${g}</button>`).join('');
-        }
-
-        // --- PLAYER & APIS ---
+        // --- 4. PLAYER ENGINE ---
         function openPlayer(anime) {
             currentAnime = anime;
             document.getElementById('playerView').classList.remove('hidden');
             document.getElementById('playerTitle').innerText = anime.title.english || anime.title.romaji;
             updateFavIcon();
             renderEpisodes(anime.episodes || 24);
-            loadVideo(1);
+            loadVideo(getWatchedProgress(anime.id));
         }
 
         function loadVideo(ep) {
             const server = document.getElementById('serverSelect').value;
-            const id = server.includes('vidlink') ? currentAnime.id : currentAnime.idMal || currentAnime.id;
-            document.getElementById('videoFrame').src = `${server}${id}/${ep}`;
+            const mode = isDub ? 'dub' : 'sub';
+            let url = "";
+            
+            if(server.includes('vidlink')) {
+                url = `${server}${currentAnime.id}/${ep}/${mode}?primaryColor=6366f1`;
+            } else {
+                url = `${server}${currentAnime.idMal || currentAnime.id}/${ep}`;
+            }
+            
+            document.getElementById('videoFrame').src = url;
+            saveHistory(ep);
         }
 
         function renderEpisodes(total) {
+            const activeEp = getWatchedProgress(currentAnime.id);
             document.getElementById('epList').innerHTML = Array.from({length: total}, (_, i) => i + 1).map(n => `
-                <button onclick="loadVideo(${n})" class="bg-gray-800 px-4 py-2 rounded font-bold text-xs">${n}</button>
+                <button onclick="loadVideo(${n})" class="flex-shrink-0 ${n == activeEp ? 'bg-indigo-600' : 'bg-gray-800'} px-5 py-3 rounded-2xl font-black text-xs transition">${n}</button>
             `).join('');
         }
 
-        function closePlayer() { 
-            document.getElementById('playerView').classList.add('hidden'); 
-            document.getElementById('videoFrame').src = "";
+        function changeServer(val) { loadVideo(getWatchedProgress(currentAnime.id)); }
+        function closePlayer() { document.getElementById('playerView').classList.add('hidden'); document.getElementById('videoFrame').src = ""; }
+
+        // --- 5. SEARCH & FILTERS ---
+        document.getElementById('searchBar').addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') {
+                fetchList({ search: e.target.value });
+                document.getElementById('gridTitle').innerText = "SEARCH RESULTS";
+            }
+        });
+
+        function renderGenres() {
+            const list = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Sports"];
+            document.getElementById('genreBar').innerHTML = list.map(g => `<button onclick="fetchList({genre:'${g}'}); document.getElementById('gridTitle').innerText='${g.toUpperCase()}'" class="genre-btn uppercase tracking-widest">${g}</button>`).join('');
         }
 
-        // --- FAVORITES ---
+        function applySort(sort) {
+            fetchList({ sort });
+            document.getElementById('gridTitle').innerText = sort.split('_')[0] + " CONTENT";
+            toggleMenu('filterMenu');
+        }
+
+        // --- 6. USER FEATURES (FAVS/HISTORY/PROFILE) ---
+        function toggleProfile() { 
+            const sb = document.getElementById('profileSidebar');
+            sb.classList.toggle('translate-x-full');
+            if(!sb.classList.contains('translate-x-full')) renderHistoryList();
+        }
+
+        function saveHistory(ep) {
+            let watched = JSON.parse(localStorage.getItem('ymls_watched')) || {};
+            watched[currentAnime.id] = ep;
+            localStorage.setItem('ymls_watched', JSON.stringify(watched));
+        }
+
+        function getWatchedProgress(id) { return (JSON.parse(localStorage.getItem('ymls_watched')) || {})[id] || 1; }
+
+        function renderHistoryList() {
+            const watched = JSON.parse(localStorage.getItem('ymls_watched')) || {};
+            const ids = Object.keys(watched).reverse().slice(0, 5);
+            document.getElementById('historyList').innerHTML = ids.map(id => `
+                <div class="history-card">
+                    <div class="w-2 h-2 rounded-full bg-indigo-500"></div>
+                    <span class="text-xs font-bold uppercase tracking-tighter truncate">ANIME ID: ${id}</span>
+                    <span class="ml-auto text-[10px] bg-gray-800 px-2 py-1 rounded">EP ${watched[id]}</span>
+                </div>
+            `).join('');
+        }
+
         function toggleFavorite() {
             const idx = favorites.findIndex(i => i.id === currentAnime.id);
             if(idx === -1) favorites.push(currentAnime); else favorites.splice(idx, 1);
@@ -175,25 +273,39 @@
         }
 
         function renderFavorites() {
-            const section = document.getElementById('favSection');
+            const sec = document.getElementById('favSection');
             if(favorites.length > 0) {
-                section.classList.remove('hidden');
-                document.getElementById('favGrid').innerHTML = favorites.map(a => `<div class="anime-card" onclick='openPlayer(${JSON.stringify(a)})'><img src="${a.coverImage.large}" class="rounded-lg"></div>`).join('');
-            } else { section.classList.add('hidden'); }
+                sec.classList.remove('hidden');
+                document.getElementById('favGrid').innerHTML = favorites.map(a => `
+                    <div class="anime-card" onclick='openPlayer(${JSON.stringify(a)})'>
+                        <img src="${a.coverImage.large}" class="rounded-2xl aspect-[3/4] object-cover">
+                    </div>
+                `).join('');
+            } else { sec.classList.add('hidden'); }
         }
 
         function updateFavIcon() {
-            document.getElementById('favBtn').style.color = favorites.some(i => i.id === currentAnime.id) ? 'red' : 'gray';
-            document.getElementById('favBtn').onclick = toggleFavorite;
+            const btn = document.getElementById('favBtn');
+            const isFav = favorites.some(i => i.id === currentAnime.id);
+            btn.style.color = isFav ? '#ef4444' : '#4b5563';
+            btn.onclick = toggleFavorite;
         }
 
-        // --- AUTH ---
+        async function updateProfileName() {
+            const name = document.getElementById('userNameInput').value;
+            if(auth.currentUser) {
+                await auth.currentUser.updateProfile({ displayName: name });
+                alert("Profile Updated!");
+            }
+        }
+
+        // --- 7. AUTH & UI HELPERS ---
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        function toggleMenu(id) { document.getElementById(id).classList.toggle('hidden'); }
 
         function loginWithGoogle() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider).then(() => closeModal('authModal')).catch(e => alert(e.message));
+            auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).then(() => closeModal('authModal')).catch(e => alert(e.message));
         }
 
         async function handleEmailAuth() {
@@ -206,18 +318,29 @@
                 if(err.code === 'auth/user-not-found') {
                     await auth.createUserWithEmailAndPassword(email, pass);
                     closeModal('authModal');
-                } else { alert(err.message); }
+                } else alert(err.message);
             }
         }
 
         auth.onAuthStateChanged(user => {
-            const box = document.getElementById('authSection');
+            const authSec = document.getElementById('authSection');
             if(user) {
-                box.innerHTML = `<button onclick="auth.signOut()" class="text-xs text-gray-500">Logout</button>`;
+                document.getElementById('userNameInput').value = user.displayName || "";
+                document.getElementById('userEmailDisplay').innerText = user.email;
+                document.getElementById('userAvatar').src = user.photoURL || `https://ui-avatars.com/api/?name=${user.email}`;
+                authSec.innerHTML = `<img onclick="toggleProfile()" src="${user.photoURL || 'https://ui-avatars.com/api/?name='+user.email}" class="w-10 h-10 rounded-full border-2 border-indigo-500 cursor-pointer active:scale-90 transition shadow-lg shadow-indigo-500/20">`;
             } else {
-                box.innerHTML = `<button onclick="openModal('authModal')" class="bg-indigo-600 px-4 py-2 rounded">Login</button>`;
+                authSec.innerHTML = `<button onclick="openModal('authModal')" class="bg-indigo-600 px-5 py-2 rounded-full font-bold text-xs transition">Login</button>`;
             }
         });
+
+        // Sub/Dub Toggle
+        document.getElementById('subDubToggle').onclick = function() {
+            isDub = !isDub;
+            this.innerText = isDub ? 'DUB' : 'SUB';
+            this.classList.toggle('bg-red-600');
+            if(currentAnime) loadVideo(getWatchedProgress(currentAnime.id));
+        };
     </script>
 </body>
 </html>
