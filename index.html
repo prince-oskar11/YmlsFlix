@@ -3,343 +3,227 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YMLS Premium | Anime & Movies</title>
+    <title>YmlsFlix | Stream Premium Anime</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    
     <style>
-        body { background: #080a0f; color: #e2e8f0; font-family: 'Inter', sans-serif; overflow-x: hidden; }
-        .glass { background: rgba(11, 14, 20, 0.9); backdrop-filter: blur(15px); border-bottom: 1px solid #1f2937; }
-        .anime-card { transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; position: relative; }
-        .anime-card:hover { transform: translateY(-8px); filter: brightness(1.2); }
+        body { background: #05070a; color: #e2e8f0; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .glass { background: rgba(5, 7, 10, 0.8); backdrop-filter: blur(20px); border-bottom: 1px solid #1f2937; }
+        .logo-text { background: linear-gradient(to right, #ef4444, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        /* HERO BANNER STYLING */
+        .hero-gradient { background: linear-gradient(to top, #05070a 0%, transparent 100%); }
+        .hero-side-gradient { background: linear-gradient(to right, #05070a 0%, transparent 100%); }
+        
+        .anime-card { transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
+        .anime-card:hover { transform: scale(1.05); z-index: 10; filter: brightness(1.1); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .genre-btn { white-space: nowrap; background: #131924; padding: 6px 18px; border-radius: 50px; font-size: 12px; font-weight: 700; transition: 0.2s; border: 1px solid #1f2937; }
-        .genre-btn:hover { background: #6366f1; border-color: #6366f1; }
-        .modal { display: none; position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.95); align-items: center; justify-content: center; backdrop-filter: blur(10px); }
-        .history-card { background: #131924; border-radius: 10px; padding: 10px; display: flex; align-items: center; gap: 10px; border: 1px solid #1f2937; }
-        #profileSidebar { box-shadow: -10px 0 30px rgba(0,0,0,0.5); }
+        
+        .genre-btn { white-space: nowrap; background: #111827; padding: 8px 20px; border-radius: 8px; font-size: 11px; font-weight: 800; border: 1px solid #374151; color: #9ca3af; transition: 0.3s; }
+        .genre-active { background: #ef4444 !important; border-color: #ef4444 !important; color: white !important; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade { animation: fadeIn 0.8s ease forwards; }
     </style>
 </head>
 <body>
 
-    <nav class="sticky top-0 z-50 glass p-4">
+    <nav class="fixed top-0 w-full z-50 glass p-4 transition-all" id="navbar">
         <div class="container mx-auto flex items-center justify-between gap-4">
-            <h1 class="text-3xl font-black text-indigo-500 tracking-tighter cursor-pointer" onclick="location.reload()">YMLS</h1>
-            
-            <div class="flex-1 max-w-md relative">
-                <input type="text" id="searchBar" placeholder="Search anime..." class="w-full bg-gray-900 border border-gray-700 rounded-full py-2 px-10 focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+            <h1 class="text-3xl font-black tracking-tighter cursor-pointer logo-text" onclick="location.reload()">YmlsFlix</h1>
+            <div class="flex-1 max-w-lg relative">
+                <input type="text" id="searchBar" placeholder="Search YmlsFlix..." class="w-full bg-black/40 border border-gray-700 rounded-lg py-2 px-10 focus:ring-2 focus:ring-red-500 outline-none text-sm transition-all backdrop-blur-md">
                 <i class="fa fa-search absolute left-4 top-3 text-gray-500"></i>
-                <button onclick="toggleMenu('filterMenu')" class="absolute right-3 top-2 text-indigo-400 p-1 hover:text-white transition">
-                    <i class="fa fa-sliders"></i>
-                </button>
-                <div id="filterMenu" class="absolute right-0 mt-4 w-48 bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl p-4 hidden z-50">
-                    <h4 class="text-[10px] font-bold text-gray-500 uppercase mb-3">Sort Content</h4>
-                    <div class="flex flex-col gap-1">
-                        <button onclick="applySort('TRENDING_DESC')" class="text-left text-xs p-2 rounded hover:bg-indigo-600 transition">Trending</button>
-                        <button onclick="applySort('SCORE_DESC')" class="text-left text-xs p-2 rounded hover:bg-indigo-600 transition">Top Rated</button>
-                        <button onclick="applySort('POPULARITY_DESC')" class="text-left text-xs p-2 rounded hover:bg-indigo-600 transition">Most Popular</button>
-                        <button onclick="applySort('START_DATE_DESC')" class="text-left text-xs p-2 rounded hover:bg-indigo-600 transition">Newest</button>
-                    </div>
-                </div>
             </div>
-
-            <div id="authSection" class="flex items-center gap-3">
-                <button onclick="openModal('authModal')" class="bg-indigo-600 px-5 py-2 rounded-full font-bold text-xs shadow-lg shadow-indigo-500/20 active:scale-95 transition">Login</button>
-            </div>
+            <div id="authSection"></div>
         </div>
     </nav>
 
-    <div class="flex gap-3 overflow-x-auto p-4 no-scrollbar container mx-auto" id="genreBar"></div>
+    <header id="heroBanner" class="relative w-full h-[70vh] md:h-[85vh] flex items-center overflow-hidden hidden">
+        <img id="heroImg" src="" class="absolute inset-0 w-full h-full object-cover">
+        <div class="absolute inset-0 hero-gradient"></div>
+        <div class="absolute inset-0 hero-side-gradient hidden md:block"></div>
+        
+        <div class="relative container mx-auto px-6 z-10 animate-fade">
+            <div class="max-w-2xl">
+                <span class="bg-red-600 text-[10px] font-black px-3 py-1 rounded mb-4 inline-block uppercase tracking-widest">Trending #1</span>
+                <h2 id="heroTitle" class="text-4xl md:text-7xl font-black mb-4 uppercase tracking-tighter leading-none"></h2>
+                <p id="heroDesc" class="text-gray-300 text-xs md:text-sm line-clamp-3 mb-8 max-w-lg leading-relaxed"></p>
+                <div class="flex gap-4">
+                    <button id="heroPlayBtn" class="bg-white text-black px-8 py-3 rounded-lg font-black text-xs uppercase flex items-center gap-3 hover:bg-red-500 hover:text-white transition">
+                        <i class="fa fa-play text-sm"></i> Watch Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
 
-    <main class="container mx-auto p-4">
-        <section id="favSection" class="mb-12 hidden">
-            <h2 class="text-xl font-bold mb-6 text-red-500 flex items-center gap-2"><i class="fa fa-heart"></i> My Favorites</h2>
-            <div id="favGrid" class="grid grid-cols-2 md:grid-cols-6 gap-6"></div>
+    <div class="mt-4 md:-mt-10 relative z-20 flex gap-3 overflow-x-auto p-4 no-scrollbar container mx-auto" id="genreBar"></div>
+
+    <main class="container mx-auto p-4 relative z-20">
+        <section id="continueSection" class="mb-10 hidden">
+            <h2 class="text-xs font-black mb-4 uppercase tracking-[0.3em] text-red-500">Pick up where you left off</h2>
+            <div id="continueGrid" class="flex gap-4 overflow-x-auto no-scrollbar pb-2"></div>
         </section>
 
-        <h2 id="gridTitle" class="text-2xl font-black mb-8 uppercase tracking-tighter text-gray-400">Trending Now</h2>
-        <div id="mainGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8"></div>
+        <h2 id="gridTitle" class="text-xl font-black mb-6 uppercase tracking-widest text-gray-400 border-l-4 border-red-600 pl-3">Popular on YmlsFlix</h2>
+        <div id="mainGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 md:gap-8"></div>
     </main>
 
-    <div id="profileSidebar" class="fixed inset-y-0 right-0 w-80 bg-[#0b0e14] z-[600] transform translate-x-full transition-transform duration-300 border-l border-gray-800 flex flex-col">
-        <div class="p-6 flex-1 overflow-y-auto no-scrollbar">
-            <div class="flex justify-between items-center mb-10">
-                <h2 class="text-xl font-black text-indigo-500">ACCOUNT</h2>
-                <button onclick="toggleProfile()" class="text-gray-500 hover:text-white"><i class="fa fa-times text-xl"></i></button>
-            </div>
-            <div class="text-center mb-10">
-                <img id="userAvatar" src="https://ui-avatars.com/api/?name=User" class="w-24 h-24 rounded-full border-4 border-indigo-600 mx-auto mb-4 shadow-xl shadow-indigo-500/10">
-                <input type="text" id="userNameInput" class="bg-transparent text-center font-black text-xl w-full outline-none focus:text-indigo-400" placeholder="Display Name">
-                <p id="userEmailDisplay" class="text-xs text-gray-500 mt-1"></p>
-                <button onclick="updateProfileName()" class="text-[10px] text-indigo-500 mt-3 font-bold uppercase tracking-widest hover:text-white transition">Save Changes</button>
-            </div>
-            <div>
-                <h3 class="text-xs font-black text-gray-600 uppercase mb-4 tracking-widest">Recent History</h3>
-                <div id="historyList" class="space-y-3"></div>
-            </div>
+    <div id="playerView" class="fixed inset-0 z-[700] bg-[#05070a] hidden overflow-y-auto no-scrollbar">
+        <div class="sticky top-0 z-10 p-4 flex justify-between items-center glass">
+            <button onclick="closePlayer()" class="text-xl hover:text-red-500 transition"><i class="fa fa-times"></i></button>
+            <h3 id="playerTitle" class="font-black truncate uppercase text-xs px-4 flex-1 text-center tracking-widest"></h3>
+            <div class="w-10"></div>
         </div>
-        <div class="p-6 border-t border-gray-800">
-            <button onclick="auth.signOut(); toggleProfile();" class="w-full bg-red-900/10 text-red-500 font-black py-4 rounded-2xl hover:bg-red-900/20 transition">LOG OUT</button>
-        </div>
-    </div>
-
-    <div id="playerView" class="fixed inset-0 z-[700] bg-black hidden flex flex-col">
-        <div class="p-4 flex justify-between items-center glass">
-            <div class="flex items-center gap-4">
-                <button onclick="closePlayer()" class="text-2xl"><i class="fa fa-arrow-left"></i></button>
-                <h3 id="playerTitle" class="font-black truncate max-w-[150px] md:max-w-md uppercase tracking-tight"></h3>
-            </div>
-            <div class="flex items-center gap-4">
-                <button id="favBtn" class="text-2xl text-gray-600 transition"><i class="fa fa-heart"></i></button>
-            </div>
-        </div>
-        <div class="flex-1 bg-black relative">
+        <div class="w-full aspect-video bg-black shadow-2xl">
             <iframe id="videoFrame" src="" class="w-full h-full" frameborder="0" allowfullscreen allow="autoplay; encrypted-media"></iframe>
         </div>
-        <div class="p-4 bg-[#080a0f] border-t border-gray-800 space-y-4">
-            <div class="flex items-center justify-between">
-                <select id="serverSelect" onchange="changeServer(this.value)" class="bg-gray-900 border border-gray-700 p-2 rounded-lg text-xs font-bold outline-none">
-                    <option value="https://vidlink.pro/anime/">SERVER 1 (VIDLINK)</option>
-                    <option value="https://vidsrc.me/anime/">SERVER 2 (VIDSRC)</option>
-                    <option value="https://vidsrc.to/embed/anime/">SERVER 3 (VIDSRC.TO)</option>
-                    <option value="https://embed.su/embed/anime/">SERVER 4 (EMBED.SU)</option>
-                    <option value="https://autoembed.to/anime/anilist/">SERVER 5 (AUTO)</option>
-                </select>
-                <button id="subDubToggle" class="bg-indigo-600 px-4 py-2 rounded-lg text-[10px] font-black uppercase">SUB</button>
+        <div class="p-6 container mx-auto">
+            <div class="flex flex-wrap gap-3 mb-6">
+                <button onclick="playTrailer()" id="trailerBtn" class="flex-1 min-w-[120px] bg-white text-black py-3 rounded-lg font-black text-[10px] uppercase">Trailer</button>
+                <button onclick="toggleDub()" id="subDubToggle" class="px-8 py-3 bg-gray-900 border border-gray-700 rounded-lg text-[10px] font-black uppercase">SUB</button>
+                <button onclick="nextEpisode()" id="nextBtn" class="px-8 py-3 bg-red-600 rounded-lg text-[10px] font-black uppercase flex items-center gap-2">Next Episode <i class="fa fa-forward"></i></button>
             </div>
-            <div id="epList" class="flex gap-2 overflow-x-auto no-scrollbar py-2"></div>
-        </div>
-    </div>
-
-    <div id="authModal" class="modal">
-        <div class="bg-gray-900 p-8 rounded-[2rem] w-full max-w-md border border-gray-800 relative mx-4">
-            <button onclick="closeModal('authModal')" class="absolute top-6 right-6 text-gray-500"><i class="fa fa-times"></i></button>
-            <h2 class="text-3xl font-black mb-2 text-center tracking-tighter uppercase">Join YMLS</h2>
-            <p class="text-gray-500 text-center mb-8 text-sm">Sync your history & favorites.</p>
-            
-            <button onclick="loginWithGoogle()" class="w-full bg-white text-black font-black py-4 rounded-2xl mb-4 flex items-center justify-center gap-3 active:scale-95 transition">
-                <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png" class="w-5"> CONTINUE WITH GOOGLE
-            </button>
-            
-            <div class="relative my-8"><hr class="border-gray-800"><span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-900 px-4 text-[10px] text-gray-500 font-bold">OR EMAIL</span></div>
-
-            <input type="email" id="email" placeholder="Email" class="w-full bg-gray-800 p-4 rounded-2xl mb-3 border border-gray-700 outline-none focus:border-indigo-500">
-            <input type="password" id="pass" placeholder="Password" class="w-full bg-gray-800 p-4 rounded-2xl mb-6 border border-gray-700 outline-none focus:border-indigo-500">
-            <button onclick="handleEmailAuth()" class="w-full bg-indigo-600 py-4 rounded-2xl font-black tracking-widest uppercase shadow-lg shadow-indigo-500/20 active:scale-95 transition">Enter App</button>
+            <div class="mb-8">
+                <div class="bg-gray-900 border border-gray-800 p-1 rounded-lg">
+                    <select id="serverSelect" onchange="loadVideo()" class="bg-transparent text-[10px] font-bold outline-none uppercase w-full p-2 text-white">
+                        <option value="vidlink">VidLink (Primary)</option>
+                        <option value="vidsrc_to">VidSrc PRO</option>
+                        <option value="aniwave">Super Stream</option>
+                    </select>
+                </div>
+            </div>
+            <div id="epList" class="flex gap-2 overflow-x-auto no-scrollbar py-4 mb-8 border-y border-gray-800/50"></div>
+            <div id="relatedGrid" class="grid grid-cols-2 md:grid-cols-6 gap-4 pb-10"></div>
         </div>
     </div>
 
     <script>
-        // --- 1. FIREBASE CONFIG (INTEGRATED) ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyAftKyvHMLUxzp1owu0tBocEORD_LWeWWw",
-            authDomain: "project-1f0e9f4f-2aef-4447-a0b.firebaseapp.com",
-            projectId: "project-1f0e9f4f-2aef-4447-a0b",
-            storageBucket: "project-1f0e9f4f-2aef-4447-a0b.firebasestorage.app",
-            messagingSenderId: "866760079013",
-            appId: "1:866760079013:web:26e81af529b8c4c119bf4c"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-
-        // --- 2. APP STATE ---
         const ANILIST = 'https://graphql.anilist.co';
-        let currentAnime = null;
-        let isDub = false;
-        let favorites = JSON.parse(localStorage.getItem('ymls_favs')) || [];
+        let currentAnime = null, isDub = false, currentEp = 1;
 
-        // --- 3. DATA FETCHING ---
-        window.onload = () => {
-            fetchList({ sort: "TRENDING_DESC" });
-            renderGenres();
-            renderFavorites();
-        };
+        window.onload = () => { fetchList(); renderGenres(); renderContinue(); };
 
-        async function fetchList(vars) {
-            const query = `query($s: [MediaSort], $search: String, $g: String){ Page(perPage:24){ media(type:ANIME, sort:$s, search:$search, genre:$g){ id idMal title{english romaji} coverImage{large} averageScore episodes } } }`;
-            const res = await fetch(ANILIST, {
-                method:'POST',
-                headers:{'Content-Type':'application/json'},
-                body: JSON.stringify({query, variables: { s: [vars.sort || "TRENDING_DESC"], search: vars.search, g: vars.genre }})
-            });
-            const data = await res.json();
-            renderGrid(data.data.Page.media);
-        }
+        async function fetchList(vars = {}, target = 'mainGrid') {
+            const grid = document.getElementById(target);
+            grid.innerHTML = Array(6).fill('<div class="loading-shimmer aspect-[3/4]"></div>').join('');
+            
+            // Added bannerImage and description to the query
+            const query = `query($s:[MediaSort],$search:String,$g:String){Page(perPage:24){media(type:ANIME,sort:$s,search:$search,genre:$g){id idMal title{english romaji} bannerImage coverImage{large extraLarge} averageScore episodes genres description trailer{id site}}}}`;
+            
+            try {
+                const res = await fetch(ANILIST, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ query, variables: { s: vars.search ? null : [vars.sort || "TRENDING_DESC"], search: vars.search || undefined, g: vars.genre || undefined }})});
+                const json = await res.json();
+                const list = json.data.Page.media;
 
-        function renderGrid(list) {
-            const grid = document.getElementById('mainGrid');
-            grid.innerHTML = list.map(a => `
-                <div class="anime-card" onclick='openPlayer(${JSON.stringify(a)})'>
-                    <div class="relative overflow-hidden rounded-[1.5rem] aspect-[3/4] shadow-2xl">
-                        <img src="${a.coverImage.large}" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent flex items-end p-4">
-                            <span class="bg-indigo-600 px-2 py-1 rounded-lg text-[10px] font-black">★ ${a.averageScore/10 || '7.5'}</span>
+                // Setup Hero Banner with the first trending item
+                if(!vars.search && !vars.genre && target === 'mainGrid') {
+                    setupHero(list[0]);
+                }
+
+                grid.innerHTML = list.map(a => `
+                    <div class="anime-card bg-gray-900 rounded-xl overflow-hidden" onclick='openPlayer(${JSON.stringify(a)})'>
+                        <img src="${a.coverImage.large}" class="w-full aspect-[3/4] object-cover">
+                        <div class="p-3">
+                            <h4 class="text-[10px] font-black uppercase truncate text-gray-200">${a.title.english || a.title.romaji}</h4>
+                            <p class="text-[8px] font-bold text-gray-500 mt-1">★ ${a.averageScore/10 || '7.5'} | ${a.episodes || '?'} EPS</p>
                         </div>
                     </div>
-                    <h4 class="mt-4 text-[11px] font-black uppercase tracking-tight truncate">${a.title.english || a.title.romaji}</h4>
-                </div>
-            `).join('');
+                `).join('');
+            } catch (err) { console.error(err); }
         }
 
-        // --- 4. PLAYER ENGINE ---
-        function openPlayer(anime) {
-            currentAnime = anime;
+        function setupHero(anime) {
+            const hero = document.getElementById('heroBanner');
+            const title = document.getElementById('heroTitle');
+            const desc = document.getElementById('heroDesc');
+            const img = document.getElementById('heroImg');
+            
+            hero.classList.remove('hidden');
+            img.src = anime.bannerImage || anime.coverImage.extraLarge;
+            title.innerText = anime.title.english || anime.title.romaji;
+            desc.innerHTML = anime.description || "Stream the latest episodes of this top-rated series on YmlsFlix.";
+            
+            document.getElementById('heroPlayBtn').onclick = () => openPlayer(anime);
+        }
+
+        function openPlayer(anime, ep = 1) {
+            currentAnime = anime; currentEp = parseInt(ep);
             document.getElementById('playerView').classList.remove('hidden');
             document.getElementById('playerTitle').innerText = anime.title.english || anime.title.romaji;
-            updateFavIcon();
             renderEpisodes(anime.episodes || 24);
-            loadVideo(getWatchedProgress(anime.id));
+            loadVideo();
+            fetchList({ genre: anime.genres[0] }, 'relatedGrid');
+            document.getElementById('playerView').scrollTo(0,0);
         }
 
-        function loadVideo(ep) {
+        function loadVideo() {
             const server = document.getElementById('serverSelect').value;
             const mode = isDub ? 'dub' : 'sub';
-            let url = "";
-            
-            if(server.includes('vidlink')) {
-                url = `${server}${currentAnime.id}/${ep}/${mode}?primaryColor=6366f1`;
-            } else {
-                url = `${server}${currentAnime.idMal || currentAnime.id}/${ep}`;
-            }
-            
-            document.getElementById('videoFrame').src = url;
-            saveHistory(ep);
+            let finalUrl = server === 'vidlink' 
+                ? `https://vidlink.pro/anime/${currentAnime.id}/${currentEp}/${mode}?primaryColor=ef4444`
+                : `https://vidsrc.to/embed/anime/${currentAnime.idMal || currentAnime.id}/${currentEp}`;
+            document.getElementById('videoFrame').src = finalUrl;
+            saveProgress(currentAnime, currentEp);
         }
 
+        function setEp(n) { currentEp = n; renderEpisodes(currentAnime.episodes || 24); loadVideo(); }
+        function nextEpisode() { if (currentEp < (currentAnime.episodes || 999)) { currentEp++; setEp(currentEp); } }
         function renderEpisodes(total) {
-            const activeEp = getWatchedProgress(currentAnime.id);
             document.getElementById('epList').innerHTML = Array.from({length: total}, (_, i) => i + 1).map(n => `
-                <button onclick="loadVideo(${n})" class="flex-shrink-0 ${n == activeEp ? 'bg-indigo-600' : 'bg-gray-800'} px-5 py-3 rounded-2xl font-black text-xs transition">${n}</button>
+                <button onclick="setEp(${n})" class="flex-shrink-0 min-w-[50px] ${n==currentEp?'bg-red-600 text-white':'bg-gray-900 text-gray-500'} px-4 py-2 rounded-md font-black text-xs transition-all">${n}</button>
             `).join('');
         }
-
-        function changeServer(val) { loadVideo(getWatchedProgress(currentAnime.id)); }
+        function toggleDub() { isDub = !isDub; document.getElementById('subDubToggle').innerText = isDub?'DUB':'SUB'; loadVideo(); }
+        function playTrailer() { if(currentAnime.trailer) document.getElementById('videoFrame').src = `https://www.youtube.com/embed/${currentAnime.trailer.id}?autoplay=1`; }
         function closePlayer() { document.getElementById('playerView').classList.add('hidden'); document.getElementById('videoFrame').src = ""; }
 
-        // --- 5. SEARCH & FILTERS ---
-        document.getElementById('searchBar').addEventListener('keypress', (e) => {
-            if(e.key === 'Enter') {
-                fetchList({ search: e.target.value });
-                document.getElementById('gridTitle').innerText = "SEARCH RESULTS";
-            }
-        });
-
-        function renderGenres() {
-            const list = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Sports"];
-            document.getElementById('genreBar').innerHTML = list.map(g => `<button onclick="fetchList({genre:'${g}'}); document.getElementById('gridTitle').innerText='${g.toUpperCase()}'" class="genre-btn uppercase tracking-widest">${g}</button>`).join('');
+        function saveProgress(anime, ep) {
+            let list = JSON.parse(localStorage.getItem('ymls_history')) || [];
+            list = list.filter(i => i.id !== anime.id);
+            list.unshift({ id: anime.id, title: anime.title.english || anime.title.romaji, img: anime.coverImage.large, ep, data: anime });
+            localStorage.setItem('ymls_history', JSON.stringify(list.slice(0, 10)));
+            renderContinue();
         }
 
-        function applySort(sort) {
-            fetchList({ sort });
-            document.getElementById('gridTitle').innerText = sort.split('_')[0] + " CONTENT";
-            toggleMenu('filterMenu');
-        }
-
-        // --- 6. USER FEATURES ---
-        function toggleProfile() { 
-            const sb = document.getElementById('profileSidebar');
-            sb.classList.toggle('translate-x-full');
-            if(!sb.classList.contains('translate-x-full')) renderHistoryList();
-        }
-
-        function saveHistory(ep) {
-            let watched = JSON.parse(localStorage.getItem('ymls_watched')) || {};
-            watched[currentAnime.id] = ep;
-            localStorage.setItem('ymls_watched', JSON.stringify(watched));
-        }
-
-        function getWatchedProgress(id) { return (JSON.parse(localStorage.getItem('ymls_watched')) || {})[id] || 1; }
-
-        function renderHistoryList() {
-            const watched = JSON.parse(localStorage.getItem('ymls_watched')) || {};
-            const ids = Object.keys(watched).reverse().slice(0, 5);
-            document.getElementById('historyList').innerHTML = ids.map(id => `
-                <div class="history-card">
-                    <div class="w-2 h-2 rounded-full bg-indigo-500"></div>
-                    <span class="text-xs font-bold uppercase tracking-tighter truncate">ANIME ID: ${id}</span>
-                    <span class="ml-auto text-[10px] bg-gray-800 px-2 py-1 rounded">EP ${watched[id]}</span>
+        function renderContinue() {
+            const list = JSON.parse(localStorage.getItem('ymls_history')) || [];
+            const sec = document.getElementById('continueSection');
+            if(list.length === 0) { sec.classList.add('hidden'); return; }
+            sec.classList.remove('hidden');
+            document.getElementById('continueGrid').innerHTML = list.map(item => `
+                <div class="flex-shrink-0 w-64 bg-gray-900/50 p-2 rounded-xl flex gap-3 cursor-pointer border border-gray-800 hover:border-red-500 transition" onclick='openPlayer(${JSON.stringify(item.data)}, ${item.ep})'>
+                    <img src="${item.img}" class="w-14 h-20 object-cover rounded-lg">
+                    <div class="overflow-hidden flex flex-col justify-center">
+                        <h4 class="text-[10px] font-black uppercase truncate text-white">${item.title}</h4>
+                        <p class="text-[9px] text-red-500 font-black mt-1">EPISODE ${item.ep}</p>
+                    </div>
                 </div>
             `).join('');
         }
 
-        function toggleFavorite() {
-            const idx = favorites.findIndex(i => i.id === currentAnime.id);
-            if(idx === -1) favorites.push(currentAnime); else favorites.splice(idx, 1);
-            localStorage.setItem('ymls_favs', JSON.stringify(favorites));
-            updateFavIcon();
-            renderFavorites();
+        function renderGenres() {
+            const g = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi"];
+            document.getElementById('genreBar').innerHTML = g.map(name => `<button onclick="selectGenre(this, '${name}')" class="genre-btn">${name}</button>`).join('');
         }
 
-        function renderFavorites() {
-            const sec = document.getElementById('favSection');
-            if(favorites.length > 0) {
-                sec.classList.remove('hidden');
-                document.getElementById('favGrid').innerHTML = favorites.map(a => `
-                    <div class="anime-card" onclick='openPlayer(${JSON.stringify(a)})'>
-                        <img src="${a.coverImage.large}" class="rounded-2xl aspect-[3/4] object-cover">
-                    </div>
-                `).join('');
-            } else { sec.classList.add('hidden'); }
+        function selectGenre(btn, g) {
+            document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('genre-active'));
+            btn.classList.add('genre-active');
+            fetchList({ genre: g });
+            window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
-        function updateFavIcon() {
-            const btn = document.getElementById('favBtn');
-            const isFav = favorites.some(i => i.id === currentAnime.id);
-            btn.style.color = isFav ? '#ef4444' : '#4b5563';
-            btn.onclick = toggleFavorite;
-        }
-
-        async function updateProfileName() {
-            const name = document.getElementById('userNameInput').value;
-            if(auth.currentUser) {
-                await auth.currentUser.updateProfile({ displayName: name });
-                alert("Profile Updated!");
-            }
-        }
-
-        // --- 7. AUTH & UI HELPERS ---
-        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-        function toggleMenu(id) { document.getElementById(id).classList.toggle('hidden'); }
-
-        function loginWithGoogle() {
-            auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).then(() => closeModal('authModal')).catch(e => alert(e.message));
-        }
-
-        async function handleEmailAuth() {
-            const email = document.getElementById('email').value;
-            const pass = document.getElementById('pass').value;
-            try {
-                await auth.signInWithEmailAndPassword(email, pass);
-                closeModal('authModal');
-            } catch (err) {
-                if(err.code === 'auth/user-not-found') {
-                    await auth.createUserWithEmailAndPassword(email, pass);
-                    closeModal('authModal');
-                } else alert(err.message);
-            }
-        }
-
-        auth.onAuthStateChanged(user => {
-            const authSec = document.getElementById('authSection');
-            if(user) {
-                document.getElementById('userNameInput').value = user.displayName || "";
-                document.getElementById('userEmailDisplay').innerText = user.email;
-                document.getElementById('userAvatar').src = user.photoURL || `https://ui-avatars.com/api/?name=${user.email}`;
-                authSec.innerHTML = `<img onclick="toggleProfile()" src="${user.photoURL || 'https://ui-avatars.com/api/?name='+user.email}" class="w-10 h-10 rounded-full border-2 border-indigo-500 cursor-pointer active:scale-90 transition shadow-lg shadow-indigo-500/20">`;
-            } else {
-                authSec.innerHTML = `<button onclick="openModal('authModal')" class="bg-indigo-600 px-5 py-2 rounded-full font-bold text-xs transition">Login</button>`;
-            }
+        document.getElementById('searchBar').addEventListener('keypress', (e) => { if(e.key === 'Enter') fetchList({ search: e.target.value }); });
+        
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if(window.scrollY > 50) nav.classList.add('bg-black');
+            else nav.classList.remove('bg-black');
         });
-
-        document.getElementById('subDubToggle').onclick = function() {
-            isDub = !isDub;
-            this.innerText = isDub ? 'DUB' : 'SUB';
-            this.classList.toggle('bg-red-600');
-            if(currentAnime) loadVideo(getWatchedProgress(currentAnime.id));
-        };
     </script>
 </body>
 </html>
