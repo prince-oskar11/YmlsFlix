@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YmlsFlix | v39.0</title>
+    <title>YmlsFlix | v41.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <style>
@@ -14,7 +14,6 @@
         .icon-btn { color: #94a3b8; font-size: 16px; cursor: pointer; transition: 0.2s; position: relative; }
         .icon-btn:hover, .icon-active { color: #ef4444; }
         
-        /* DROPDOWNS */
         .dropdown-content { 
             display: none; position: fixed; top: 120px; left: 50%; transform: translateX(-50%); 
             background: #0f1117; border: 1px solid #1f2937; border-radius: 20px; z-index: 3000; 
@@ -22,21 +21,19 @@
         }
         .show { display: block !important; }
 
-        /* GRIDS & CARDS */
         .grid-full { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; }
-        .grid-compact { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; max-height: 250px; overflow-y: auto; }
+        .grid-compact { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; max-height: 300px; overflow-y: auto; }
         .anime-card { transition: 0.3s ease; cursor: pointer; position: relative; border-radius: 12px; overflow: hidden; background: #0f1117; width: 140px; flex-shrink: 0; }
         .card-img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
 
-        /* AUTH FORMS */
         input { background: #111827; border: 1px solid #1f2937; color: white; padding: 10px; border-radius: 10px; outline: none; width: 100%; font-size: 12px; margin-bottom: 8px; }
         .btn-red { background: #ef4444; color: white; padding: 10px; border-radius: 10px; font-weight: 900; font-size: 10px; text-transform: uppercase; width: 100%; }
         
-        #heroSection { height: 45vh; background-size: cover; background-position: center; display: flex; align-items: flex-end; padding-bottom: 30px; position: relative; }
-        .hero-overlay { position: absolute; inset: 0; background: linear-gradient(0deg, #05070a 10%, transparent 100%); }
+        #heroSection { height: 55vh; background-size: cover; background-position: center; display: flex; align-items: flex-end; padding-bottom: 40px; position: relative; width: 100%; }
+        .hero-overlay { position: absolute; inset: 0; background: linear-gradient(0deg, #05070a 15%, transparent 100%); }
         
-        .page-view { display: none; padding-top: 140px; }
+        .page-view { display: none; }
         .active-view { display: block; }
     </style>
 </head>
@@ -52,7 +49,7 @@
                         <i onclick="toggleDropdown('notifDrop')" class="fa fa-bell icon-btn"><span id="notifDot" style="display:none" class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span></i>
                         <div id="notifDrop" class="dropdown-content">
                             <h4 class="text-[10px] font-black uppercase text-red-500 mb-4">Alerts</h4>
-                            <div id="notifList" class="text-xs text-gray-400 space-y-3">Login to track your watchlist.</div>
+                            <div id="notifList" class="text-xs text-gray-400 space-y-3">No new updates.</div>
                         </div>
                     </div>
                     <div class="relative"><i onclick="toggleDropdown('genreDrop')" class="fa fa-th-large icon-btn"></i>
@@ -74,7 +71,6 @@
                                 <input type="password" id="regPass" placeholder="Password">
                                 <input type="password" id="regConfirm" placeholder="Confirm Password">
                                 <button onclick="handleRegister()" class="btn-red mb-2">Create Account</button>
-                                <div class="text-[9px] text-center text-gray-600 uppercase font-black my-2">OR</div>
                                 <button onclick="handleLogin()" class="w-full border border-gray-800 py-2 rounded-lg text-[9px] font-black uppercase">Sign In</button>
                             </div>
                             <div id="userBox" class="hidden text-center">
@@ -90,11 +86,11 @@
                     </div>
                 </div>
             </div>
-            <input type="text" id="searchBar" placeholder="Search..." class="mt-3" oninput="handleSearch(this.value)">
+            <input type="text" id="searchBar" placeholder="Search anime..." class="mt-3" oninput="handleSearch(this.value)">
         </div>
     </nav>
 
-    <div id="page-home" class="page-view active-view" style="padding-top:0">
+    <div id="page-home" class="page-view active-view">
         <header id="heroSection">
             <div class="hero-overlay"></div>
             <div class="container mx-auto px-6 relative z-10">
@@ -104,21 +100,21 @@
             </div>
         </header>
         <main class="container mx-auto p-4 -mt-8 relative z-20">
-            <section id="continueSection" class="mb-10 hidden">
-                <h2 class="text-[10px] font-black mb-4 uppercase text-red-500 tracking-widest">Continue Watching</h2>
-                <div id="continueGrid" class="flex gap-4 overflow-x-auto no-scrollbar pb-4"></div>
-            </section>
-            <section class="mb-10"><h2 class="text-[10px] font-black mb-4 uppercase text-orange-500 tracking-widest">Trending</h2><div id="trendingGrid" class="flex gap-4 overflow-x-auto no-scrollbar pb-4"></div></section>
-            <section class="mb-10"><h2 class="text-[10px] font-black mb-4 uppercase text-blue-500 tracking-widest">Recent</h2><div id="recentGrid" class="flex gap-4 overflow-x-auto no-scrollbar pb-4"></div></section>
+            <section id="continueSection" class="mb-10 hidden"><h2 class="text-[10px] font-black mb-4 uppercase text-red-500 tracking-widest">Continue Watching</h2><div id="continueGrid" class="flex gap-4 overflow-x-auto no-scrollbar pb-4"></div></section>
+            <section class="mb-10"><h2 class="text-[10px] font-black mb-4 uppercase text-orange-500 tracking-widest">Trending Now</h2><div id="trendingGrid" class="flex gap-4 overflow-x-auto no-scrollbar pb-4"></div></section>
+            <section class="mb-10"><h2 class="text-[10px] font-black mb-4 uppercase text-green-500 tracking-widest">Upcoming Releases</h2><div id="upcomingGrid" class="flex gap-4 overflow-x-auto no-scrollbar pb-4"></div></section>
+            <section class="mb-10"><h2 class="text-[10px] font-black mb-4 uppercase text-blue-500 tracking-widest">Airing Now</h2><div id="airingGrid" class="flex gap-4 overflow-x-auto no-scrollbar pb-4"></div></section>
+            <section class="mb-10"><h2 class="text-[10px] font-black mb-4 uppercase text-purple-500 tracking-widest">Most Popular</h2><div id="popularGrid" class="flex gap-4 overflow-x-auto no-scrollbar pb-4"></div></section>
+            <section class="mb-10"><h2 class="text-[10px] font-black mb-4 uppercase text-yellow-500 tracking-widest">Top Rated</h2><div id="ratedGrid" class="flex gap-4 overflow-x-auto no-scrollbar pb-4"></div></section>
         </main>
     </div>
 
-    <div id="page-wishlist" class="page-view container mx-auto p-4">
+    <div id="page-wishlist" class="page-view container mx-auto p-4 pt-[140px]">
         <h2 class="text-xl font-black mb-6 uppercase tracking-tighter">My <span class="text-red-600">Watchlist</span></h2>
         <div id="wishlistGrid" class="grid-full"></div>
     </div>
 
-    <div id="page-filter" class="page-view container mx-auto p-4">
+    <div id="page-filter" class="page-view container mx-auto p-4 pt-[140px]">
         <h2 id="filterTitle" class="text-xl font-black mb-6 uppercase tracking-tighter">Results</h2>
         <div id="filterGrid" class="grid-full"></div>
     </div>
@@ -130,109 +126,47 @@
             <button onclick="location.reload()" class="text-lg"><i class="fa fa-home"></i></button>
         </div>
         <div class="w-full aspect-video bg-black"><iframe id="videoFrame" src="" class="w-full h-full" frameborder="0" allowfullscreen></iframe></div>
-        <div class="p-6 container mx-auto">
-            <div id="epList" class="flex gap-2 overflow-x-auto no-scrollbar pb-10"></div>
-        </div>
+        <div class="p-6 container mx-auto"><div id="epList" class="flex gap-2 overflow-x-auto no-scrollbar pb-10"></div></div>
     </div>
 
     <script>
         const API = 'https://graphql.anilist.co';
         let currentUser = JSON.parse(localStorage.getItem('ymls_active_user')) || null;
-        let currentAnime = null;
 
         window.onload = () => { setupUI(); fetchHero(); loadHome(); genFilters(); };
 
-        function setupUI() {
-            if(currentUser) {
-                document.getElementById('authBox').classList.add('hidden');
-                document.getElementById('userBox').classList.remove('hidden');
-                document.getElementById('userDisplay').innerText = currentUser.name;
-                checkNotifs();
-            }
-        }
+        function setupUI() { if(currentUser) { document.getElementById('authBox').classList.add('hidden'); document.getElementById('userBox').classList.remove('hidden'); document.getElementById('userDisplay').innerText = currentUser.name; } }
+        function toggleDropdown(id) { const drop = document.getElementById(id); const isShown = drop.classList.contains('show'); document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show')); if (!isShown) drop.classList.add('show'); }
+        function showPage(pageId) { document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active-view')); document.getElementById(`page-${pageId}`).classList.add('active-view'); if(pageId === 'wishlist') renderWishlist(); window.scrollTo(0,0); }
 
-        // NAVIGATION SYSTEM
-        function showPage(pageId) {
-            document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active-view'));
-            document.getElementById(`page-${pageId}`).classList.add('active-view');
-            document.querySelectorAll('.icon-btn').forEach(i => i.classList.remove('icon-active'));
-            if(pageId === 'wishlist') {
-                document.getElementById('wishNav').classList.add('icon-active');
-                renderWishlist();
-            }
-            window.scrollTo(0,0);
-        }
-
-        // AUTH LOGIC
-        function handleRegister() {
-            const u = document.getElementById('regUser').value, p = document.getElementById('regPass').value, cp = document.getElementById('regConfirm').value;
-            if(!u || p.length < 4) return alert("Valid User/Pass required (min 4 chars)");
-            if(p !== cp) return alert("Passwords do not match!");
-            let users = JSON.parse(localStorage.getItem('ymls_users')) || {};
-            if(users[u]) return alert("User exists!");
-            users[u] = { name: u, pass: p, wishlist: [] };
-            localStorage.setItem('ymls_users', JSON.stringify(users));
-            alert("Account created! Please Sign In.");
-        }
-
-        function handleLogin() {
-            const u = document.getElementById('regUser').value, p = document.getElementById('regPass').value;
-            let users = JSON.parse(localStorage.getItem('ymls_users')) || {};
-            if(users[u] && users[u].pass === p) {
-                currentUser = users[u];
-                localStorage.setItem('ymls_active_user', JSON.stringify(currentUser));
-                location.reload();
-            } else alert("Invalid credentials");
-        }
-
-        function handleLogout() { localStorage.removeItem('ymls_active_user'); location.reload(); }
-
-        // WISHLIST LOGIC (LINKED TO ACCOUNT)
-        function toggleWish(e, anime) {
-            e.stopPropagation();
-            if(!currentUser) return alert("Please Login to use Wishlist");
-            let users = JSON.parse(localStorage.getItem('ymls_users'));
-            let list = users[currentUser.name].wishlist || [];
-            const idx = list.findIndex(i => i.id === anime.id);
-            idx === -1 ? list.unshift(anime) : list.splice(idx, 1);
-            users[currentUser.name].wishlist = list;
-            currentUser.wishlist = list;
-            localStorage.setItem('ymls_users', JSON.stringify(users));
-            localStorage.setItem('ymls_active_user', JSON.stringify(currentUser));
-            location.reload(); // Refresh to sync UI
-        }
-
-        function renderWishlist() {
-            const list = currentUser ? currentUser.wishlist : [];
-            const grid = document.getElementById('wishlistGrid');
-            if(!list.length) grid.innerHTML = "<p class='text-gray-600 text-xs'>Your list is empty.</p>";
-            else render(list, 'wishlistGrid', true);
-        }
-
-        // FILTER SYSTEM
         function genFilters() {
-            const genres = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mecha", "Music", "Mystery", "Psychological", "Romance", "Sci-Fi", "Sports", "Supernatural", "Thriller", "Slice of Life", "War", "Politics"];
+            const genres = ["Action", "Adventure", "Comedy", "Drama", "Ecchi", "Fantasy", "Horror", "Mahou Shoujo", "Mecha", "Music", "Mystery", "Psychological", "Romance", "Sci-Fi", "Slice of Life", "Sports", "Supernatural", "Thriller"];
             document.getElementById('genreList').innerHTML = genres.map(g => `<button onclick="fetchByFilter({genre:'${g}'})" class="bg-gray-900 py-2 rounded text-[9px] font-bold hover:bg-red-600">${g}</button>`).join('');
-            let yH = ''; for(let y=2026; y>=1990; y--) yH += `<button onclick="fetchByFilter({year:${y}})" class="bg-gray-900 py-2 rounded text-[9px] font-bold hover:bg-red-600">${y}</button>`;
+            let yH = ''; for(let y=2026; y>=2000; y--) yH += `<button onclick="fetchByFilter({year:${y}})" class="bg-gray-900 py-2 rounded text-[9px] font-bold hover:bg-red-600">${y}</button>`;
             document.getElementById('yearList').innerHTML = yH;
         }
 
-        async function fetchByFilter(params) {
-            showPage('filter'); toggleDropdown('genreDrop');
-            document.getElementById('filterTitle').innerText = params.genre || params.year;
-            const query = `query($g:String,$y:Int){Page(perPage:24){media(genre:$g,seasonYear:$y,type:ANIME,sort:POPULARITY_DESC){id idMal title{english romaji} coverImage{large} episodes}}}`;
-            const res = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query, variables:{g:params.genre, y:params.year}})});
-            const json = await res.json(); render(json.data.Page.media, "filterGrid", true);
+        async function loadHome() {
+            fetchGrid("TRENDING_DESC", "trendingGrid");
+            fetchGrid("POPULARITY_DESC", "popularGrid");
+            fetchGrid("SCORE_DESC", "ratedGrid");
+            // Upcoming
+            const uQ = `query{Page(perPage:12){media(status:NOT_YET_RELEASED,type:ANIME,sort:POPULARITY_DESC){id idMal title{english romaji} coverImage{large} episodes}}}`;
+            const uR = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query:uQ})});
+            const uJ = await uR.json(); render(uJ.data.Page.media, "upcomingGrid");
+            // Airing
+            const aQ = `query{Page(perPage:12){airingSchedules(airingAt_greater:${Math.floor(Date.now()/1000)},sort:TIME){media{id idMal title{english romaji} coverImage{large} episodes}}}}`;
+            const aR = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query:aQ})});
+            const aJ = await aR.json(); render(aJ.data.Page.airingSchedules.map(s => s.media), "airingGrid");
+            renderContinue();
         }
 
-        async function handleSearch(term) {
-            if(term.length < 2) return; showPage('filter');
-            const query = `query($s:String){Page(perPage:20){media(search:$s,type:ANIME){id idMal title{english romaji} coverImage{large} episodes}}}`;
-            const res = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query, variables:{s:term}})});
-            const json = await res.json(); render(json.data.Page.media, "filterGrid", true);
+        async function fetchGrid(sort, target) {
+            const query = `query($s:[MediaSort]){Page(perPage:12){media(type:ANIME,sort:$s){id idMal title{english romaji} coverImage{large} episodes}}}`;
+            const res = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query, variables:{s:[sort]}})});
+            const json = await res.json(); render(json.data.Page.media, target);
         }
 
-        // RENDER UTILS
         function render(list, target, isGrid = false) {
             const wishes = currentUser ? currentUser.wishlist : [];
             document.getElementById(target).innerHTML = list.map(a => {
@@ -245,36 +179,47 @@
             }).join('');
         }
 
-        // PRESERVED SYSTEMS
-        async function loadHome() { fetchGrid("TRENDING_DESC", "trendingGrid"); fetchGrid("UPDATED_AT_DESC", "recentGrid"); renderContinue(); }
-        async function fetchGrid(sort, target) {
-            const query = `query($s:[MediaSort]){Page(perPage:12){media(type:ANIME,sort:$s){id idMal title{english romaji} coverImage{large} episodes}}}`;
-            const res = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query, variables:{s:[sort]}})});
-            const json = await res.json(); render(json.data.Page.media, target);
+        function toggleWish(e, anime) {
+            e.stopPropagation(); if(!currentUser) return alert("Login required");
+            let users = JSON.parse(localStorage.getItem('ymls_users'));
+            let list = users[currentUser.name].wishlist || [];
+            const idx = list.findIndex(i => i.id === anime.id);
+            idx === -1 ? list.unshift(anime) : list.splice(idx, 1);
+            users[currentUser.name].wishlist = list;
+            currentUser.wishlist = list;
+            localStorage.setItem('ymls_users', JSON.stringify(users));
+            localStorage.setItem('ymls_active_user', JSON.stringify(currentUser));
+            location.reload();
         }
-        function openPlayer(a, ep = 1) {
-            currentAnime = a; document.getElementById('playerView').classList.remove('hidden');
-            document.getElementById('playerTitle').innerText = a.title.english || a.title.romaji;
-            document.getElementById('videoFrame').src = `https://win-anime.vercel.app/embed/${a.idMal || a.id}/${ep}`;
-            document.getElementById('epList').innerHTML = Array.from({length: a.episodes || 12}, (_, i) => `<button onclick="openPlayer(currentAnime, ${i+1})" class="min-w-[40px] bg-gray-800 p-2 rounded text-[10px]">${i+1}</button>`).join('');
-        }
-        function closePlayer() { document.getElementById('playerView').classList.add('hidden'); document.getElementById('videoFrame').src = ""; }
-        function toggleDropdown(id) { document.querySelectorAll('.dropdown-content').forEach(d => {if(d.id!==id)d.classList.remove('show')}); document.getElementById(id).classList.toggle('show'); }
-        function switchTab(t) { document.getElementById('genreList').classList.toggle('hidden', t !== 'genres'); document.getElementById('tabGen').style.borderColor = t==='genres'?'#ef4444':'transparent'; document.getElementById('yearList').classList.toggle('hidden', t !== 'years'); document.getElementById('tabYear').style.borderColor = t==='years'?'#ef4444':'transparent'; }
+
         async function fetchHero() {
             const query = `query{Page(perPage:1){media(type:ANIME,sort:TRENDING_DESC){id idMal title{english romaji} bannerImage description episodes}}}`;
             const res = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query})});
             const json = await res.json(); const top = json.data.Page.media[0];
-            document.getElementById('heroSection').style.backgroundImage = `url(${top.bannerImage})`;
+            if(top.bannerImage) document.getElementById('heroSection').style.backgroundImage = `url(${top.bannerImage})`;
             document.getElementById('heroTitle').innerText = top.title.english || top.title.romaji;
             document.getElementById('heroDesc').innerHTML = top.description;
             document.getElementById('heroPlayBtn').onclick = () => openPlayer(top);
         }
-        function renderContinue() {
-            const list = JSON.parse(localStorage.getItem('ymls_hist')) || [];
-            if(!list.length) return; document.getElementById('continueSection').classList.remove('hidden');
-            render(list, 'continueGrid');
+
+        async function fetchByFilter(params) {
+            showPage('filter'); toggleDropdown('genreDrop');
+            document.getElementById('filterTitle').innerText = params.genre || params.year;
+            const query = `query($g:String,$y:Int){Page(perPage:24){media(genre:$g,seasonYear:$y,type:ANIME,sort:POPULARITY_DESC){id idMal title{english romaji} coverImage{large} episodes}}}`;
+            const res = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query, variables:{g:params.genre, y:params.year}})});
+            const json = await res.json(); render(json.data.Page.media, "filterGrid", true);
         }
+
+        function renderWishlist() { render(currentUser ? currentUser.wishlist : [], 'wishlistGrid', true); }
+        function openPlayer(a, ep = 1) { document.getElementById('playerView').classList.remove('hidden'); document.getElementById('playerTitle').innerText = a.title.english || a.title.romaji; document.getElementById('videoFrame').src = `https://win-anime.vercel.app/embed/${a.idMal || a.id}/${ep}`; document.getElementById('epList').innerHTML = Array.from({length: a.episodes || 12}, (_, i) => `<button onclick="openPlayer(${JSON.stringify(a)}, ${i+1})" class="min-w-[40px] bg-gray-800 p-2 rounded text-[10px]">${i+1}</button>`).join(''); }
+        function closePlayer() { document.getElementById('playerView').classList.add('hidden'); document.getElementById('videoFrame').src = ""; }
+        function handleRegister() { const u = document.getElementById('regUser').value, p = document.getElementById('regPass').value, cp = document.getElementById('regConfirm').value; if(p !== cp) return alert("Passwords match error"); let users = JSON.parse(localStorage.getItem('ymls_users')) || {}; users[u] = { name: u, pass: p, wishlist: [] }; localStorage.setItem('ymls_users', JSON.stringify(users)); alert("Registered!"); }
+        function handleLogin() { const u = document.getElementById('regUser').value, p = document.getElementById('regPass').value; let users = JSON.parse(localStorage.getItem('ymls_users')) || {}; if(users[u]?.pass === p) { localStorage.setItem('ymls_active_user', JSON.stringify(users[u])); location.reload(); } }
+        function handleLogout() { localStorage.removeItem('ymls_active_user'); location.reload(); }
+        function switchTab(t) { document.getElementById('genreList').classList.toggle('hidden', t !== 'genres'); document.getElementById('yearList').classList.toggle('hidden', t !== 'years'); }
+        async function handleSearch(term) { if(term.length < 2) return; showPage('filter'); fetchByFilter({genre: term}); }
+        function renderContinue() { const list = JSON.parse(localStorage.getItem('ymls_hist')) || []; if(list.length) { document.getElementById('continueSection').classList.remove('hidden'); render(list, 'continueGrid'); } }
+        function clearHistoryOnly() { if(confirm("Clear history row?")) { localStorage.removeItem('ymls_hist'); location.reload(); } }
     </script>
 </body>
 </html>
