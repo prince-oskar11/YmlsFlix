@@ -40,9 +40,8 @@
         .ep-btn { flex-shrink: 0; width: 45px; height: 45px; border-radius: 10px; background: #111827; font-weight: 900; transition: 0.2s; border: 1px solid transparent; color: white; }
         .ep-active { background: #ef4444 !important; }
         
-        #installBtn { display: none; } /* Hidden by default until PWA is ready */
+        #installBtn { display: none; }
 
-        /* Confirmation Modal Styles */
         #confirmOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 5000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         .confirm-box { background: #0f1117; border: 1px solid #1f2937; padding: 30px; border-radius: 24px; max-width: 340px; width: 90%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
     </style>
@@ -64,7 +63,6 @@
     <nav class="fixed top-0 w-full z-[2500] glass p-4">
         <div class="container mx-auto flex items-center justify-between">
             <h1 class="text-2xl font-black tracking-tighter logo-text cursor-pointer" onclick="showPage('home')">YMLSFLIX PRO</h1>
-            
             <div class="flex items-center gap-5">
                 <i onclick="showPage('home')" class="fa fa-home text-gray-400 hover:text-white cursor-pointer text-xl"></i>
                 <i onclick="showPage('wishlist')" class="fa fa-heart text-gray-400 hover:text-red-500 cursor-pointer text-xl"></i>
@@ -72,12 +70,10 @@
                 <i onclick="toggleDropdown('profileDrop')" class="fa fa-user-circle text-gray-400 hover:text-white cursor-pointer text-xl"></i>
             </div>
         </div>
-        
         <div class="container mx-auto mt-4 px-2 flex gap-2">
             <input type="text" id="searchBar" placeholder="Search anime instantly..." oninput="handleSearch(this.value)">
             <button id="installBtn" onclick="triggerInstall()" class="bg-indigo-600 text-[10px] font-black px-4 rounded-xl uppercase whitespace-nowrap"><i class="fa fa-download mr-2"></i>Install</button>
         </div>
-
         <div id="genreDrop" class="dropdown-content">
             <div class="flex mb-4 gap-4">
                 <button onclick="switchTab('genres')" id="tab-gen" class="flex-1 pb-2 font-black text-xs uppercase border-b-2 border-red-600">Genres</button>
@@ -86,7 +82,6 @@
             <div id="genreList" class="grid grid-cols-3 gap-2 max-h-80 overflow-y-auto pr-2"></div>
             <div id="yearList" class="grid grid-cols-3 gap-2 max-h-80 overflow-y-auto pr-2 hidden"></div>
         </div>
-
         <div id="profileDrop" class="dropdown-content">
             <div id="authBox">
                 <h3 class="text-white font-black text-xs uppercase mb-4 tracking-widest text-center">Account Access</h3>
@@ -122,7 +117,8 @@
             </section>
             
             <section class="mb-12"><h2 class="text-[11px] font-black mb-4 uppercase text-orange-500 tracking-[0.2em]">Trending Now</h2><div id="trendingGrid" class="flex gap-4 overflow-x-auto no-scrollbar"></div></section>
-            <section class="mb-12"><h2 class="text-[11px] font-black mb-4 uppercase text-blue-500 tracking-[0.2em]">Now Playing (Airing Today)</h2><div id="airingGrid" class="flex gap-4 overflow-x-auto no-scrollbar"></div></section>
+            <section class="mb-12"><h2 class="text-[11px] font-black mb-4 uppercase text-yellow-500 tracking-[0.2em]">Top Rated</h2><div id="ratedGrid" class="flex gap-4 overflow-x-auto no-scrollbar"></div></section>
+            <section class="mb-12"><h2 class="text-[11px] font-black mb-4 uppercase text-blue-500 tracking-[0.2em]">Now Playing</h2><div id="airingGrid" class="flex gap-4 overflow-x-auto no-scrollbar"></div></section>
             <section class="mb-12"><h2 class="text-[11px] font-black mb-4 uppercase text-purple-500 tracking-[0.2em]">Most Popular</h2><div id="popularGrid" class="flex gap-4 overflow-x-auto no-scrollbar"></div></section>
             <section class="mb-12"><h2 class="text-[11px] font-black mb-4 uppercase text-green-500 tracking-[0.2em]">Upcoming</h2><div id="upcomingGrid" class="flex gap-4 overflow-x-auto no-scrollbar"></div></section>
         </main>
@@ -174,10 +170,8 @@
         let playMode = 'sub', currentAnime = null, currentEp = 1;
         let deferredPrompt;
 
-        // --- PWA LOGIC ---
         window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
+            e.preventDefault(); deferredPrompt = e;
             document.getElementById('installBtn').style.display = 'block';
         });
 
@@ -185,9 +179,7 @@
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    document.getElementById('installBtn').style.display = 'none';
-                }
+                if (outcome === 'accepted') document.getElementById('installBtn').style.display = 'none';
                 deferredPrompt = null;
             }
         }
@@ -206,18 +198,17 @@
             const user = document.getElementById('authEmail').value.trim();
             const pass = document.getElementById('authPass').value.trim();
             if(!user || !pass) return alert("Please fill all fields");
-            
             let db = JSON.parse(localStorage.getItem('ymls_users_db')) || {};
             if(mode === 'signup') {
                 if(db[user]) return alert("User already exists");
-                db[user] = { name: user, pass: pass, wishlist: [], history: [] };
+                db[user] = { name: user, pass: pass, wishlist: [] };
                 localStorage.setItem('ymls_users_db', JSON.stringify(db));
-                alert("Account Created! You can now Sign In.");
+                alert("Account Created!");
             } else {
                 if(db[user] && db[user].pass === pass) {
                     localStorage.setItem('ymls_active_user', JSON.stringify(db[user]));
                     location.reload();
-                } else alert("Invalid username or password");
+                } else alert("Invalid credentials");
             }
         }
 
@@ -226,6 +217,7 @@
         async function loadHome() {
             fetchGrid("TRENDING_DESC", "trendingGrid");
             fetchGrid("POPULARITY_DESC", "popularGrid");
+            fetchGrid("SCORE_DESC", "ratedGrid"); // Fixed: Top Rated
             
             const uQ = `query{Page(perPage:20){media(status:NOT_YET_RELEASED,type:ANIME,sort:POPULARITY_DESC){id idMal title{english romaji} coverImage{large} episodes trailer{id site}}}}`;
             fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query:uQ})}).then(r=>r.json()).then(j=>render(j.data.Page.media, "upcomingGrid"));
@@ -244,7 +236,10 @@
         }
 
         function render(list, target, isGrid = false) {
-            const wishes = currentUser ? currentUser.wishlist : [];
+            let wishes = [];
+            if(currentUser) wishes = currentUser.wishlist || [];
+            else wishes = JSON.parse(localStorage.getItem('ymls_guest_wishlist')) || [];
+
             document.getElementById(target).innerHTML = list.map(a => {
                 if(!a) return '';
                 const isSaved = wishes.some(w => w.id === a.id);
@@ -256,6 +251,28 @@
                     <div class="p-2 truncate text-[10px] font-black uppercase text-gray-300">${a.title.english || a.title.romaji}</div>
                 </div>`;
             }).join('');
+        }
+
+        function toggleWish(e, a) {
+            e.stopPropagation();
+            let wishlist;
+            if(currentUser) {
+                let db = JSON.parse(localStorage.getItem('ymls_users_db')) || {};
+                wishlist = currentUser.wishlist || [];
+                const idx = wishlist.findIndex(x => x.id === a.id);
+                if(idx === -1) wishlist.unshift(a); else wishlist.splice(idx, 1);
+                currentUser.wishlist = wishlist;
+                db[currentUser.name] = currentUser;
+                localStorage.setItem('ymls_users_db', JSON.stringify(db));
+                localStorage.setItem('ymls_active_user', JSON.stringify(currentUser));
+            } else {
+                wishlist = JSON.parse(localStorage.getItem('ymls_guest_wishlist')) || [];
+                const idx = wishlist.findIndex(x => x.id === a.id);
+                if(idx === -1) wishlist.unshift(a); else wishlist.splice(idx, 1);
+                localStorage.setItem('ymls_guest_wishlist', JSON.stringify(wishlist));
+            }
+            if(document.getElementById('page-wishlist').classList.contains('active-view')) renderWishlist();
+            loadHome();
         }
 
         async function handleSearch(term) {
@@ -273,19 +290,6 @@
             const query = `query($g:String,$y:Int){Page(perPage:50){media(genre:$g,seasonYear:$y,type:ANIME,sort:POPULARITY_DESC){id idMal title{english romaji} coverImage{large} episodes trailer{id site}}}}`;
             const res = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query, variables:{g, y}})});
             const json = await res.json(); render(json.data.Page.media, "filterGrid", true);
-        }
-
-        function toggleWish(e, a) {
-            e.stopPropagation(); if(!currentUser) return alert("Sign in to use Wishlist");
-            let db = JSON.parse(localStorage.getItem('ymls_users_db'));
-            let u = db[currentUser.name];
-            const idx = u.wishlist.findIndex(x => x.id === a.id);
-            if(idx === -1) u.wishlist.unshift(a); else u.wishlist.splice(idx, 1);
-            localStorage.setItem('ymls_users_db', JSON.stringify(db));
-            localStorage.setItem('ymls_active_user', JSON.stringify(u));
-            currentUser = u;
-            if(document.getElementById('page-wishlist').classList.contains('active-view')) renderWishlist();
-            loadHome();
         }
 
         async function openPlayer(a, ep = 1) {
@@ -315,7 +319,7 @@
         }
 
         function genFilters() {
-            const g = ["Action", "Adventure", "Cars", "Comedy", "Dementia", "Demons", "Drama", "Ecchi", "Fantasy", "Game", "Harem", "Historical", "Horror", "Isekai", "Josei", "Kids", "Magic", "Martial Arts", "Mecha", "Military", "Music", "Mystery", "Parody", "Police", "Psychological", "Romance", "Samurai", "School", "Sci-Fi", "Seinen", "Shoujo", "Shoujo Ai", "Shounen", "Shounen Ai", "Slice of Life", "Space", "Sports", "Super Power", "Supernatural", "Thriller", "Vampire"];
+            const g = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Slice of Life", "Sports", "Supernatural", "Thriller"];
             document.getElementById('genreList').innerHTML = g.map(x => `<button onclick="fetchByFilter('${x}')" class="genre-btn">${x}</button>`).join('');
             let yH = ''; for(let y=2026; y>=2000; y--) yH += `<button onclick="fetchByFilter('', ${y})" class="genre-btn">${y}</button>`;
             document.getElementById('yearList').innerHTML = yH;
@@ -332,13 +336,13 @@
         function toggleDropdown(id) { const d=document.getElementById(id); const s=d.classList.contains('show'); document.querySelectorAll('.dropdown-content').forEach(x=>x.classList.remove('show')); if(!s) d.classList.add('show'); }
         function switchTab(t) { document.getElementById('genreList').classList.toggle('hidden', t !== 'genres'); document.getElementById('yearList').classList.toggle('hidden', t !== 'years'); document.getElementById('tab-gen').classList.toggle('border-red-600', t==='genres'); document.getElementById('tab-year').classList.toggle('border-red-600', t==='years'); }
         function closePlayer() { document.getElementById('playerView').classList.add('hidden'); document.getElementById('videoFrame').src = ""; }
-        
-        // Confirmation Modal Logic
         function clearHistory() { document.getElementById('confirmOverlay').style.display = 'flex'; }
         function closeConfirm() { document.getElementById('confirmOverlay').style.display = 'none'; }
         function confirmClearHistory() { localStorage.removeItem('ymls_hist'); location.reload(); }
-
-        function renderWishlist() { render(currentUser ? currentUser.wishlist : [], 'wishlistGrid', true); }
+        function renderWishlist() { 
+            const list = currentUser ? (currentUser.wishlist || []) : (JSON.parse(localStorage.getItem('ymls_guest_wishlist')) || []);
+            render(list, 'wishlistGrid', true); 
+        }
         function saveHistory(a) { let h = JSON.parse(localStorage.getItem('ymls_hist')) || []; h = h.filter(x => x.id !== a.id); h.unshift(a); localStorage.setItem('ymls_hist', JSON.stringify(h.slice(0,12))); }
         function setMode(m) { playMode = m; document.getElementById('subBtn').classList.toggle('bg-red-600', m==='sub'); document.getElementById('dubBtn').classList.toggle('bg-red-600', m==='dub'); if(currentAnime) openPlayer(currentAnime, currentEp); }
 
