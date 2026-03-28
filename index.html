@@ -27,6 +27,10 @@
         .btn-red { background: #ef4444; color: white; padding: 14px; border-radius: 12px; font-weight: 900; font-size: 11px; text-transform: uppercase; width: 100%; cursor: pointer; }
         .ep-watched { border: 2px solid #ef4444 !important; color: #ef4444 !important; }
         .ep-active { background: #ef4444 !important; color: white !important; }
+        
+        /* New PWA Button Style */
+        #installBtn { display: none; background: #ef4444; color: white; padding: 6px 12px; border-radius: 8px; font-size: 10px; font-weight: 900; text-transform: uppercase; margin-right: 10px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -35,6 +39,8 @@
         <div class="container mx-auto flex items-center justify-between">
             <h1 class="text-2xl font-black tracking-tighter logo-text cursor-pointer" onclick="showPage('home')">YmlsFlix</h1>
             <div class="flex items-center gap-6">
+                <button id="installBtn" onclick="installPWA()">Install App</button>
+                
                 <i onclick="showPage('wishlist')" class="fa fa-heart text-gray-400 hover:text-red-500 cursor-pointer text-xl"></i>
                 <div class="relative"><i onclick="toggleDropdown('genreDrop')" class="fa fa-th-large text-gray-400 hover:text-red-500 cursor-pointer text-xl"></i>
                     <div id="genreDrop" class="dropdown-content">
@@ -115,6 +121,25 @@
         const API = 'https://graphql.anilist.co';
         let currentUser = JSON.parse(localStorage.getItem('ymls_active_user')) || null;
         let playMode = 'sub', currentAnime = null, currentEp = 1;
+        
+        // PWA Install Logic
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installBtn').style.display = 'block';
+        });
+
+        async function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    document.getElementById('installBtn').style.display = 'none';
+                }
+                deferredPrompt = null;
+            }
+        }
 
         window.onload = () => { setupUI(); fetchHero(); loadHome(); genFilters(); };
 
@@ -261,6 +286,11 @@
 
         function switchTab(t) { document.getElementById('genreList').classList.toggle('hidden', t !== 'genres'); document.getElementById('yearList').classList.toggle('hidden', t !== 'years'); }
         function setMode(m) { playMode = m; document.getElementById('subBtn').classList.toggle('bg-red-600', m==='sub'); document.getElementById('dubBtn').classList.toggle('bg-red-600', m==='dub'); if(currentAnime) openPlayer(currentAnime, currentEp); }
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
     </script>
 </body>
 </html>
