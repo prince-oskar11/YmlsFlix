@@ -1,11 +1,11 @@
 {
-  "name": "YMLS Premium Streaming",
-  "short_name": "YMLS",
+  "name": "YmlsFlix Premium Streaming",
+  "short_name": "YmlsFlix",
   "description": "Watch Anime and Movies for Free",
-  "start_url": "index.html",
+  "start_url": "/",
   "display": "standalone",
-  "background_color": "#080a0f",
-  "theme_color": "#6366f1",
+  "background_color": "#05070a",
+  "theme_color": "#ef4444",
   "icons": [
     {
       "src": "https://cdn-icons-png.flaticon.com/512/3665/3665931.png",
