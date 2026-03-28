@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YmlsFlix | v55.0 Verified Auth</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ef4444">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <style>
@@ -28,7 +30,6 @@
         .ep-watched { border: 2px solid #ef4444 !important; color: #ef4444 !important; }
         .ep-active { background: #ef4444 !important; color: white !important; }
         
-        /* New PWA Button Style */
         #installBtn { display: none; background: #ef4444; color: white; padding: 6px 12px; border-radius: 8px; font-size: 10px; font-weight: 900; text-transform: uppercase; margin-right: 10px; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
     </style>
@@ -40,7 +41,6 @@
             <h1 class="text-2xl font-black tracking-tighter logo-text cursor-pointer" onclick="showPage('home')">YmlsFlix</h1>
             <div class="flex items-center gap-6">
                 <button id="installBtn" onclick="installPWA()">Install App</button>
-                
                 <i onclick="showPage('wishlist')" class="fa fa-heart text-gray-400 hover:text-red-500 cursor-pointer text-xl"></i>
                 <div class="relative"><i onclick="toggleDropdown('genreDrop')" class="fa fa-th-large text-gray-400 hover:text-red-500 cursor-pointer text-xl"></i>
                     <div id="genreDrop" class="dropdown-content">
@@ -122,7 +122,6 @@
         let currentUser = JSON.parse(localStorage.getItem('ymls_active_user')) || null;
         let playMode = 'sub', currentAnime = null, currentEp = 1;
         
-        // PWA Install Logic
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
@@ -238,25 +237,33 @@
             document.getElementById('heroPlayBtn').onclick = () => openPlayer(top);
         }
 
+        // UPDATED RENDER FUNCTION FOR RECOMMENDATIONS
         function render(list, target, isGrid = false) {
             const wishes = currentUser ? currentUser.wishlist : [];
             const badges = currentUser ? currentUser.lastPlayed : {};
             document.getElementById(target).innerHTML = list.map(a => {
                 if(!a) return '';
-                const isSaved = wishes.some(w => w.id === a.id);
-                const lastEp = badges[a.id];
-                return `<div class="anime-card ${isGrid ? 'w-full' : ''}" onclick='openPlayer(${JSON.stringify(a)})'>
+                // Fix for nested recommendation objects
+                const anime = a.mediaRecommendation || a;
+                const isSaved = wishes.some(w => w.id === anime.id);
+                const lastEp = badges[anime.id];
+                return `<div class="anime-card ${isGrid ? 'w-full' : ''}" onclick='openPlayer(${JSON.stringify(anime)})'>
                     ${lastEp ? `<div class="ep-badge">EP ${lastEp}</div>` : ''}
-                    <i class="fa fa-heart absolute top-2 right-2 z-10 ${isSaved ? 'text-red-500' : 'text-gray-400'}" onclick='toggleWish(event, ${JSON.stringify(a)})'></i>
-                    <img src="${a.coverImage.large}" class="card-img"><div class="p-2 truncate text-[9px] font-black uppercase text-gray-400">${a.title.english || a.title.romaji}</div>
+                    <i class="fa fa-heart absolute top-2 right-2 z-10 ${isSaved ? 'text-red-500' : 'text-gray-400'}" onclick='toggleWish(event, ${JSON.stringify(anime)})'></i>
+                    <img src="${anime.coverImage.large}" class="card-img"><div class="p-2 truncate text-[9px] font-black uppercase text-gray-400">${anime.title.english || anime.title.romaji}</div>
                 </div>`;
             }).join('');
         }
 
+        // UPDATED RECOMMENDATION FETCH
         async function fetchRecommendations(id) {
-            const q = `query($id:Int){Media(id:$id){recommendations(perPage:10){nodes{mediaRecommendation{id idMal title{english romaji} coverImage{large} episodes trailer{id site}}}}}}`;
+            const q = `query($id:Int){Media(id:$id){recommendations(perPage:12,sort:RATING_DESC){nodes{mediaRecommendation{id idMal title{english romaji} coverImage{large} episodes trailer{id site}}}}}}`;
             fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query:q, variables:{id}})})
-            .then(r=>r.json()).then(j=>render(j.data.Media.recommendations.nodes.map(n => n.mediaRecommendation), 'recommendGrid'));
+            .then(r=>r.json()).then(j => {
+                if(j.data && j.data.Media.recommendations.nodes) {
+                    render(j.data.Media.recommendations.nodes, 'recommendGrid');
+                }
+            });
         }
 
         function renderWishlist() { render(currentUser ? currentUser.wishlist : [], 'wishlistGrid', true); }
