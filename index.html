@@ -20,7 +20,6 @@
         .anime-card:hover { transform: scale(1.05); }
         .card-img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
         
-        /* Episode Count Top Left */
         .ep-count-badge { position: absolute; top: 6px; left: 6px; background: #ef4444; color: white; font-size: 8px; font-weight: 900; padding: 2px 6px; border-radius: 4px; z-index: 40; }
         .wish-badge { position: absolute; top: 6px; right: 6px; z-index: 40; cursor: pointer; text-shadow: 0 0 5px black; }
 
@@ -41,23 +40,10 @@
         .ep-btn { flex-shrink: 0; width: 45px; height: 45px; border-radius: 10px; background: #111827; font-weight: 900; transition: 0.2s; border: 1px solid transparent; color: white; }
         .ep-active { background: #ef4444 !important; }
         
-        /* Confirmation Modal */
-        #confirmModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; padding: 20px; }
+        #installBtn { display: none; } /* Hidden by default until PWA is ready */
     </style>
 </head>
 <body>
-
-    <div id="confirmModal">
-        <div class="bg-[#0f1117] p-8 rounded-3xl border border-gray-800 max-w-sm w-full text-center">
-            <i class="fa fa-exclamation-triangle text-red-500 text-3xl mb-4"></i>
-            <h3 class="text-white font-black uppercase text-sm mb-2">Clear History?</h3>
-            <p class="text-gray-400 text-xs mb-6">This will permanently delete your "Continue Watching" list.</p>
-            <div class="flex gap-3">
-                <button onclick="executeClearHistory()" class="btn-red flex-1">Yes, Clear</button>
-                <button onclick="closeModal()" class="btn-red flex-1 bg-gray-700">Cancel</button>
-            </div>
-        </div>
-    </div>
 
     <nav class="fixed top-0 w-full z-[2500] glass p-4">
         <div class="container mx-auto flex items-center justify-between">
@@ -97,7 +83,7 @@
             </div>
             <div id="userBox" class="hidden text-center">
                 <h4 id="userDisplay" class="font-black text-sm mb-4 text-white uppercase"></h4>
-                <button onclick="promptClearHistory()" class="w-full border border-red-900 text-red-500 py-3 rounded-xl text-[10px] font-black uppercase mb-2">Clear History</button>
+                <button onclick="clearHistory()" class="w-full border border-red-900 text-red-500 py-3 rounded-xl text-[10px] font-black uppercase mb-2">Clear History</button>
                 <button onclick="handleLogout()" class="w-full bg-gray-800 py-3 rounded-xl text-[10px] font-black uppercase">Logout</button>
             </div>
         </div>
@@ -120,7 +106,7 @@
             </section>
             
             <section class="mb-12"><h2 class="text-[11px] font-black mb-4 uppercase text-orange-500 tracking-[0.2em]">Trending Now</h2><div id="trendingGrid" class="flex gap-4 overflow-x-auto no-scrollbar"></div></section>
-            <section class="mb-12"><h2 class="text-[11px] font-black mb-4 uppercase text-blue-500 tracking-[0.2em]">Now Playing</h2><div id="airingGrid" class="flex gap-4 overflow-x-auto no-scrollbar"></div></section>
+            <section class="mb-12"><h2 class="text-[11px] font-black mb-4 uppercase text-blue-500 tracking-[0.2em]">Now Playing (Airing Today)</h2><div id="airingGrid" class="flex gap-4 overflow-x-auto no-scrollbar"></div></section>
             <section class="mb-12"><h2 class="text-[11px] font-black mb-4 uppercase text-purple-500 tracking-[0.2em]">Most Popular</h2><div id="popularGrid" class="flex gap-4 overflow-x-auto no-scrollbar"></div></section>
             <section class="mb-12"><h2 class="text-[11px] font-black mb-4 uppercase text-green-500 tracking-[0.2em]">Upcoming</h2><div id="upcomingGrid" class="flex gap-4 overflow-x-auto no-scrollbar"></div></section>
         </main>
@@ -129,7 +115,7 @@
     <div id="page-filter" class="page-view container mx-auto p-4 pt-44">
         <div class="flex justify-between items-center mb-8">
             <h2 id="filterTitle" class="text-xl font-black uppercase text-red-600 border-l-4 border-red-600 pl-4">Results</h2>
-            <button onclick="showPage('home')" class="text-[10px] font-black uppercase bg-gray-800 px-4 py-2 rounded-lg">Home</button>
+            <button onclick="showPage('home')" class="text-[10px] font-black uppercase bg-gray-800 px-4 py-2 rounded-lg">Back to Home</button>
         </div>
         <div id="filterGrid" class="grid-full"></div>
     </div>
@@ -137,7 +123,7 @@
     <div id="page-wishlist" class="page-view container mx-auto p-4 pt-44">
         <div class="flex justify-between items-center mb-8">
             <h2 class="text-xl font-black uppercase text-red-600 border-l-4 border-red-600 pl-4">My Wishlist</h2>
-            <button onclick="showPage('home')" class="text-[10px] font-black uppercase bg-gray-800 px-4 py-2 rounded-lg">Home</button>
+            <button onclick="showPage('home')" class="text-[10px] font-black uppercase bg-gray-800 px-4 py-2 rounded-lg">Back to Home</button>
         </div>
         <div id="wishlistGrid" class="grid-full"></div>
     </div>
@@ -172,16 +158,20 @@
         let playMode = 'sub', currentAnime = null, currentEp = 1;
         let deferredPrompt;
 
-        // PWA Setup
+        // --- PWA LOGIC ---
         window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault(); deferredPrompt = e;
+            e.preventDefault();
+            deferredPrompt = e;
             document.getElementById('installBtn').style.display = 'block';
         });
 
         async function triggerInstall() {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
-                await deferredPrompt.userChoice;
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    document.getElementById('installBtn').style.display = 'none';
+                }
                 deferredPrompt = null;
             }
         }
@@ -199,35 +189,34 @@
         function handleAuth(mode) {
             const user = document.getElementById('authEmail').value.trim();
             const pass = document.getElementById('authPass').value.trim();
-            if(!user || !pass) return alert("Fill all fields");
+            if(!user || !pass) return alert("Please fill all fields");
+            
             let db = JSON.parse(localStorage.getItem('ymls_users_db')) || {};
             if(mode === 'signup') {
-                if(db[user]) return alert("Username taken");
-                db[user] = { name: user, pass, wishlist: [] };
+                if(db[user]) return alert("User already exists");
+                db[user] = { name: user, pass: pass, wishlist: [], history: [] };
                 localStorage.setItem('ymls_users_db', JSON.stringify(db));
-                alert("Account Created! Sign in now.");
+                alert("Account Created! You can now Sign In.");
             } else {
                 if(db[user] && db[user].pass === pass) {
                     localStorage.setItem('ymls_active_user', JSON.stringify(db[user]));
                     location.reload();
-                } else alert("Invalid credentials");
+                } else alert("Invalid username or password");
             }
         }
 
         function handleLogout() { localStorage.removeItem('ymls_active_user'); location.reload(); }
 
-        // Confirmation Logic
-        function promptClearHistory() { document.getElementById('confirmModal').style.display = 'flex'; }
-        function closeModal() { document.getElementById('confirmModal').style.display = 'none'; }
-        function executeClearHistory() { localStorage.removeItem('ymls_hist'); location.reload(); }
-
         async function loadHome() {
             fetchGrid("TRENDING_DESC", "trendingGrid");
             fetchGrid("POPULARITY_DESC", "popularGrid");
+            
             const uQ = `query{Page(perPage:20){media(status:NOT_YET_RELEASED,type:ANIME,sort:POPULARITY_DESC){id idMal title{english romaji} coverImage{large} episodes trailer{id site}}}}`;
             fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query:uQ})}).then(r=>r.json()).then(j=>render(j.data.Page.media, "upcomingGrid"));
+            
             const aQ = `query{Page(perPage:20){airingSchedules(airingAt_greater:${Math.floor(Date.now()/1000)},sort:TIME){media{id idMal title{english romaji} coverImage{large} episodes trailer{id site}}}}}`;
             fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query:aQ})}).then(r=>r.json()).then(j=>render(j.data.Page.airingSchedules.map(s => s.media), "airingGrid"));
+            
             const h = JSON.parse(localStorage.getItem('ymls_hist')) || [];
             if(h.length) { document.getElementById('continueSection').classList.remove('hidden'); render(h, 'continueGrid'); }
         }
@@ -243,7 +232,8 @@
             document.getElementById(target).innerHTML = list.map(a => {
                 if(!a) return '';
                 const isSaved = wishes.some(w => w.id === a.id);
-                return `<div class="anime-card ${isGrid ? 'w-full' : ''}" onclick='openPlayer(${JSON.stringify(a)})'>
+                return `
+                <div class="anime-card ${isGrid ? 'w-full' : ''}" onclick='openPlayer(${JSON.stringify(a)})'>
                     <div class="ep-count-badge">${a.episodes || '?'} EPS</div>
                     <i class="fa fa-heart wish-badge ${isSaved ? 'text-red-500' : 'text-gray-400'}" onclick='toggleWish(event, ${JSON.stringify(a)})'></i>
                     <img src="${a.coverImage.large}" class="card-img">
@@ -255,6 +245,7 @@
         async function handleSearch(term) {
             if(term.length < 1) { showPage('home'); return; }
             showPage('filter');
+            document.getElementById('filterTitle').innerText = "Results: " + term;
             const query = `query($s:String){Page(perPage:50){media(search:$s,type:ANIME,sort:POPULARITY_DESC){id idMal title{english romaji} coverImage{large} episodes trailer{id site}}}}`;
             const res = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query, variables:{s:term}})});
             const json = await res.json(); render(json.data.Page.media, "filterGrid", true);
@@ -263,14 +254,13 @@
         async function fetchByFilter(g, y) { 
             showPage('filter'); 
             document.getElementById('filterTitle').innerText = g || y;
-            // Enhanced query to ensure a full list is returned
-            const query = `query($g:String,$y:Int){Page(perPage:50){media(${g ? 'genre:$g,' : ''}${y ? 'seasonYear:$y,' : ''}type:ANIME,sort:POPULARITY_DESC){id idMal title{english romaji} coverImage{large} episodes trailer{id site}}}}`;
+            const query = `query($g:String,$y:Int){Page(perPage:50){media(genre:$g,seasonYear:$y,type:ANIME,sort:POPULARITY_DESC){id idMal title{english romaji} coverImage{large} episodes trailer{id site}}}}`;
             const res = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query, variables:{g, y}})});
             const json = await res.json(); render(json.data.Page.media, "filterGrid", true);
         }
 
         function toggleWish(e, a) {
-            e.stopPropagation(); if(!currentUser) return alert("Sign in to use wishlist");
+            e.stopPropagation(); if(!currentUser) return alert("Sign in to use Wishlist");
             let db = JSON.parse(localStorage.getItem('ymls_users_db'));
             let u = db[currentUser.name];
             const idx = u.wishlist.findIndex(x => x.id === a.id);
@@ -309,7 +299,7 @@
         }
 
         function genFilters() {
-            const g = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Slice of Life", "Sports", "Supernatural", "Thriller"];
+            const g = ["Action", "Adventure", "Cars", "Comedy", "Dementia", "Demons", "Drama", "Ecchi", "Fantasy", "Game", "Harem", "Historical", "Horror", "Isekai", "Josei", "Kids", "Magic", "Martial Arts", "Mecha", "Military", "Music", "Mystery", "Parody", "Police", "Psychological", "Romance", "Samurai", "School", "Sci-Fi", "Seinen", "Shoujo", "Shoujo Ai", "Shounen", "Shounen Ai", "Slice of Life", "Space", "Sports", "Super Power", "Supernatural", "Thriller", "Vampire"];
             document.getElementById('genreList').innerHTML = g.map(x => `<button onclick="fetchByFilter('${x}')" class="genre-btn">${x}</button>`).join('');
             let yH = ''; for(let y=2026; y>=2000; y--) yH += `<button onclick="fetchByFilter('', ${y})" class="genre-btn">${y}</button>`;
             document.getElementById('yearList').innerHTML = yH;
@@ -326,6 +316,7 @@
         function toggleDropdown(id) { const d=document.getElementById(id); const s=d.classList.contains('show'); document.querySelectorAll('.dropdown-content').forEach(x=>x.classList.remove('show')); if(!s) d.classList.add('show'); }
         function switchTab(t) { document.getElementById('genreList').classList.toggle('hidden', t !== 'genres'); document.getElementById('yearList').classList.toggle('hidden', t !== 'years'); document.getElementById('tab-gen').classList.toggle('border-red-600', t==='genres'); document.getElementById('tab-year').classList.toggle('border-red-600', t==='years'); }
         function closePlayer() { document.getElementById('playerView').classList.add('hidden'); document.getElementById('videoFrame').src = ""; }
+        function clearHistory() { localStorage.removeItem('ymls_hist'); location.reload(); }
         function renderWishlist() { render(currentUser ? currentUser.wishlist : [], 'wishlistGrid', true); }
         function saveHistory(a) { let h = JSON.parse(localStorage.getItem('ymls_hist')) || []; h = h.filter(x => x.id !== a.id); h.unshift(a); localStorage.setItem('ymls_hist', JSON.stringify(h.slice(0,12))); }
         function setMode(m) { playMode = m; document.getElementById('subBtn').classList.toggle('bg-red-600', m==='sub'); document.getElementById('dubBtn').classList.toggle('bg-red-600', m==='dub'); if(currentAnime) openPlayer(currentAnime, currentEp); }
