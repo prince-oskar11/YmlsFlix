@@ -20,6 +20,7 @@
         .anime-card:hover { transform: scale(1.05); }
         .card-img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
         
+        /* Episode Count Top Left */
         .ep-count-badge { position: absolute; top: 6px; left: 6px; background: #ef4444; color: white; font-size: 8px; font-weight: 900; padding: 2px 6px; border-radius: 4px; z-index: 40; }
         .wish-badge { position: absolute; top: 6px; right: 6px; z-index: 40; cursor: pointer; text-shadow: 0 0 5px black; }
 
@@ -39,8 +40,6 @@
         
         .ep-btn { flex-shrink: 0; width: 45px; height: 45px; border-radius: 10px; background: #111827; font-weight: 900; transition: 0.2s; border: 1px solid transparent; color: white; }
         .ep-active { background: #ef4444 !important; }
-        
-        #installBtn { display: none; } /* Hidden by default until PWA is ready */
     </style>
 </head>
 <body>
@@ -106,7 +105,7 @@
             </section>
             
             <section class="mb-12"><h2 class="text-[11px] font-black mb-4 uppercase text-orange-500 tracking-[0.2em]">Trending Now</h2><div id="trendingGrid" class="flex gap-4 overflow-x-auto no-scrollbar"></div></section>
-            <section class="mb-12"><h2 class="text-[11px] font-black mb-4 uppercase text-blue-500 tracking-[0.2em]">Now Playing (Airing Today)</h2><div id="airingGrid" class="flex gap-4 overflow-x-auto no-scrollbar"></div></section>
+            <section class="mb-12"><h2 class="text-[11px] font-black mb-4 uppercase text-blue-500 tracking-[0.2em]">Now Playing</h2><div id="airingGrid" class="flex gap-4 overflow-x-auto no-scrollbar"></div></section>
             <section class="mb-12"><h2 class="text-[11px] font-black mb-4 uppercase text-purple-500 tracking-[0.2em]">Most Popular</h2><div id="popularGrid" class="flex gap-4 overflow-x-auto no-scrollbar"></div></section>
             <section class="mb-12"><h2 class="text-[11px] font-black mb-4 uppercase text-green-500 tracking-[0.2em]">Upcoming</h2><div id="upcomingGrid" class="flex gap-4 overflow-x-auto no-scrollbar"></div></section>
         </main>
@@ -115,7 +114,7 @@
     <div id="page-filter" class="page-view container mx-auto p-4 pt-44">
         <div class="flex justify-between items-center mb-8">
             <h2 id="filterTitle" class="text-xl font-black uppercase text-red-600 border-l-4 border-red-600 pl-4">Results</h2>
-            <button onclick="showPage('home')" class="text-[10px] font-black uppercase bg-gray-800 px-4 py-2 rounded-lg">Back to Home</button>
+            <button onclick="showPage('home')" class="text-[10px] font-black uppercase bg-gray-800 px-4 py-2 rounded-lg">Home</button>
         </div>
         <div id="filterGrid" class="grid-full"></div>
     </div>
@@ -123,7 +122,7 @@
     <div id="page-wishlist" class="page-view container mx-auto p-4 pt-44">
         <div class="flex justify-between items-center mb-8">
             <h2 class="text-xl font-black uppercase text-red-600 border-l-4 border-red-600 pl-4">My Wishlist</h2>
-            <button onclick="showPage('home')" class="text-[10px] font-black uppercase bg-gray-800 px-4 py-2 rounded-lg">Back to Home</button>
+            <button onclick="showPage('home')" class="text-[10px] font-black uppercase bg-gray-800 px-4 py-2 rounded-lg">Home</button>
         </div>
         <div id="wishlistGrid" class="grid-full"></div>
     </div>
@@ -158,7 +157,7 @@
         let playMode = 'sub', currentAnime = null, currentEp = 1;
         let deferredPrompt;
 
-        // --- PWA LOGIC ---
+        // PWA Setup
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
@@ -169,10 +168,9 @@
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    document.getElementById('installBtn').style.display = 'none';
-                }
                 deferredPrompt = null;
+            } else {
+                alert("To install: Open browser menu and select 'Add to Home Screen'");
             }
         }
 
@@ -189,19 +187,18 @@
         function handleAuth(mode) {
             const user = document.getElementById('authEmail').value.trim();
             const pass = document.getElementById('authPass').value.trim();
-            if(!user || !pass) return alert("Please fill all fields");
-            
+            if(!user || !pass) return alert("Fill all fields");
             let db = JSON.parse(localStorage.getItem('ymls_users_db')) || {};
             if(mode === 'signup') {
-                if(db[user]) return alert("User already exists");
-                db[user] = { name: user, pass: pass, wishlist: [], history: [] };
+                if(db[user]) return alert("Username taken");
+                db[user] = { name: user, pass, wishlist: [] };
                 localStorage.setItem('ymls_users_db', JSON.stringify(db));
-                alert("Account Created! You can now Sign In.");
+                alert("Account Created! Sign in now.");
             } else {
                 if(db[user] && db[user].pass === pass) {
                     localStorage.setItem('ymls_active_user', JSON.stringify(db[user]));
                     location.reload();
-                } else alert("Invalid username or password");
+                } else alert("Invalid credentials");
             }
         }
 
@@ -211,9 +208,11 @@
             fetchGrid("TRENDING_DESC", "trendingGrid");
             fetchGrid("POPULARITY_DESC", "popularGrid");
             
+            // Upcoming
             const uQ = `query{Page(perPage:20){media(status:NOT_YET_RELEASED,type:ANIME,sort:POPULARITY_DESC){id idMal title{english romaji} coverImage{large} episodes trailer{id site}}}}`;
             fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query:uQ})}).then(r=>r.json()).then(j=>render(j.data.Page.media, "upcomingGrid"));
             
+            // Now Playing (Airing)
             const aQ = `query{Page(perPage:20){airingSchedules(airingAt_greater:${Math.floor(Date.now()/1000)},sort:TIME){media{id idMal title{english romaji} coverImage{large} episodes trailer{id site}}}}}`;
             fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query:aQ})}).then(r=>r.json()).then(j=>render(j.data.Page.airingSchedules.map(s => s.media), "airingGrid"));
             
@@ -245,22 +244,29 @@
         async function handleSearch(term) {
             if(term.length < 1) { showPage('home'); return; }
             showPage('filter');
-            document.getElementById('filterTitle').innerText = "Results: " + term;
-            const query = `query($s:String){Page(perPage:50){media(search:$s,type:ANIME,sort:POPULARITY_DESC){id idMal title{english romaji} coverImage{large} episodes trailer{id site}}}}`;
+            document.getElementById('filterTitle').innerText = "Searching: " + term;
+            const query = `query($s:String){Page(perPage:40){media(search:$s,type:ANIME,sort:POPULARITY_DESC){id idMal title{english romaji} coverImage{large} episodes trailer{id site}}}}`;
             const res = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query, variables:{s:term}})});
             const json = await res.json(); render(json.data.Page.media, "filterGrid", true);
         }
 
+        // FIXED FILTER LOGIC
         async function fetchByFilter(g, y) { 
             showPage('filter'); 
             document.getElementById('filterTitle').innerText = g || y;
-            const query = `query($g:String,$y:Int){Page(perPage:50){media(genre:$g,seasonYear:$y,type:ANIME,sort:POPULARITY_DESC){id idMal title{english romaji} coverImage{large} episodes trailer{id site}}}}`;
+            const query = `query($g:String,$y:Int){Page(perPage:40){media(${g?'genre:$g,':''}${y?'seasonYear:$y,':''}type:ANIME,sort:POPULARITY_DESC){id idMal title{english romaji} coverImage{large} episodes trailer{id site}}}}`;
             const res = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query, variables:{g, y}})});
-            const json = await res.json(); render(json.data.Page.media, "filterGrid", true);
+            const json = await res.json(); 
+            if(json.data.Page.media.length > 0) {
+                render(json.data.Page.media, "filterGrid", true);
+            } else {
+                document.getElementById('filterGrid').innerHTML = "<p class='col-span-full text-center py-10 opacity-50 uppercase font-black'>No results found</p>";
+            }
         }
 
         function toggleWish(e, a) {
-            e.stopPropagation(); if(!currentUser) return alert("Sign in to use Wishlist");
+            e.stopPropagation(); 
+            if(!currentUser) return alert("Sign in to use wishlist");
             let db = JSON.parse(localStorage.getItem('ymls_users_db'));
             let u = db[currentUser.name];
             const idx = u.wishlist.findIndex(x => x.id === a.id);
@@ -288,7 +294,10 @@
         async function fetchRecommendations(id) {
             const q = `query($id:Int){Media(id:$id){recommendations(perPage:15){nodes{mediaRecommendation{id idMal title{english romaji} coverImage{large} episodes trailer{id site}}}}}}`;
             fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query:q, variables:{id}})})
-            .then(r=>r.json()).then(j=>render(j.data.Media.recommendations.nodes.map(n => n.mediaRecommendation).filter(x => x !== null), 'recommendGrid'));
+            .then(r=>r.json()).then(j => {
+                const recs = j.data.Media.recommendations.nodes.map(n => n.mediaRecommendation).filter(x => x !== null);
+                render(recs, 'recommendGrid');
+            });
         }
 
         function renderEpisodes(a) {
@@ -299,8 +308,8 @@
         }
 
         function genFilters() {
-            const g = ["Action", "Adventure", "Cars", "Comedy", "Dementia", "Demons", "Drama", "Ecchi", "Fantasy", "Game", "Harem", "Historical", "Horror", "Isekai", "Josei", "Kids", "Magic", "Martial Arts", "Mecha", "Military", "Music", "Mystery", "Parody", "Police", "Psychological", "Romance", "Samurai", "School", "Sci-Fi", "Seinen", "Shoujo", "Shoujo Ai", "Shounen", "Shounen Ai", "Slice of Life", "Space", "Sports", "Super Power", "Supernatural", "Thriller", "Vampire"];
-            document.getElementById('genreList').innerHTML = g.map(x => `<button onclick="fetchByFilter('${x}')" class="genre-btn">${x}</button>`).join('');
+            const genres = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Slice of Life", "Sports", "Supernatural", "Thriller"];
+            document.getElementById('genreList').innerHTML = genres.map(x => `<button onclick="fetchByFilter('${x}')" class="genre-btn">${x}</button>`).join('');
             let yH = ''; for(let y=2026; y>=2000; y--) yH += `<button onclick="fetchByFilter('', ${y})" class="genre-btn">${y}</button>`;
             document.getElementById('yearList').innerHTML = yH;
         }
