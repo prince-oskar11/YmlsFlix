@@ -205,10 +205,10 @@
 
             plyrInstance.on('ended', () => {
                 const total = currentAnime.episodes || 1;
-                if(currentEp < total) openPlayer(currentAnime, currentEp + 1);
+                if(currentEp < total) openPlayer(null, currentEp + 1);
             });
 
-            // ROTATION CODE Integration
+            // ROTATION CODE
             plyrInstance.on('enterfullscreen', () => {
                 if (screen.orientation && screen.orientation.lock) {
                     screen.orientation.lock('landscape').catch(e => console.log(e));
@@ -221,10 +221,8 @@
             setupUI(); fetchHero(); loadHome(); genFilters(); 
         };
 
-        // PWA INSTALL LOGIC Integration
         window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
+            e.preventDefault(); deferredPrompt = e;
             const btn = document.getElementById('installBtn');
             if(btn) btn.classList.remove('hidden');
         });
@@ -238,7 +236,7 @@
             });
         }
 
-        // DOUBLE-TAP TO SEEK Logic
+        // DOUBLE-TAP SEEK
         document.getElementById('player').addEventListener('dblclick', function(e) {
             const rect = this.getBoundingClientRect();
             const x = e.clientX - rect.left;
@@ -276,8 +274,7 @@
 
         async function handleSearch(term) {
             if(term.length < 1) { showPage('home'); return; }
-            showPage('filter');
-            updateActiveChip(null);
+            showPage('filter'); updateActiveChip(null);
             document.getElementById('filterTitle').innerText = "Results: " + term;
             const query = `query($s:String){Page(perPage:50){media(search:$s,type:ANIME,sort:POPULARITY_DESC,format_in:[TV,MOVIE,OVA]){id idMal title{english romaji} coverImage{large} episodes trailer{id site}}}}`;
             const res = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query, variables:{s:term}})});
@@ -285,8 +282,7 @@
         }
 
         async function fetchByFormat(f) {
-            showPage('filter');
-            updateActiveChip(f);
+            showPage('filter'); updateActiveChip(f);
             document.getElementById('filterTitle').innerText = f === 'MOVIE' ? "Anime Movies" : f;
             const query = `query($f:MediaFormat){Page(perPage:50){media(type:ANIME,format:$f,sort:POPULARITY_DESC){id idMal title{english romaji} coverImage{large} episodes trailer{id site}}}}`;
             const res = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query, variables:{f}})});
@@ -294,8 +290,7 @@
         }
 
         async function fetchByFilter(g, y) { 
-            showPage('filter'); 
-            updateActiveChip(null);
+            showPage('filter'); updateActiveChip(null);
             document.getElementById('filterTitle').innerText = g || y;
             const query = `query($g:String,$y:Int){Page(perPage:50){media(genre:$g,seasonYear:$y,type:ANIME,sort:POPULARITY_DESC,format_in:[TV,MOVIE,OVA]){id idMal title{english romaji} coverImage{large} episodes trailer{id site}}}}`;
             const res = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query, variables:{g, y}})});
@@ -315,8 +310,11 @@
                 const searchData = await searchRes.json();
                 const isDub = (playMode === 'dub');
                 const target = searchData.results.find(r => isDub ? r.id.includes('-dub') : !r.id.includes('-dub')) || searchData.results[0];
+                
                 const infoRes = await fetch(`${STREAM_API}/info/${target.id}`);
                 const infoData = await infoRes.json();
+                
+                // Find episode by number
                 const episode = infoData.episodes.find(e => e.number == ep) || infoData.episodes[0];
                 const linkRes = await fetch(`${STREAM_API}/watch/${episode.id}`);
                 const linkData = await linkRes.json();
@@ -330,6 +328,7 @@
 
                 switchServer(0);
 
+                // Trailer logic
                 const tBtn = document.getElementById('trailerBtn');
                 if(currentAnime.trailer?.site === 'youtube') {
                     tBtn.classList.remove('hidden');
@@ -337,6 +336,7 @@
                 } else tBtn.classList.add('hidden');
 
             } catch (err) {
+                console.log(err);
                 document.getElementById('playerLoader').classList.add('hidden');
             }
             saveHistory(currentAnime); renderEpisodes(currentAnime); fetchRecommendations(currentAnime.id);
@@ -346,12 +346,22 @@
             const video = document.getElementById('player');
             const streamUrl = currentServers[index].url;
             document.getElementById('playerLoader').classList.remove('hidden');
+            
             if (Hls.isSupported()) {
                 if (hlsInstance) hlsInstance.destroy();
-                hlsInstance = new Hls(); hlsInstance.loadSource(streamUrl); hlsInstance.attachMedia(video);
-                hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => { document.getElementById('playerLoader').classList.add('hidden'); plyrInstance.play(); });
+                hlsInstance = new Hls();
+                hlsInstance.loadSource(streamUrl);
+                hlsInstance.attachMedia(video);
+                hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+                    document.getElementById('playerLoader').classList.add('hidden');
+                    plyrInstance.play();
+                });
             } else {
-                video.src = streamUrl; document.getElementById('playerLoader').classList.add('hidden');
+                video.src = streamUrl;
+                video.addEventListener('loadedmetadata', () => {
+                    document.getElementById('playerLoader').classList.add('hidden');
+                    plyrInstance.play();
+                });
             }
         }
 
@@ -426,6 +436,7 @@
         }
 
         function renderWishlist() { const list = currentUser ? (currentUser.wishlist || []) : (JSON.parse(localStorage.getItem('ymls_guest_wishlist')) || []); render(list, 'wishlistGrid', true); }
+        
         function renderEpisodes(a) {
             const count = a.episodes || 12;
             document.getElementById('epList').innerHTML = Array.from({length: count}, (_, i) => {
@@ -441,12 +452,14 @@
         function setMode(m) { playMode = m; document.getElementById('subBtn').classList.toggle('bg-red-600', m==='sub'); document.getElementById('dubBtn').classList.toggle('bg-red-600', m==='dub'); if(currentAnime) openPlayer(currentAnime, currentEp); }
         function saveHistory(a) { let h = JSON.parse(localStorage.getItem('ymls_hist')) || []; h = h.filter(x => x.id !== a.id); h.unshift(a); localStorage.setItem('ymls_hist', JSON.stringify(h.slice(0,12))); }
         function setupUI() { if(currentUser) { document.getElementById('authBox').classList.add('hidden'); document.getElementById('userBox').classList.remove('hidden'); document.getElementById('userDisplay').innerText = `Hello, ${currentUser.name}`; } }
+        
         function genFilters() {
             const g = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Slice of Life", "Sports", "Supernatural", "Thriller"];
             document.getElementById('genreList').innerHTML = g.map(x => `<button onclick="fetchByFilter('${x}')" class="genre-btn">${x}</button>`).join('');
             let yH = ''; for(let y=2026; y>=2000; y--) yH += `<button onclick="fetchByFilter('', ${y})" class="genre-btn">${y}</button>`;
             document.getElementById('yearList').innerHTML = yH;
         }
+
         function clearHistory() { document.getElementById('confirmOverlay').style.display = 'flex'; }
         function closeConfirm() { document.getElementById('confirmOverlay').style.display = 'none'; }
         function confirmClearHistory() { localStorage.removeItem('ymls_hist'); location.reload(); }
