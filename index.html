@@ -18,6 +18,10 @@
         .anime-card { transition: 0.3s ease; cursor: pointer; position: relative; border-radius: 12px; overflow: hidden; background: #0f1117; width: 145px; flex-shrink: 0; }
         .card-img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
         .ep-badge { position: absolute; bottom: 38px; left: 8px; background: #ef4444; color: white; font-size: 8px; font-weight: 900; padding: 2px 6px; border-radius: 4px; z-index: 20; }
+        
+        /* New Style for Total Episodes Top Left */
+        .total-ep-badge { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); color: white; font-size: 8px; font-weight: 900; padding: 2px 6px; border-radius: 4px; z-index: 20; border: 1px solid rgba(255,255,255,0.1); }
+
         .genre-btn { background: #1a1c23; border: 1px solid #2d2d2d; color: #e2e8f0; padding: 12px 5px; border-radius: 8px; font-size: 10px; font-weight: 700; text-align: center; }
         #heroSection { height: 55vh; background-size: cover; background-position: center; display: flex; align-items: flex-end; padding-bottom: 50px; position: relative; }
         .hero-overlay { position: absolute; inset: 0; background: linear-gradient(0deg, #05070a 12%, transparent 100%); }
@@ -247,7 +251,14 @@
                 const anime = a.mediaRecommendation || a;
                 const isSaved = wishes.some(w => w.id === anime.id);
                 const lastEp = badges[anime.id];
+                
+                // Add logic to get total episodes or default to ?
+                const totalEpisodes = anime.episodes || '?';
+                
                 return `<div class="anime-card ${isGrid ? 'w-full' : ''}" onclick='openPlayer(${JSON.stringify(anime)})'>
+                    
+                    <div class="total-ep-badge">${totalEpisodes} EPS</div>
+                    
                     ${lastEp ? `<div class="ep-badge">EP ${lastEp}</div>` : ''}
                     <i class="fa fa-heart absolute top-2 right-2 z-10 ${isSaved ? 'text-red-500' : 'text-gray-400'}" onclick='toggleWish(event, ${JSON.stringify(anime)})'></i>
                     <img src="${anime.coverImage.large}" class="card-img"><div class="p-2 truncate text-[9px] font-black uppercase text-gray-400">${anime.title.english || anime.title.romaji}</div>
