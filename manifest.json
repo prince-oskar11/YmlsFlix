@@ -2,7 +2,7 @@
   "name": "YmlsFlix Premium Streaming",
   "short_name": "YmlsFlix",
   "description": "Watch Anime and Movies for Free",
-  "start_url": "/",
+  "start_url": "index.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#05070a",
@@ -12,12 +12,32 @@
       "src": "https://cdn-icons-png.flaticon.com/512/3665/3665931.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3665/3665931.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "https://cdn-icons-png.flaticon.com/512/3665/3665931.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["entertainment", "video"],
+  "shortcuts": [
+    {
+      "name": "Trending",
+      "url": "/#trendingGrid",
+      "icons": [{ "src": "https://cdn-icons-png.flaticon.com/512/3665/3665931.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Wishlist",
+      "url": "/#page-wishlist",
+      "icons": [{ "src": "https://cdn-icons-png.flaticon.com/512/3665/3665931.png", "sizes": "192x192" }]
     }
   ]
 }
