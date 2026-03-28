@@ -198,7 +198,6 @@
         let playMode = 'sub', currentAnime = null, currentEp = 1, currentServers = [];
         let plyrInstance, hlsInstance, deferredPrompt;
 
-        // Initialization
         window.onload = () => {
             plyrInstance = new Plyr('#player', {
                 controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'fullscreen']
@@ -209,10 +208,44 @@
                 if(currentEp < total) openPlayer(currentAnime, currentEp + 1);
             });
 
+            // ROTATION CODE Integration
+            plyrInstance.on('enterfullscreen', () => {
+                if (screen.orientation && screen.orientation.lock) {
+                    screen.orientation.lock('landscape').catch(e => console.log(e));
+                }
+            });
+            plyrInstance.on('exitfullscreen', () => {
+                if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
+            });
+
             setupUI(); fetchHero(); loadHome(); genFilters(); 
         };
 
-        // Restored Navigation & UI Functions from your Original
+        // PWA INSTALL LOGIC Integration
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const btn = document.getElementById('installBtn');
+            if(btn) btn.classList.remove('hidden');
+        });
+
+        function triggerInstall() {
+            if(!deferredPrompt) return;
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(() => {
+                deferredPrompt = null;
+                document.getElementById('installBtn').classList.add('hidden');
+            });
+        }
+
+        // DOUBLE-TAP TO SEEK Logic
+        document.getElementById('player').addEventListener('dblclick', function(e) {
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            if (x < rect.width / 2) plyrInstance.rewind(10);
+            else plyrInstance.forward(10);
+        });
+
         function showPage(p) { 
             document.querySelectorAll('.page-view').forEach(v=>v.classList.remove('active-view')); 
             document.getElementById(`page-${p}`).classList.add('active-view'); 
@@ -241,7 +274,6 @@
             if(format) document.getElementById(`chip-${format}`).classList.add('cat-active');
         }
 
-        // Restored Search & Filter Functions
         async function handleSearch(term) {
             if(term.length < 1) { showPage('home'); return; }
             showPage('filter');
@@ -270,7 +302,6 @@
             const json = await res.json(); render(json.data.Page.media, "filterGrid", true);
         }
 
-        // Streaming Engine
         async function openPlayer(a, ep = 1) {
             if(a) currentAnime = a;
             currentEp = ep;
@@ -330,7 +361,6 @@
             document.getElementById('player').src = ""; 
         }
 
-        // Restored Auth & Logic
         function handleAuth(mode) {
             const user = document.getElementById('authEmail').value.trim();
             const pass = document.getElementById('authPass').value.trim();
