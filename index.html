@@ -277,7 +277,8 @@
                 if(idx === -1) wishlist.unshift(a); else wishlist.splice(idx, 1);
                 localStorage.setItem('ymls_guest_wishlist', JSON.stringify(wishlist));
             }
-            if(document.getElementById('page-wishlist').classList.contains('active-view')) renderWishlist();
+            // Refresh grids immediately
+            renderWishlist();
             loadHome();
         }
 
