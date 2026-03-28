@@ -41,9 +41,25 @@
         .ep-active { background: #ef4444 !important; }
         
         #installBtn { display: none; } /* Hidden by default until PWA is ready */
+
+        /* Confirmation Modal Styles */
+        #confirmOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 5000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .confirm-box { background: #0f1117; border: 1px solid #1f2937; padding: 30px; border-radius: 24px; max-width: 340px; width: 90%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
+
+    <div id="confirmOverlay">
+        <div class="confirm-box">
+            <i class="fa fa-history text-red-500 text-3xl mb-4"></i>
+            <h3 class="text-white font-black uppercase text-sm mb-2">Clear History?</h3>
+            <p class="text-gray-400 text-xs mb-6">Are you sure? You will lose all your "Continue Watching" progress.</p>
+            <div class="flex gap-3">
+                <button onclick="confirmClearHistory()" class="btn-red flex-1">Yes, Clear</button>
+                <button onclick="closeConfirm()" class="btn-red flex-1 bg-gray-800">Cancel</button>
+            </div>
+        </div>
+    </div>
 
     <nav class="fixed top-0 w-full z-[2500] glass p-4">
         <div class="container mx-auto flex items-center justify-between">
@@ -316,7 +332,12 @@
         function toggleDropdown(id) { const d=document.getElementById(id); const s=d.classList.contains('show'); document.querySelectorAll('.dropdown-content').forEach(x=>x.classList.remove('show')); if(!s) d.classList.add('show'); }
         function switchTab(t) { document.getElementById('genreList').classList.toggle('hidden', t !== 'genres'); document.getElementById('yearList').classList.toggle('hidden', t !== 'years'); document.getElementById('tab-gen').classList.toggle('border-red-600', t==='genres'); document.getElementById('tab-year').classList.toggle('border-red-600', t==='years'); }
         function closePlayer() { document.getElementById('playerView').classList.add('hidden'); document.getElementById('videoFrame').src = ""; }
-        function clearHistory() { localStorage.removeItem('ymls_hist'); location.reload(); }
+        
+        // Confirmation Modal Logic
+        function clearHistory() { document.getElementById('confirmOverlay').style.display = 'flex'; }
+        function closeConfirm() { document.getElementById('confirmOverlay').style.display = 'none'; }
+        function confirmClearHistory() { localStorage.removeItem('ymls_hist'); location.reload(); }
+
         function renderWishlist() { render(currentUser ? currentUser.wishlist : [], 'wishlistGrid', true); }
         function saveHistory(a) { let h = JSON.parse(localStorage.getItem('ymls_hist')) || []; h = h.filter(x => x.id !== a.id); h.unshift(a); localStorage.setItem('ymls_hist', JSON.stringify(h.slice(0,12))); }
         function setMode(m) { playMode = m; document.getElementById('subBtn').classList.toggle('bg-red-600', m==='sub'); document.getElementById('dubBtn').classList.toggle('bg-red-600', m==='dub'); if(currentAnime) openPlayer(currentAnime, currentEp); }
