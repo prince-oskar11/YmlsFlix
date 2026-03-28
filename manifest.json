@@ -1,49 +1,43 @@
-// --- REAL INSTALL LOGIC ---
-let deferredPrompt;
-
-// Capture the browser's install event
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    // The button is now ready to trigger a real install
-    console.log("Install prompt ready");
-});
-
-document.getElementById('installBtn').onclick = async () => {
-    if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-            console.log('User installed YmlsFlix');
-        }
-        deferredPrompt = null;
-    } else {
-        // This runs if the app is already installed or browser doesn't support the prompt
-        alert("To install: Tap the 3 dots (⋮) in Chrome or 'Share' in Safari and select 'Add to Home Screen'.");
+{
+  "name": "YMLSFLIX PRO Streaming",
+  "short_name": "YMLSFLIX",
+  "description": "Premium Anime and Movie Streaming Experience",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#05070a",
+  "theme_color": "#ef4444",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3665/3665931.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3665/3665931.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3665/3665931.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     }
-};
-
-// --- GENRE GRID FIX (Matching your screenshot) ---
-function genFilters() {
-    const genres = ["Action", "Adventure", "Cars", "Comedy", "Dementia", "Demons", "Drama", "Ecchi", "Fantasy", "Game", "Harem", "Historical", "Horror", "Isekai", "Josei", "Kids", "Magic", "Martial Arts", "Mecha", "Military", "Music", "Mystery", "Parody", "Police", "Psychological", "Romance", "Samurai", "School", "Sci-Fi", "Seinen", "Shoujo", "Shoujo Ai", "Shounen", "Shounen Ai", "Slice of Life", "Space", "Sports", "Super Power", "Supernatural", "Thriller", "Vampire"];
-    
-    // Generates the buttons with the exact style from your image
-    document.getElementById('genreList').innerHTML = genres.map(x => `
-        <button onclick="fetchByFilter('${x}')" 
-                class="bg-[#1a1a1a] text-white py-4 rounded-lg text-sm font-bold border-none hover:bg-[#252525] transition-all">
-            ${x}
-        </button>`).join('');
-
-    let yH = ''; 
-    for(let y=2026; y>=2000; y--) {
-        yH += `<button onclick="fetchByFilter('', ${y})" class="bg-[#1a1a1a] text-white py-4 rounded-lg text-sm font-bold border-none hover:bg-[#252525]">${y}</button>`;
+  ],
+  "categories": ["entertainment", "video"],
+  "shortcuts": [
+    {
+      "name": "Trending",
+      "url": "/#trendingGrid",
+      "icons": [{ "src": "https://cdn-icons-png.flaticon.com/512/3665/3665931.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Wishlist",
+      "url": "/#page-wishlist",
+      "icons": [{ "src": "https://cdn-icons-png.flaticon.com/512/3665/3665931.png", "sizes": "192x192" }]
     }
-    document.getElementById('yearList').innerHTML = yH;
-}
-
-// --- SERVICE WORKER REGISTRATION (Required for Install) ---
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').catch(err => console.log(err));
-    });
+  ]
 }
