@@ -179,6 +179,7 @@
                     <span class="text-[9px] text-gray-600 font-bold uppercase">Auto-Saved</span>
                 </div>
                 <div id="continueGrid" class="flex gap-6 overflow-x-auto no-scrollbar pb-3"></div>
+
             </section>
             
             <section><h2 class="text-[11px] font-black mb-7 uppercase text-orange-500 tracking-[0.4em]">Trending Now</h2><div id="trendingGrid" class="flex gap-6 overflow-x-auto no-scrollbar pb-3"></div></section>
@@ -603,43 +604,14 @@
             setMode('sub');
         }
 
-    async function fetchByFilter(g, y) {
-    showPage('filter'); 
-    document.getElementById('filterTitle').innerText = g || ("Released in " + y);
-
-    const q = `
-    query($g:String,$y:Int){
-        Page(perPage:50){
-            media(
-                genre_in: [$g],
-                seasonYear: $y,
-                type: ANIME,
-                sort: POPULARITY_DESC
-            ){
-                id
-                title{english romaji}
-                coverImage{large}
-                episodes
-                trailer{id site}
-            }
+        function genFilters() {
+            const g = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Sports", "Supernatural", "Thriller", "Psychological"];
+            document.getElementById('genreList').innerHTML = g.map(x => `<button onclick="fetchByFilter('${x}')" class="genre-btn">${x}</button>`).join('');
+            
+            let yH = ''; 
+            for(let y=2026; y>=2000; y--) yH += `<button onclick="fetchByFilter('', ${y})" class="genre-btn">${y}</button>`;
+            document.getElementById('yearList').innerHTML = yH;
         }
-    }`;
-
-    const r = await fetch(API, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-            query:q,
-            variables:{
-                g: g || null,
-                y: y || null
-            }
-        })
-    }).then(res=>res.json());
-
-    render(r.data.Page.media, "filterGrid", true);
-    }
-    
     </script>
 </body>
-    </html>
+</html>
