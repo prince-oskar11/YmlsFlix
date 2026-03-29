@@ -612,6 +612,14 @@
             for(let y=2026; y>=2000; y--) yH += `<button onclick="fetchByFilter('', ${y})" class="genre-btn">${y}</button>`;
             document.getElementById('yearList').innerHTML = yH;
         }
+        const cleanTitle = (currentAnime.title.english || currentAnime.title.romaji)
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]/g, '')
+    .replace(/\s+/g, '-');
+
+const s = await fetch(`${STREAM_API}/${cleanTitle}`).then(r=>r.json());
+
+if (!s.results || !s.results.length) throw new Error("No results");
     </script>
 </body>
                 </html>
