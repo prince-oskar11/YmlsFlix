@@ -1,328 +1,360 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YmlsFlix Pro</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary: #e50914;
-            --bg-dark: #0f0f0f;
-            --overlay: rgba(0, 0, 0, 0.7);
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YmlsFlix Pro</title>
 
-        body, html {
-            margin: 0; padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-dark);
-            color: white;
-            overflow-x: hidden;
-        }
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0b0b0f;
+  color: white;
+}
 
-        /* Dynamic Background */
-        #dynamic-bg {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-size: cover;
-            background-position: center;
-            filter: brightness(0.4) blur(5px);
-            z-index: -1;
-            transition: background 1s ease-in-out;
-        }
+header {
+  padding: 15px;
+  font-size: 24px;
+  font-weight: bold;
+  background: linear-gradient(45deg, #ff4d6d, #7b2ff7);
+}
 
-        /* Header & Navigation */
-        header {
-            padding: 20px 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
-            position: sticky; top: 0; z-index: 100;
-        }
+nav {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px;
+  background: #111;
+}
 
-        .logo { font-size: 28px; font-weight: bold; color: var(--primary); cursor: pointer; }
+nav button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+}
 
-        .nav-icons { display: flex; gap: 25px; font-size: 20px; }
-        .nav-icons i { cursor: pointer; transition: 0.3s; }
-        .nav-icons i:hover { color: var(--primary); }
+.search-bar {
+  display: flex;
+  padding: 10px;
+  gap: 10px;
+}
 
-        /* Search & Categories */
-        .search-container { padding: 0 5%; margin-top: 10px; }
-        .search-bar-wrapper { display: flex; align-items: center; gap: 10px; position: relative; }
-        #search-input {
-            width: 100%; padding: 12px 20px;
-            border-radius: 5px; border: none;
-            background: rgba(255,255,255,0.1); color: white;
-        }
-        .install-btn {
-            background: var(--primary); color: white;
-            border: none; padding: 12px 20px;
-            border-radius: 5px; cursor: pointer; white-space: nowrap;
-        }
+.search-bar input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+}
 
-        .sub-nav {
-            display: flex; gap: 20px; margin-top: 15px;
-            font-size: 14px; color: #ccc;
-        }
-        .sub-nav span { cursor: pointer; text-transform: uppercase; font-weight: bold; }
-        .sub-nav span:hover { color: white; }
+.install-btn {
+  background: #7b2ff7;
+  border: none;
+  color: white;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
 
-        /* Main Content */
-        .content-section { padding: 20px 5%; }
-        .row-title { font-size: 20px; margin: 20px 0 10px; display: flex; justify-content: space-between; }
-        
-        .anime-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 20px;
-        }
+.categories {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+}
 
-        .poster-card {
-            position: relative; border-radius: 8px; overflow: hidden;
-            transition: transform 0.3s; cursor: pointer;
-        }
-        .poster-card:hover { transform: scale(1.05); }
-        .poster-card img { width: 100%; height: 240px; object-fit: cover; }
-        
-        .ep-count {
-            position: absolute; top: 5px; left: 5px;
-            background: var(--primary); font-size: 10px;
-            padding: 2px 6px; border-radius: 3px;
-        }
-        .wishlist-icon-small {
-            position: absolute; top: 5px; right: 5px;
-            background: rgba(0,0,0,0.5); padding: 5px; border-radius: 50%;
-        }
-        .poster-info {
-            padding: 8px; font-size: 12px;
-            background: rgba(0,0,0,0.8);
-        }
+.categories button {
+  padding: 8px 15px;
+  border-radius: 20px;
+  border: none;
+  background: #1a1a2e;
+  color: white;
+}
 
-        /* Detail Modal */
-        #detail-modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); z-index: 1000;
-            display: none; overflow-y: auto;
-        }
-        .modal-content { padding: 5% 10%; display: flex; gap: 40px; }
-        .modal-left img { width: 300px; border-radius: 10px; }
-        .modal-right { flex: 1; }
-        .btn-group { display: flex; gap: 10px; margin: 20px 0; }
-        .play-btn { background: white; color: black; padding: 10px 30px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+.section {
+  padding: 10px;
+}
 
-        /* Fullscreen Player */
-        #video-player-container {
-            position: fixed; top:0; left:0; width: 100%; height: 100%;
-            background: black; z-index: 2000; display: none;
-        }
-        iframe { width: 100%; height: 100%; border: none; }
-        .player-controls { position: absolute; bottom: 40px; right: 40px; display: flex; gap: 20px; }
+.cards {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+}
 
-        /* Genre/Profile Screens */
-        .screen { display: none; padding: 20px 5%; }
-        .active { display: block; }
-        
-        /* Auth */
-        #auth-screen { text-align: center; margin-top: 100px; }
-        input[type="text"], input[type="email"], input[type="password"] {
-            display: block; width: 300px; margin: 10px auto; padding: 10px; border-radius: 5px;
-        }
-    </style>
+.card {
+  min-width: 150px;
+  background: #111;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.card img {
+  width: 100%;
+}
+
+.ep {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  background: black;
+  padding: 3px 6px;
+  font-size: 12px;
+}
+
+.wishlist {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  cursor: pointer;
+}
+
+.modal {
+  position: fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:#000000dd;
+  display:none;
+  justify-content:center;
+  align-items:center;
+}
+
+.modal-content {
+  background:#111;
+  padding:20px;
+  width:90%;
+  max-width:400px;
+}
+
+video {
+  width:100%;
+  border-radius:10px;
+}
+
+.hidden { display:none; }
+
+</style>
 </head>
+
 <body>
 
-    <div id="dynamic-bg"></div>
+<header>YmlsFlix Pro</header>
 
-    <header>
-        <div class="logo" onclick="showScreen('home')">YmlsFlix Pro</div>
-        <div class="nav-icons">
-            <i class="fas fa-home" onclick="showScreen('home')" title="Home"></i>
-            <i class="fas fa-th-large" onclick="showScreen('genres')" title="Genres"></i>
-            <i class="fas fa-bookmark" onclick="showScreen('wishlist')" title="Wishlist"></i>
-            <i class="fas fa-user-circle" onclick="showScreen('profile')" title="Profile"></i>
-        </div>
-    </header>
+<nav>
+<button onclick="showPage('home')">🏠</button>
+<button onclick="showPage('genres')">📂</button>
+<button onclick="showPage('wishlist')">❤️</button>
+<button onclick="showPage('profile')">👤</button>
+</nav>
 
-    <div class="search-container">
-        <div class="search-bar-wrapper">
-            <input type="text" id="search-input" placeholder="Search anime under YmlsFlix..." onkeyup="handleSearch(this.value)">
-            <button class="install-btn">Install App</button>
-        </div>
-        <div class="sub-nav">
-            <span onclick="fetchByType('tv')">TV Shows</span>
-            <span onclick="fetchByType('movie')">Movies</span>
-            <span onclick="fetchByType('ova')">OVA</span>
-        </div>
-    </div>
+<div class="search-bar">
+<input type="text" id="search" placeholder="Search anime...">
+<button class="install-btn">INSTALL</button>
+</div>
 
-    <!-- Home Screen -->
-    <div id="home-screen" class="screen active">
-        <div class="content-section">
-            <div class="row-title">Trending Now</div>
-            <div id="trending-grid" class="anime-grid"></div>
-            
-            <div class="row-title">Upcoming <span id="current-time" style="font-size: 12px; color: gray;"></span></div>
-            <div id="upcoming-grid" class="anime-grid"></div>
-        </div>
-    </div>
+<div class="categories">
+<button>TV</button>
+<button>Movies</button>
+<button>OVA</button>
+</div>
 
-    <!-- Genre Screen -->
-    <div id="genres-screen" class="screen">
-        <h2>Genres & Years</h2>
-        <div class="sub-nav" style="margin-bottom: 20px;">
-            <span onclick="loadGenres()">All Genres</span>
-            <span onclick="loadYears()">Years (2000+)</span>
-        </div>
-        <div id="genres-grid" class="anime-grid"></div>
-    </div>
+<!-- HOME -->
+<div id="home" class="page">
 
-    <!-- Wishlist Screen -->
-    <div id="wishlist-screen" class="screen">
-        <h2>My Wishlist</h2>
-        <div id="wishlist-grid" class="anime-grid"></div>
-    </div>
+<div class="section">
+<h3>Trending</h3>
+<div class="cards" id="trending"></div>
+</div>
 
-    <!-- Profile/Auth Screen -->
-    <div id="profile-screen" class="screen">
-        <div id="auth-area">
-            <h2>Sign In</h2>
-            <input type="text" id="user-name" placeholder="Username or Email">
-            <input type="password" placeholder="Password">
-            <button class="install-btn" onclick="login()">Login / Sign Up</button>
-        </div>
-        <div id="user-area" style="display:none;">
-            <h2 id="welcome-user"></h2>
-            <button class="install-btn" style="background: grey;" onclick="clearHistory()">Clear History</button>
-            <button class="install-btn" onclick="logout()">Sign Out</button>
-        </div>
-    </div>
+<div class="section">
+<h3>Top Rated</h3>
+<div class="cards" id="top"></div>
+</div>
 
-    <!-- Detail Modal -->
-    <div id="detail-modal">
-        <div class="modal-content">
-            <div class="modal-left">
-                <img id="modal-img" src="" alt="">
-                <div class="btn-group">
-                    <button class="play-btn" onclick="startStream()">Stream Now</button>
-                    <button class="play-btn" style="background: #333; color: white;" onclick="addToWishlistFromModal()">+ Wishlist</button>
-                </div>
-            </div>
-            <div class="modal-right">
-                <h1 id="modal-title"></h1>
-                <p id="modal-meta" style="color: #aaa;"></p>
-                <h3>Synopsis</h3>
-                <p id="modal-synopsis"></p>
-                <h3>Characters</h3>
-                <div id="modal-characters" style="display:flex; gap: 10px; overflow-x: auto; padding-bottom: 10px;"></div>
-                <button class="install-btn" onclick="closeModal()">Back to Home</button>
-            </div>
-        </div>
-    </div>
+</div>
 
-    <!-- Video Player -->
-    <div id="video-player-container">
-        <div id="player-frame" style="width: 100%; height: 100%;"></div>
-        <div class="player-controls">
-            <button class="play-btn" onclick="toggleRotation()">Rotate Screen</button>
-            <button class="play-btn" onclick="closePlayer()">Close</button>
-        </div>
-    </div>
+<!-- GENRES -->
+<div id="genres" class="page hidden">
+<h3 style="padding:10px;">Genres</h3>
+<button onclick="loadGenres()">All Genres</button>
+<button onclick="loadYears()">Year (2000+)</button>
+<div id="genreList"></div>
+</div>
 
-    <script>
-        const API_URL = 'https://api.jikan.moe/v4';
-        let currentAnime = null;
-        let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+<!-- WISHLIST -->
+<div id="wishlist" class="page hidden">
+<h3 style="padding:10px;">Wishlist</h3>
+<div id="wishlistItems"></div>
+</div>
 
-        // App Initialization
-        window.onload = () => {
-            fetchTrending();
-            fetchUpcoming();
-            updateTime();
-            setInterval(updateTime, 1000);
-        };
+<!-- PROFILE -->
+<div id="profile" class="page hidden">
+<h3 style="padding:10px;">Profile</h3>
 
-        function updateTime() {
-            document.getElementById('current-time').innerText = new Date().toLocaleString();
-        }
+<div id="auth">
+<input id="username" placeholder="Username or Email"><br><br>
+<input id="password" type="password" placeholder="Password"><br><br>
+<button onclick="signup()">Sign Up</button>
+<button onclick="login()">Sign In</button>
+</div>
 
-        async function fetchTrending() {
-            const res = await fetch(`${API_URL}/top/anime?filter=bypopularity&limit=10`);
-            const data = await res.json();
-            renderGrid(data.data, 'trending-grid');
-            // Change background to #1 rated
-            document.getElementById('dynamic-bg').style.backgroundImage = `url(${data.data[0].images.jpg.large_image_url})`;
-        }
+<div id="userPanel" class="hidden">
+<p id="userText"></p>
+<button onclick="logout()">Sign Out</button>
+<button onclick="clearHistory()">Clear History</button>
+</div>
 
-        async function fetchUpcoming() {
-            const res = await fetch(`${API_URL}/seasons/upcoming?limit=10`);
-            const data = await res.json();
-            renderGrid(data.data, 'upcoming-grid');
-        }
+</div>
 
-        function renderGrid(list, elementId) {
-            const grid = document.getElementById(elementId);
-            grid.innerHTML = list.map(anime => `
-                <div class="poster-card" onclick="openDetails(${anime.mal_id})">
-                    <div class="ep-count">EP ${anime.episodes || '?'}</div>
-                    <div class="wishlist-icon-small" onclick="event.stopPropagation(); addToWishlist(${anime.mal_id}, '${anime.title.replace(/'/g, "")}', '${anime.images.jpg.image_url}')">
-                        <i class="fas fa-plus"></i>
-                    </div>
-                    <img src="${anime.images.jpg.image_url}" alt="${anime.title}">
-                    <div class="poster-info">
-                        <div style="font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${anime.title}</div>
-                        <div style="font-size:10px; color:#aaa;">${anime.type} • ${anime.score || 'N/A'} ⭐</div>
-                    </div>
-                </div>
-            `).join('');
-        }
+<!-- MODAL -->
+<div class="modal" id="modal">
+<div class="modal-content">
+<h3 id="title"></h3>
 
-        // Navigation
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(`${screenId}-screen`).classList.add('active');
-            if(screenId === 'wishlist') renderWishlist();
-        }
+<div id="tabs">
+<button onclick="showTab('synopsis')">Synopsis</button>
+<button onclick="showTab('characters')">Characters</button>
+</div>
 
-        // Search
-        async function handleSearch(query) {
-            if(query.length < 3) return;
-            const res = await fetch(`${API_URL}/anime?q=${query}&limit=12`);
-            const data = await res.json();
-            renderGrid(data.data, 'trending-grid'); // Show results in trending area for demo
-        }
+<p id="synopsis"></p>
+<div id="characters" class="hidden"></div>
 
-        // Details & Synopsis
-        async function openDetails(id) {
-            const res = await fetch(`${API_URL}/anime/${id}/full`);
-            const data = await res.json();
-            currentAnime = data.data;
+<video id="player" controls></video>
+<button onclick="playTrailer()">▶ Play Trailer</button>
 
-            document.getElementById('modal-title').innerText = currentAnime.title;
-            document.getElementById('modal-img').src = currentAnime.images.jpg.large_image_url;
-            document.getElementById('modal-synopsis').innerText = currentAnime.synopsis;
-            document.getElementById('modal-meta').innerText = `${currentAnime.type} | ${currentAnime.duration} | Rating: ${currentAnime.score}`;
-            
-            // Characters
-            const charRes = await fetch(`${API_URL}/anime/${id}/characters`);
-            const charData = await charRes.json();
-            document.getElementById('modal-characters').innerHTML = charData.data.slice(0, 8).map(c => `
-                <div style="text-align:center; min-width:80px;">
-                    <img src="${c.character.images.jpg.image_url}" style="width:60px; height:60px; border-radius:50%; object-fit:cover;">
-                    <div style="font-size:10px;">${c.character.name}</div>
-                </div>
-            `).join('');
+<button onclick="closeModal()">Close</button>
+</div>
+</div>
 
-            document.getElementById('detail-modal').style.display = 'block';
-        }
+<script>
 
-        function closeModal() { document.getElementById('detail-modal').style.display = 'none'; }
+let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
 
-        // Streaming & Player
-        function startStream() {
-            const player = document.getElementById('video-player-container');
-            const frame = document.getElementById('player-frame');
-            player.style.display = 'block';
-            
-            // Show trailer if available, else placeholder
-            const trailerUrl = currentAnime.trailer.embed_url || 'https://www.youtube.com/embed/
+function showPage(page){
+  document.querySelectorAll(".page").forEach(p=>p.classList.add("hidden"));
+  document.getElementById(page).classList.remove("hidden");
+}
+
+async function loadAnime(){
+  let res = await fetch("https://api.jikan.moe/v4/top/anime");
+  let data = await res.json();
+
+  display(data.data.slice(0,10),"trending");
+  display(data.data.slice(10,20),"top");
+}
+
+function display(list, id){
+  let container = document.getElementById(id);
+  container.innerHTML="";
+
+  list.forEach(anime=>{
+    let card = document.createElement("div");
+    card.className="card";
+
+    card.innerHTML = `
+      <div class="ep">${anime.episodes || "?"} EP</div>
+      <div class="wishlist" onclick="addWishlist(event, '${anime.title}')">❤️</div>
+      <img src="${anime.images.jpg.image_url}">
+    `;
+
+    card.onclick = ()=>openModal(anime.mal_id);
+    container.appendChild(card);
+  });
+}
+
+async function openModal(id){
+  let res = await fetch(`https://api.jikan.moe/v4/anime/${id}/full`);
+  let data = await res.json();
+
+  document.getElementById("modal").style.display="flex";
+  document.getElementById("title").innerText=data.data.title;
+  document.getElementById("synopsis").innerText=data.data.synopsis;
+
+  window.currentAnime = data.data;
+}
+
+function closeModal(){
+  document.getElementById("modal").style.display="none";
+}
+
+function showTab(tab){
+  document.getElementById("synopsis").classList.toggle("hidden", tab!=="synopsis");
+  document.getElementById("characters").classList.toggle("hidden", tab!=="characters");
+
+  if(tab==="characters"){
+    loadCharacters();
+  }
+}
+
+async function loadCharacters(){
+  let res = await fetch(`https://api.jikan.moe/v4/anime/${currentAnime.mal_id}/characters`);
+  let data = await res.json();
+
+  let div = document.getElementById("characters");
+  div.innerHTML = data.data.slice(0,5).map(c=>`<p>${c.character.name}</p>`).join("");
+}
+
+function playTrailer(){
+  let player = document.getElementById("player");
+  player.src = currentAnime.trailer.embed_url;
+  player.style.transform="rotate(360deg)";
+}
+
+function addWishlist(e,title){
+  e.stopPropagation();
+  wishlist.push(title);
+  localStorage.setItem("wishlist", JSON.stringify(wishlist));
+  renderWishlist();
+}
+
+function renderWishlist(){
+  let div = document.getElementById("wishlistItems");
+  div.innerHTML = wishlist.map(w=>`<p>${w}</p>`).join("");
+}
+
+function signup(){
+  let u = username.value;
+  let p = password.value;
+  localStorage.setItem("user", JSON.stringify({u,p}));
+  alert("Account created");
+}
+
+function login(){
+  let user = JSON.parse(localStorage.getItem("user"));
+  if(user && user.u===username.value && user.p===password.value){
+    auth.classList.add("hidden");
+    userPanel.classList.remove("hidden");
+    userText.innerText="Welcome "+user.u;
+  }
+}
+
+function logout(){
+  location.reload();
+}
+
+function clearHistory(){
+  if(confirm("Clear history?")){
+    localStorage.clear();
+    location.reload();
+  }
+}
+
+document.getElementById("search").addEventListener("input", async (e)=>{
+  let q = e.target.value;
+  if(q.length<3) return;
+
+  let res = await fetch(`https://api.jikan.moe/v4/anime?q=${q}`);
+  let data = await res.json();
+
+  display(data.data.slice(0,10),"trending");
+});
+
+loadAnime();
+renderWishlist();
+
+</script>
+
+</body>
+</html>
