@@ -603,7 +603,7 @@
             setMode('sub');
         }
 
-    function fetchByFilter(g, y) {
+    async function fetchByFilter(g, y) {
     showPage('filter'); 
     document.getElementById('filterTitle').innerText = g || ("Released in " + y);
 
@@ -638,7 +638,7 @@
     }).then(res=>res.json());
 
     render(r.data.Page.media, "filterGrid", true);
-        }
+    }
     
     </script>
 </body>
