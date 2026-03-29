@@ -249,9 +249,10 @@
     </div>
 
     <script>
-        const API = 'https://graphql.anilist.co', STREAM_API = 'https://api.consumet.org/anime/gogoanime';
-        let currentUser = JSON.parse(localStorage.getItem('ymls_active_user'));
-        let playMode = 'sub', currentAnime = null, currentEp = 1, currentServers = [], lastTap = 0, deferredPrompt, plyrInstance, hlsInstance;
+        const API = 'https://graphql.anilist.co'; const SOURCES -「
+https://api.consumet.org/anime/gogoanime'
+https://api.consumet.org/anime/zoro', 
+https://api.consumet.org/anime/9anime
 
         // AUTHENTICATION LOGIC
         function handleAuth(mode) {
