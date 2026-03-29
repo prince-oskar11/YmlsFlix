@@ -480,12 +480,33 @@
             render(r.data.Page.media, "filterGrid", true);
         }
 
-        async function fetchByFilter(g, y) {
-            showPage('filter'); 
-            document.getElementById('filterTitle').innerText = g || "Released in " + y;
-            const q = `query($g:String,$y:Int){Page(perPage:50){media(genre:$g,seasonYear:$y,type:ANIME,sort:POPULARITY_DESC){id title{english romaji} coverImage{large} episodes trailer{id site}}}}`;
-            const r = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query:q, variables:{g, y}})}).then(res=>res.json());
-            render(r.data.Page.media, "filterGrid", true);
+        async function fetchByFilter(g, y) { 
+    showPage('filter'); 
+    // Update the title so you know what you're looking at
+    document.getElementById('filterTitle').innerText = g ? `Genre: ${g}` : `Year: ${y}`;
+    
+    const query = `query($g:String, $y:Int){
+        Page(perPage:50){
+            media(genre:$g, seasonYear:$y, type:ANIME, sort:POPULARITY_DESC){
+                id idMal title{english romaji} coverImage{large} episodes trailer{id site}
+            }
+        }
+    }`;
+
+    // Logic to handle which filter is active
+    const variables = {};
+    if (g) variables.g = g;
+    if (y) variables.y = y;
+
+    const res = await fetch(API, {
+        method:'POST', 
+        headers:{'Content-Type':'application/json'}, 
+        body:JSON.stringify({query, variables})
+    });
+    
+    const json = await res.json(); 
+    // This sends the results to your "Filter Results" grid
+    render(json.data.Page.media, "filterGrid", true); 
         }
 
         function loadHome() {
@@ -595,22 +616,21 @@
             render(r.data.Media.recommendations.nodes.map(n=>n.mediaRecommendation).filter(x=>x), 'recommendGrid');
         }
 
-        function setupUI() { 
-            if(currentUser) { 
-                document.getElementById('authBox').classList.add('hidden'); 
-                document.getElementById('userBox').classList.remove('hidden'); 
-                document.getElementById('userDisplay').innerText = currentUser.name; 
-            } 
-            setMode('sub');
-        }
-
         function genFilters() {
-            const g = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Sports", "Supernatural", "Thriller", "Psychological"];
-            document.getElementById('genreList').innerHTML = g.map(x => `<button onclick="fetchByFilter('${x}')" class="genre-btn">${x}</button>`).join('');
-            
-            let yH = ''; 
-            for(let y=2026; y>=2000; y--) yH += `<button onclick="fetchByFilter('', ${y})" class="genre-btn">${y}</button>`;
-            document.getElementById('yearList').innerHTML = yH;
+    // FULL 41-GENRE LIST FROM YOUR SCREENSHOT
+    const g = ["Action", "Adventure", "Cars", "Comedy", "Dementia", "Demons", "Drama", "Ecchi", "Fantasy", "Game", "Harem", "Historical", "Horror", "Isekai", "Josei", "Kids", "Magic", "Martial Arts", "Mecha", "Military", "Music", "Mystery", "Parody", "Police", "Psychological", "Romance", "Samurai", "School", "Sci-Fi", "Seinen", "Shoujo", "Shoujo Ai", "Shounen", "Shounen Ai", "Slice of Life", "Space", "Sports", "Super Power", "Supernatural", "Thriller", "Vampire"];
+    
+    // Renders the Genre Tab
+    document.getElementById('genreList').innerHTML = g.map(x => 
+        `<button onclick="fetchByFilter('${x}', null)" class="genre-btn">${x}</button>`
+    ).join('');
+    
+    // Renders the Year Tab (2000 - 2026)
+    let yH = ''; 
+    for(let y=2026; y>=2000; y--) {
+        yH += `<button onclick="fetchByFilter(null, ${y})" class="genre-btn">${y}</button>`;
+    }
+    document.getElementById('yearList').innerHTML = yH;
         }
     </script>
 </body>
