@@ -8,7 +8,7 @@
 <!-- Manifest -->
 <link rel="manifest" href="manifest.json" />
 
-<!-- Tailwind & Font Awesome -->
+<!-- Tailwind CSS & FontAwesome -->
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" />
 
@@ -17,6 +17,7 @@
 <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
+<!-- Custom CSS -->
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
 :root {
@@ -36,19 +37,21 @@ body {
 }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .page-view { display: none; min-height: 100vh; padding-bottom: 120px; overflow-x: hidden; }
-.active { display: block; }
+.page-view.active { display: block; }
 #scrollable { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 #scrollable::-webkit-scrollbar { display:none; }
+
+/* Additional styling for layout & UI components */
 </style>
 </head>
-<body class="relative">
+<body>
 
-<!-- Install Button -->
+<!-- Install App Button -->
 <div class="fixed top-4 right-4 z-[9999] hidden" id="installContainer">
   <button id="installBtn" class="bg-indigo-600 px-4 py-2 rounded-full font-bold text-sm uppercase shadow-lg hover:bg-indigo-500">Install App</button>
 </div>
 
-<!-- Navigation -->
+<!-- Navigation Bar -->
 <nav class="fixed top-0 w-full z-[2500] bg-black/50 backdrop-blur-lg p-4 flex justify-between items-center">
   <h1 class="text-2xl font-black tracking-tighter cursor-pointer" onclick="showPage('home')">YMLSFLIX PRO</h1>
   <div class="flex gap-4 text-xl text-gray-400">
@@ -58,7 +61,7 @@ body {
   </div>
 </nav>
 
-<!-- Dropdowns -->
+<!-- Dropdown for Genres & Years -->
 <div class="absolute right-4 top-16 bg-[#0f1117] p-4 rounded-lg shadow-lg hidden" id="genreDrop">
   <h4 class="mb-2 font-bold text-white">Categories</h4>
   <div id="genreList" class="grid grid-cols-3 gap-2"></div>
@@ -69,7 +72,7 @@ body {
 <!-- Main Content -->
 <div class="pt-20" id="mainContent">
 
-<!-- Home Page -->
+<!-- Home Page Content -->
 <div id="page-home" class="page-view active">
 
   <!-- Hero Banner -->
@@ -106,7 +109,7 @@ body {
       <div class="flex gap-4 overflow-x-auto scrollbar-hide" id="airingGrid"></div>
     </div>
 
-    <!-- Popular -->
+    <!-- All Time Popular -->
     <div>
       <h3 class="text-[11px] font-black mb-4 uppercase text-purple-500 tracking-widest">All Time Popular</h3>
       <div class="flex gap-4 overflow-x-auto scrollbar-hide" id="popularGrid"></div>
@@ -136,22 +139,22 @@ body {
   <div id="wishlistGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
 </div>
 
-<!-- Player Modal -->
-<div id="playerModal" class="fixed inset-0 bg-black bg-opacity-90 z-[9999] flex items-center justify-center hidden">
-  <div class="w-full max-w-3xl p-4 relative">
+<!-- Video Player Modal -->
+<div id="playerModal" class="fixed inset-0 bg-black bg-opacity-90 z-[9999] hidden flex flex-col justify-center items-center p-4">
+  <div class="w-full max-w-3xl relative">
     <div class="absolute top-2 right-2 cursor-pointer text-white text-xl z-50" onclick="closePlayer()">×</div>
     <h3 id="playerTitle" class="text-white mb-2 text-center"></h3>
-    <video id="player" controls playsinline class="w-full aspect-video bg-black"></video>
-    <div class="mt-4 flex justify-center space-x-4">
-      <button onclick="nextEpisode()" class="bg-red-600 px-4 py-2 rounded-full text-sm font-bold uppercase hover:bg-red-500 transition">Next Episode</button>
-      <button onclick="showTrailer(currentAnime?.trailer?.id)" class="bg-indigo-600 px-4 py-2 rounded-full text-sm font-bold uppercase hover:bg-indigo-500 transition">Trailer</button>
+    <video id="player" controls playsinline class="w-full aspect-[16/9] bg-black rounded-lg"></video>
+    <div class="mt-4 flex justify-center gap-4">
+      <button onclick="nextEpisode()" class="bg-red-600 px-4 py-2 rounded-full font-bold uppercase text-sm hover:bg-red-500 transition">Next Episode</button>
+      <button onclick="showTrailer(currentAnime?.trailer?.id)" class="bg-indigo-600 px-4 py-2 rounded-full font-bold uppercase text-sm hover:bg-indigo-500 transition">Trailer</button>
     </div>
   </div>
 </div>
 
 <!-- Trailer Overlay -->
 <div id="trailerOverlay" class="fixed inset-0 bg-black bg-opacity-90 z-[9999] hidden justify-center items-center">
-  <div class="relative w-full max-w-4xl h-96">
+  <div class="relative w-full max-w-4xl aspect-video">
     <iframe id="trailerFrame" class="w-full h-full" src="" frameborder="0" allowfullscreen></iframe>
     <div class="absolute top-2 right-2 cursor-pointer text-white text-xl" onclick="closeTrailer()">×</div>
   </div>
@@ -159,14 +162,14 @@ body {
 
 <!-- Scripts -->
 <script>
-// --- Variables ---
+// ================== Variables ==================
 const API='https://graphql.anilist.co', STREAM_API='https://api.consumet.org/anime/gogoanime';
 
 let currentUser=JSON.parse(localStorage.getItem('ymls_active_user'));
 let playMode='sub', currentAnime=null, currentEp=1, currentServers=[], hlsInstance=null, plyrInstance=null;
 
-// --- Install App ---
-const deferredPrompt = null;
+// ================== PWA Install Prompt ==================
+let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   document.getElementById('installContainer').classList.remove('hidden');
@@ -176,17 +179,17 @@ window.addEventListener('beforeinstallprompt', (e) => {
   };
 });
 
-// --- Show Page ---
+// ================== Show Page Function ==================
 function showPage(pageID){
   document.querySelectorAll('.page-view').forEach(p => p.classList.toggle('active', p.id===pageID));
 }
 
-// --- Toggle Dropdown ---
+// ================== Toggle Dropdown ==================
 function toggleDropdown(id){
   document.getElementById(id).classList.toggle('hidden');
 }
 
-// --- Fetch and Render Upcoming Shows ---
+// ================== Fetch and Render Upcoming Shows ==================
 async function fetchUpcomingShows() {
   try {
     const res= await fetch('https://api.jikan.moe/v4/seasons/coming');
@@ -202,8 +205,8 @@ function renderUpcomingShows(shows){
     const img= show.images.webp?.large_image_url || show.images.jpg?.image_url || 'https://placehold.co/300x450/222/fff?text=No+Image';
     return `
       <div class="cursor-pointer" onclick='showChoice(${JSON.stringify(show)})'>
-        <div class="relative">
-          <img src="${img}" class="w-full aspect-[2/3] object-cover rounded-lg" />
+        <div class="relative rounded-lg overflow-hidden">
+          <img src="${img}" class="w-full aspect-[2/3] object-cover" />
           <div class="absolute bottom-0 w-full bg-black bg-opacity-50 text-white text-xs p-1 text-center">${dateStr}</div>
         </div>
         <div class="mt-2 text-sm text-white truncate">${show.title}</div>
@@ -211,7 +214,7 @@ function renderUpcomingShows(shows){
   }).join('');
 }
 
-// --- Fetch by Genre or Year ---
+// ================== Fetch by Genre or Year ==================
 async function fetchByFilter(genre, year) {
   showPage('filter');
   document.getElementById('filterTitle').innerText= genre ? `${genre} Masterpieces` : `Released in ${year}`;
@@ -234,7 +237,7 @@ async function fetchByFilter(genre, year) {
   } catch(e){ console.log('Filter fetch error:', e);}
 }
 
-// --- Load home grids ---
+// ================== Load homepage grids ==================
 function fetchGrid(s,t){
   const q= `query($s:[MediaSort]){Page(perPage:20){media(type:ANIME,sort:$s){id title{english romaji} coverImage{large} episodes trailer{id site}}}}`;
   fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({query:q, variables:{s:[s]}})})
@@ -242,7 +245,7 @@ function fetchGrid(s,t){
   .then(r=>render(r.data.Page.media,t));
 }
 
-// --- Render media ---
+// ================== Render media items ==================
 function render(list, targetId, isGrid=false){
   const wishlist= currentUser? (currentUser.wishlist||[]): (JSON.parse(localStorage.getItem('ymls_guest_wishlist'))||[]);
   document.getElementById(targetId).innerHTML= list.map(a => {
@@ -252,16 +255,14 @@ function render(list, targetId, isGrid=false){
     <div class="cursor-pointer ${isGrid?'w-full':' '} rounded-lg overflow-hidden" onclick='showChoice(${JSON.stringify(a)})'>
       <div class="relative">
         <img src="${a.coverImage.large}" class="w-full aspect-[2/3] object-cover rounded-lg" />
-        <div class="absolute top-2 right-2 text-white z-10" onclick='toggleWish(${JSON.stringify(a)}, event)'>
-          <i class="fa fa-heart ${inWish?'text-red-600':'text-gray-400'}"></i>
-        </div>
+        <div class="absolute top-2 right-2 text-white z-10" onclick='toggleWish(${JSON.stringify(a)}, event)'><i class="fa fa-heart ${inWish?'text-red-600':'text-gray-400'}"></i></div>
       </div>
       <div class="mt-2 text-xs font-bold uppercase text-gray-300 truncate">${a.title.english || a.title.romaji}</div>
     </div>`;
   }).join('');
 }
 
-// --- Load homepage ---
+// ================== Load homepage data ==================
 function loadHome() {
   fetchGrid("TRENDING_DESC", "trendingGrid");
   fetchGrid("SCORE_DESC", "ratedGrid");
@@ -274,7 +275,7 @@ function loadHome() {
   }
 }
 
-// --- Fetch hero ---
+// ================== Fetch hero data ==================
 async function fetchHero() {
   const q= `query{Page(perPage:1){media(type:ANIME,sort:TRENDING_DESC){id title{english romaji} bannerImage description episodes trailer{id site}}}}`;
   const r= await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({query:q})}).then(res=>res.json());
@@ -288,7 +289,7 @@ async function fetchHero() {
   }
 }
 
-// --- Show choice ---
+// ================== Show choice (episodes, details) ==================
 function showChoice(a){
   document.getElementById('choiceOverlay').style.display='flex';
   document.getElementById('choiceImg').src= a.coverImage.large;
@@ -301,7 +302,7 @@ function showChoice(a){
   document.getElementById('choiceWish').onclick= ()=>{ toggleWish(a); };
 }
 
-// --- Open Player ---
+// ================== Open Player ==================
 async function openPlayer(a, ep=1){
   if(a) currentAnime= a; currentEp=ep;
   document.getElementById('playerModal').classList.remove('hidden');
@@ -318,7 +319,7 @@ async function openPlayer(a, ep=1){
   fetchRecommendations(currentAnime.id);
 }
 
-// --- Load streams ---
+// ================== Load stream sources ==================
 async function loadStreamSources(a, ep=1){
   try{
     const title= (a.title.romaji||a.title.english).replace(/[^a-zA-Z0-9 ]/g,'');
@@ -332,7 +333,7 @@ async function loadStreamSources(a, ep=1){
   } catch(e){ console.log('Stream fetch error:', e); }
 }
 
-// --- Render sources ---
+// ================== Render stream sources ==================
 function renderStreamSources(sources){
   const container= document.getElementById('serverList');
   container.innerHTML= sources.map((s,i)=>`
@@ -343,7 +344,7 @@ function renderStreamSources(sources){
   switchServer(0,sources);
 }
 
-// --- Switch server ---
+// ================== Switch server ==================
 function switchServer(idx, sources){
   if(hlsInstance) hlsInstance.destroy();
   const v= document.getElementById('player');
@@ -359,7 +360,7 @@ function switchServer(idx, sources){
   }
 }
 
-// --- Render episodes list ---
+// ================== Render episodes ==================
 function renderEpisodes(a){
   const count= a.episodes||12;
   document.getElementById('totalEpDisplay').innerText= count + ' Total Episodes';
@@ -368,27 +369,27 @@ function renderEpisodes(a){
   `).join('');
 }
 
-// --- Show trailer ---
+// ================== Show trailer overlay ==================
 function showTrailer(trailerId){
   document.getElementById('trailerFrame').src= `https://www.youtube.com/embed/${trailerId}?autoplay=1`;
   document.getElementById('trailerOverlay').classList.remove('hidden');
 }
 function closeTrailer(){ document.getElementById('trailerOverlay').classList.add('hidden'); }
 
-// --- Fetch recommendations ---
+// ================== Fetch recommendations ==================
 async function fetchRecommendations(id){
   const q= `query($id:Int){Media(id:$id){recommendations(perPage:15){nodes{mediaRecommendation{id title{english romaji} coverImage{large} episodes trailer{id site}}}}}}`;
   const r= await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({query:q, variables:{id}})}).then(res=>res.json());
   render(r.data.Media.recommendations.nodes.map(n=>n.mediaRecommendation).filter(x=>x), 'recommendGrid');
 }
 
-// --- Close Player ---
+// ================== Close Player ==================
 function closePlayer(){
   document.getElementById('playerModal').classList.add('hidden');
   if(hlsInstance) hlsInstance.destroy();
 }
 
-// --- Next Episode ---
+// ================== Next Episode ==================
 function nextEpisode(){
   if(currentAnime && currentAnime.episodes){
     const nextEp= currentEp+1;
@@ -398,14 +399,14 @@ function nextEpisode(){
   }
 }
 
-// --- Show trailer ---
+// ================== Show Trailer ==================
 function showTrailer(trailerId){ 
   document.getElementById('trailerFrame').src= `https://www.youtube.com/embed/${trailerId}?autoplay=1`;
   document.getElementById('trailerOverlay').classList.remove('hidden');
 }
 function closeTrailer(){ document.getElementById('trailerOverlay').classList.add('hidden'); }
 
-// --- Toggle Wishlist ---
+// ================== Wishlist Functions ==================
 function toggleWish(a, e=null){
   if(e) e.stopPropagation();
   let list= currentUser? (currentUser.wishlist||[]): (JSON.parse(localStorage.getItem('ymls_guest_wishlist'))||[]);
@@ -424,7 +425,7 @@ function toggleWish(a, e=null){
   if(document.getElementById('page-wishlist').classList.contains('active')) renderWishlist();
 }
 
-// --- Render Wishlist ---
+// ================== Render Wishlist ==================
 function renderWishlist() {
   const w= currentUser? (currentUser.wishlist||[]): (JSON.parse(localStorage.getItem('ymls_guest_wishlist'))||[]);
   document.getElementById('wishlistGrid').innerHTML= w.map(a => `
@@ -439,7 +440,7 @@ function renderWishlist() {
   document.getElementById('wishCount').innerText= `${w.length} Items`;
 }
 
-// --- Fetch & Show Hero ---
+// ================== Fetch & Show Hero ==================
 async function fetchHero() {
   const q= `query{Page(perPage:1){media(type:ANIME,sort:TRENDING_DESC){id title{english romaji} bannerImage description episodes trailer{id site}}}}`;
   const r= await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({query:q})}).then(res=>res.json());
@@ -453,12 +454,18 @@ async function fetchHero() {
   }
 }
 
-// --- Initialize on load ---
+// ================== Initialization ==================
 window.onload= ()=> {
-  // Load other data
-  fetchHero();
-  loadHome();
+  // Generate genre & year filters
   genFilters();
+
+  // Load homepage grids
+  loadHome();
+
+  // Fetch hero
+  fetchHero();
+
+  // Fetch upcoming shows
   fetchUpcomingShows();
 
   // Setup Plyr
@@ -467,9 +474,10 @@ window.onload= ()=> {
     tooltips:{controls:true,seek:true}
   });
 
-  // Register Service Worker
+  // Register service worker
   if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 </script>
+
 </body>
 </html>
