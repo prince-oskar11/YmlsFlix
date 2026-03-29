@@ -4,7 +4,7 @@
   "description": "Premium Anime & Movie Streaming Platform",
   "start_url": "./",
   "scope": "./",
-  "display": "fullscreen",
+  "display": "standalone",
   "orientation": "portrait",
   "background_color": "#05070a",
   "theme_color": "#ef4444",
