@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>YMLSFLIX PRO | v60 ULTIMATE FULL RECOVERY</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>YMLSFLIX PRO | v60 COMPLETE</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
@@ -12,14 +14,17 @@
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         
         :root { 
             --plyr-color-main: #ef4444; 
             --bg: #05070a; 
             --card: #0f1117; 
-            --accent: #6366f1;
+            --accent: #ef4444;
+            --glass: rgba(5, 7, 10, 0.98);
         }
+
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
 
         body { 
             background: var(--bg); 
@@ -28,323 +33,400 @@
             margin: 0; 
             padding: 0;
             overflow-x: hidden; 
-            -webkit-tap-highlight-color: transparent; 
-            font-size: 13px; 
+            font-size: 14px;
+            line-height: 1.5;
         }
 
-        /* --- UI UTILITIES --- */
-        .glass { background: rgba(5, 7, 10, 0.98); backdrop-filter: blur(25px); border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .logo-text { background: linear-gradient(to right, #ef4444, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; letter-spacing: -1px; }
+        /* --- UI Elements --- */
+        .glass-nav { 
+            background: var(--glass); 
+            backdrop-filter: blur(30px); 
+            -webkit-backdrop-filter: blur(30px);
+            border-bottom: 1px solid rgba(255,255,255,0.06); 
+        }
+
+        .logo-gradient { 
+            background: linear-gradient(135deg, #ef4444 0%, #6366f1 100%); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            font-weight: 900; 
+            letter-spacing: -1.5px;
+        }
         
-        /* --- ANIME CARDS & GRID --- */
+        /* --- Card Architecture --- */
         .anime-card { 
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
-            cursor: pointer; 
             position: relative; 
-            border-radius: 16px; 
-            overflow: hidden; 
-            background: var(--card); 
-            width: 155px; 
+            width: 160px; 
             flex-shrink: 0; 
-            border: 1px solid rgba(255,255,255,0.03); 
+            border-radius: 18px; 
+            background: var(--card); 
+            border: 1px solid rgba(255,255,255,0.04); 
+            overflow: hidden; 
+            transition: all 0.45s cubic-bezier(0.23, 1, 0.32, 1);
+            cursor: pointer;
         }
-        .anime-card:hover { transform: translateY(-10px) scale(1.02); border-color: #ef4444; box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
-        .card-img { width: 100%; aspect-ratio: 2/3; object-fit: cover; transition: 0.5s; }
-        .anime-card:hover .card-img { filter: brightness(0.7); }
-        
-        .ep-badge { position: absolute; top: 10px; left: 10px; background: #ef4444; color: white; font-size: 9px; font-weight: 900; padding: 3px 8px; border-radius: 6px; z-index: 10; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4); }
-        
-        /* SYNC DOT & NOTIFICATIONS */
-        .sync-dot { position: absolute; bottom: 10px; right: 10px; width: 12px; height: 12px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 15px #22c55e; z-index: 20; border: 2px solid var(--bg); animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.2); opacity: 0.6; } 100% { transform: scale(1); opacity: 1; } }
 
-        /* --- DROPDOWNS & MODALS --- */
-        .dropdown-content { display: none; position: fixed; top: 130px; left: 50%; transform: translateX(-50%); background: #0f1117; border: 1px solid #1f2937; border-radius: 24px; z-index: 3000; width: 92%; max-width: 500px; padding: 30px; box-shadow: 0 50px 100px rgba(0,0,0,0.9); }
-        .show { display: block !important; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes slideUp { from { opacity: 0; transform: translate(-50%, 20px); } to { opacity: 1; transform: translate(-50%, 0); } }
+        .anime-card:hover { 
+            transform: translateY(-12px) scale(1.03); 
+            border-color: var(--accent);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+        }
 
-        .page-view { display: none; min-height: 100vh; padding-bottom: 120px; }
-        .active-view { display: block; }
-        .grid-full { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 20px; }
+        .card-image-wrapper { 
+            position: relative; 
+            width: 100%; 
+            aspect-ratio: 2/3; 
+            overflow: hidden; 
+        }
+
+        .card-img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            transition: transform 0.6s ease;
+        }
+
+        .anime-card:hover .card-img { transform: scale(1.1); }
+
+        .ep-tag { 
+            position: absolute; top: 12px; left: 12px; 
+            background: var(--accent); color: white; 
+            font-size: 9px; font-weight: 900; 
+            padding: 4px 10px; border-radius: 7px; 
+            z-index: 10; letter-spacing: 0.5px;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+        
+        .sync-indicator { 
+            position: absolute; bottom: 12px; right: 12px; 
+            width: 12px; height: 12px; background: #22c55e; 
+            border-radius: 50%; border: 2.5px solid var(--bg);
+            box-shadow: 0 0 15px #22c55e; z-index: 10;
+            animation: pulseSync 2s infinite;
+        }
+
+        @keyframes pulseSync { 
+            0% { transform: scale(1); opacity: 1; } 
+            50% { transform: scale(1.3); opacity: 0.5; } 
+            100% { transform: scale(1); opacity: 1; } 
+        }
+
+        /* --- Dropdown System --- */
+        .filter-menu { 
+            display: none; position: fixed; top: 135px; left: 50%; 
+            transform: translateX(-50%); background: #0f1117; 
+            border: 1px solid rgba(255,255,255,0.08); border-radius: 28px; 
+            z-index: 3000; width: 92%; max-width: 520px; 
+            padding: 35px; box-shadow: 0 40px 100px rgba(0,0,0,0.9);
+        }
+
+        .filter-menu.active { 
+            display: block; 
+            animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+
+        @keyframes modalPop { 
+            from { opacity: 0; transform: translate(-50%, 30px) scale(0.95); } 
+            to { opacity: 1; transform: translate(-50%, 0) scale(1); } 
+        }
+
+        .tab-link { 
+            flex: 1; text-align: center; padding-bottom: 15px; 
+            font-weight: 900; font-size: 11px; text-transform: uppercase; 
+            letter-spacing: 1.5px; color: #4b5563; 
+            border-bottom: 3px solid transparent; transition: 0.3s; 
+        }
+
+        .tab-link.active { color: white; border-color: var(--accent); }
+
+        /* --- Grid Configurations --- */
+        .page-content { display: none; min-height: 100vh; padding-bottom: 120px; }
+        .page-content.active { display: block; }
+        .grid-responsive { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
+            gap: 25px; 
+        }
+        
+        /* --- Hero Header --- */
+        #heroSection { 
+            height: 75vh; background-size: cover; background-position: center; 
+            display: flex; align-items: flex-end; padding-bottom: 100px; 
+            position: relative; transition: background 0.8s ease;
+        }
+
+        .hero-overlay { 
+            position: absolute; inset: 0; 
+            background: linear-gradient(0deg, #05070a 8%, rgba(5,7,10,0.4) 50%, transparent 100%); 
+        }
+
+        /* --- Player Styling --- */
+        #playerOverlay { 
+            fixed: inset 0; z-index: 4000; background: #000; 
+            display: none; overflow-y: auto; 
+        }
+
+        .cast-scroll { display: flex; gap: 20px; overflow-x: auto; padding-bottom: 10px; }
+        .cast-scroll::-webkit-scrollbar { height: 4px; }
+        .cast-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+        .character-node { flex-shrink: 0; width: 75px; text-align: center; }
+        .character-img { 
+            width: 75px; height: 75px; border-radius: 18px; 
+            object-fit: cover; border: 1.5px solid rgba(255,255,255,0.08); 
+            margin-bottom: 8px; transition: 0.3s;
+        }
+        .character-img:hover { transform: scale(1.1); border-color: var(--accent); }
+
         .no-scrollbar::-webkit-scrollbar { display: none; }
-
-        /* --- PLAYER INTERFACE --- */
-        #videoContainer { background: #000; position: relative; width: 100%; aspect-ratio: 16/9; box-shadow: 0 20px 60px rgba(0,0,0,0.8); }
-        .char-img { width: 55px; height: 55px; border-radius: 14px; object-fit: cover; border: 1px solid rgba(255,255,255,0.08); transition: 0.3s; }
-        .char-img:hover { transform: scale(1.1); border-color: #ef4444; }
         
-        #hero { height: 70vh; background-size: cover; background-position: center; display: flex; align-items: flex-end; padding-bottom: 90px; position: relative; }
-        .hero-grad { position: absolute; inset: 0; background: linear-gradient(0deg, #05070a 10%, rgba(5,7,10,0.4) 45%, transparent 100%); }
-
-        /* TAB STYLING */
-        .tab-trigger { flex: 1; padding-bottom: 12px; font-weight: 900; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #4b5563; border-bottom: 2px solid transparent; transition: 0.3s; }
-        .tab-trigger.active { color: white; border-color: #ef4444; }
-
-        /* SHIMMER LOADERS */
-        .shimmer { background: linear-gradient(90deg, #0f1117 25%, #1f2937 50%, #0f1117 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
-        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        /* Skeleton Loader */
+        .skeleton { 
+            background: linear-gradient(90deg, #0f1117 25%, #1a1d26 50%, #0f1117 75%); 
+            background-size: 200% 100%; 
+            animation: loading 1.5s infinite; 
+        }
+        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     </style>
 </head>
 <body>
 
-    <div id="choiceOverlay" class="fixed inset-0 bg-black/95 z-[5000] hidden items-center justify-center backdrop-blur-xl" onclick="this.style.display='none'">
-        <div class="bg-[#0f1117] p-10 rounded-[40px] max-w-sm w-full text-center border border-white/5 shadow-2xl" onclick="event.stopPropagation()">
-            <img id="choiceImg" class="w-48 h-64 mx-auto rounded-3xl mb-8 object-cover shadow-red-900/20 shadow-2xl">
-            <h3 id="choiceTitle" class="text-white font-black uppercase text-sm mb-10 tracking-widest leading-tight"></h3>
-            <div class="space-y-4">
-                <button id="choicePlay" class="w-full bg-red-600 hover:bg-red-700 py-5 rounded-2xl font-black text-[12px] uppercase tracking-widest transition-all">Stream Now</button>
-                <button onclick="document.getElementById('choiceOverlay').style.display='none'" class="w-full bg-white/5 py-5 rounded-2xl font-black text-[12px] uppercase text-gray-500 hover:bg-white/10">Close</button>
-            </div>
-        </div>
-    </div>
-
-    <nav class="fixed top-0 w-full z-[2500] glass p-6">
+    <nav class="fixed top-0 w-full z-[2500] glass-nav p-6">
         <div class="container mx-auto flex items-center justify-between">
-            <h1 class="text-3xl logo-text cursor-pointer" onclick="showPage('home')">YMLSFLIX PRO</h1>
+            <h1 class="text-3xl logo-gradient cursor-pointer" onclick="navigateTo('home')">YMLSFLIX</h1>
             <div class="flex items-center gap-10">
-                <i onclick="showPage('home')" class="fa fa-home text-gray-400 text-2xl cursor-pointer hover:text-white transition-colors"></i>
-                <i onclick="toggleDropdown('genreDrop')" class="fa fa-th-large text-gray-400 text-2xl cursor-pointer hover:text-white transition-colors"></i>
+                <i onclick="navigateTo('home')" class="fa fa-home text-gray-400 text-2xl cursor-pointer hover:text-white transition-all"></i>
+                <i onclick="toggleMenu('filterDropdown')" class="fa fa-sliders text-gray-400 text-2xl cursor-pointer hover:text-white transition-all"></i>
             </div>
         </div>
         <div class="container mx-auto mt-8 flex gap-4">
-            <div class="relative w-full group">
-                <i class="fa fa-search absolute left-6 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-red-500 transition-colors"></i>
-                <input type="text" id="searchBar" class="bg-[#111827] border border-[#1f2937] text-white pl-16 pr-6 py-5 rounded-2xl w-full outline-none focus:border-red-600 transition-all shadow-inner" placeholder="Search anime title..." oninput="handleSearch(this.value)">
+            <div class="relative w-full">
+                <i class="fa fa-search absolute left-6 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                <input type="text" id="searchInput" class="bg-[#111827] border border-[#1f2937] text-white pl-16 pr-6 py-5 rounded-2xl w-full outline-none focus:border-red-600 transition-all shadow-2xl" placeholder="Search anime titles..." oninput="triggerSearch(this.value)">
             </div>
-            <button id="installBtn" onclick="triggerInstall()" class="hidden bg-indigo-600 hover:bg-indigo-700 text-[11px] font-black px-8 rounded-2xl uppercase tracking-widest shadow-lg shadow-indigo-900/30">Install</button>
+            <button id="pwaBtn" onclick="initPWA()" class="hidden bg-indigo-600 hover:bg-indigo-700 text-[10px] font-black px-8 rounded-2xl uppercase tracking-widest shadow-xl">Install</button>
         </div>
         
-        <div id="genreDrop" class="dropdown-content">
-            <div class="flex mb-8 gap-8 border-b border-white/5">
-                <button id="tabGen" onclick="switchTab('genres')" class="tab-trigger active">Categories</button>
-                <button id="tabYear" onclick="switchTab('years')" class="tab-trigger">Season Year</button>
+        <div id="filterDropdown" class="filter-menu">
+            <div class="flex mb-8 gap-10">
+                <button id="tabCategories" onclick="showTab('categories')" class="tab-link active">Categories</button>
+                <button id="tabSeasons" onclick="showTab('seasons')" class="tab-link">Season Year</button>
             </div>
-            <div id="genreList" class="grid grid-cols-3 gap-4 max-h-80 overflow-y-auto no-scrollbar"></div>
-            <div id="yearList" class="grid grid-cols-3 gap-4 max-h-80 overflow-y-auto no-scrollbar hidden"></div>
+            <div id="genreContainer" class="grid grid-cols-3 gap-4 max-h-80 overflow-y-auto no-scrollbar"></div>
+            <div id="seasonContainer" class="grid grid-cols-3 gap-4 max-h-80 overflow-y-auto no-scrollbar hidden"></div>
         </div>
     </nav>
 
-    <div id="page-home" class="page-view active-view pt-64">
-        <header id="hero">
-            <div class="hero-grad"></div>
+    <div id="view-home" class="page-content active pt-64">
+        <header id="heroSection">
+            <div class="hero-overlay"></div>
             <div class="container mx-auto px-10 relative z-10">
-                <h2 id="heroTitle" class="text-6xl font-black mb-6 uppercase italic tracking-tighter leading-none max-w-3xl drop-shadow-2xl"></h2>
-                <div id="heroMeta" class="flex gap-5 mb-8 text-[11px] font-black text-red-500 uppercase tracking-[0.3em]"></div>
-                <p id="heroDesc" class="text-gray-400 text-sm max-w-xl line-clamp-3 mb-12 font-medium leading-relaxed"></p>
-                <button id="heroPlayBtn" class="bg-white text-black px-20 py-6 rounded-full font-black text-[12px] uppercase hover:bg-red-600 hover:text-white transition-all shadow-2xl shadow-white/10">Stream Now</button>
+                <h2 id="heroTitle" class="text-6xl font-black mb-6 uppercase italic tracking-tighter leading-none max-w-4xl drop-shadow-2xl"></h2>
+                <div id="heroDetails" class="flex gap-6 mb-8 text-[11px] font-black text-red-500 uppercase tracking-[0.4em]"></div>
+                <p id="heroDescription" class="text-gray-400 text-sm max-w-2xl line-clamp-3 mb-12 font-medium leading-relaxed"></p>
+                <button id="heroAction" class="bg-white text-black px-16 py-6 rounded-full font-black text-[12px] uppercase hover:bg-red-600 hover:text-white transition-all shadow-2xl">Stream Now</button>
             </div>
         </header>
 
-        <main class="container mx-auto p-8 space-y-32">
-            <section id="continueSection" class="hidden">
+        <main class="container mx-auto p-8 space-y-32 mt-20">
+            <section id="historySection" class="hidden">
                 <div class="flex justify-between items-center mb-10">
                     <h2 class="text-[12px] font-black uppercase text-green-500 tracking-[0.5em] border-l-4 border-green-500 pl-6">Continue Watching</h2>
                 </div>
-                <div id="continueGrid" class="flex gap-8 overflow-x-auto no-scrollbar pb-6"></div>
+                <div id="historyGrid" class="flex gap-8 overflow-x-auto no-scrollbar pb-6"></div>
             </section>
 
             <section>
-                <h2 class="text-[12px] font-black uppercase text-orange-500 tracking-[0.5em] mb-10 border-l-4 border-orange-500 pl-6">Trending Worldwide</h2>
+                <h2 class="text-[12px] font-black uppercase text-orange-500 tracking-[0.5em] mb-10 border-l-4 border-orange-500 pl-6">Trending Now</h2>
                 <div id="trendingGrid" class="flex gap-8 overflow-x-auto no-scrollbar pb-6"></div>
             </section>
 
             <section>
-                <h2 class="text-[12px] font-black uppercase text-blue-500 tracking-[0.5em] mb-10 border-l-4 border-blue-500 pl-6">Top Rated Classics</h2>
-                <div id="topGrid" class="flex gap-8 overflow-x-auto no-scrollbar pb-6"></div>
+                <h2 class="text-[12px] font-black uppercase text-blue-500 tracking-[0.5em] mb-10 border-l-4 border-blue-500 pl-6">All Time Popular</h2>
+                <div id="popularGrid" class="flex gap-8 overflow-x-auto no-scrollbar pb-6"></div>
             </section>
         </main>
     </div>
 
-    <div id="page-filter" class="page-view container mx-auto p-8 pt-80">
-        <div class="mb-16 border-l-8 border-red-600 pl-8">
-            <h2 id="filterTitle" class="text-4xl font-black uppercase text-white tracking-tighter">Browse Library</h2>
-            <p class="text-gray-500 text-[11px] uppercase font-bold tracking-[0.4em] mt-3">Refined results from database</p>
+    <div id="view-filter" class="page-content container mx-auto p-10 pt-80">
+        <div class="mb-20 border-l-8 border-red-600 pl-10">
+            <h2 id="filterHeadline" class="text-5xl font-black uppercase text-white tracking-tighter">Library</h2>
+            <p class="text-gray-500 text-[12px] uppercase font-bold tracking-[0.5em] mt-4">Database filtered results</p>
         </div>
-        <div id="filterGrid" class="grid-full"></div>
+        <div id="filterGrid" class="grid-responsive"></div>
     </div>
 
-    <div id="playerView" class="fixed inset-0 z-[4000] bg-[#05070a] hidden overflow-y-auto">
-        <div class="glass p-6 sticky top-0 flex justify-between items-center z-50">
-            <button onclick="closePlayer()" class="w-14 h-14 rounded-2xl bg-gray-900 flex items-center justify-center border border-white/5 hover:border-red-600 transition-all shadow-xl">
+    <div id="playerOverlay" class="fixed inset-0 z-[4000] bg-[#05070a] hidden overflow-y-auto">
+        <div class="glass-nav p-6 sticky top-0 flex justify-between items-center z-[50]">
+            <button onclick="closeStream()" class="w-14 h-14 rounded-2xl bg-gray-900 flex items-center justify-center border border-white/5 hover:border-red-600 transition-all">
                 <i class="fa fa-chevron-left text-white"></i>
             </button>
-            <div id="playerTitle" class="text-[11px] font-black uppercase truncate max-w-[250px] text-gray-400 tracking-[0.2em]"></div>
+            <div id="playerMetaTitle" class="text-[11px] font-black uppercase truncate max-w-[300px] text-gray-400 tracking-[0.2em]"></div>
             <div class="flex gap-4">
-                <button onclick="setMode('sub')" id="subBtn" class="px-8 py-3 text-[10px] font-black rounded-xl bg-red-600 transition-all shadow-lg shadow-red-900/40">SUB</button>
-                <button onclick="setMode('dub')" id="dubBtn" class="px-8 py-3 text-[10px] font-black rounded-xl bg-gray-800 transition-all">DUB</button>
+                <button id="modeSub" onclick="setPlayMode('sub')" class="px-8 py-3 text-[10px] font-black rounded-xl bg-red-600 shadow-xl shadow-red-900/40">SUB</button>
+                <button id="modeDub" onclick="setPlayMode('dub')" class="px-8 py-3 text-[10px] font-black rounded-xl bg-gray-800">DUB</button>
             </div>
         </div>
 
-        <div id="videoContainer">
-            <video id="player" playsinline controls class="w-full h-full"></video>
+        <div id="playerFrame" class="w-full aspect-video bg-black relative shadow-2xl">
+            <video id="mainVideo" playsinline controls class="w-full h-full"></video>
         </div>
 
-        <div class="p-10 container mx-auto grid grid-cols-1 lg:grid-cols-3 gap-16">
+        <div class="p-12 container mx-auto grid grid-cols-1 lg:grid-cols-3 gap-20">
             <div class="lg:col-span-2">
-                <h2 class="text-[12px] font-black uppercase text-gray-500 tracking-[0.4em] mb-8 border-b border-white/5 pb-4">Select Episode</h2>
-                <div id="epList" class="flex gap-5 overflow-x-auto no-scrollbar mb-16 py-4"></div>
+                <h2 class="text-[12px] font-black uppercase text-gray-500 tracking-[0.5em] mb-10 border-b border-white/5 pb-5">Episodes</h2>
+                <div id="episodeList" class="flex gap-5 overflow-x-auto no-scrollbar mb-20 py-4"></div>
                 
-                <h2 class="text-[12px] font-black uppercase text-gray-500 tracking-[0.4em] mb-8 border-b border-white/5 pb-4">Stream Quality</h2>
-                <div id="serverList" class="flex gap-4 overflow-x-auto no-scrollbar"></div>
+                <h2 class="text-[12px] font-black uppercase text-gray-500 tracking-[0.5em] mb-10 border-b border-white/5 pb-5">Stream Sources</h2>
+                <div id="serverContainer" class="flex gap-4 overflow-x-auto no-scrollbar"></div>
             </div>
             
             <div class="lg:col-span-1">
-                <div class="bg-white/5 border border-white/5 rounded-[40px] p-10 shadow-2xl">
-                    <h4 class="text-white font-black text-[12px] uppercase mb-8 border-b border-white/10 pb-4 tracking-[0.2em]">Anime Info</h4>
-                    <div id="animeDetails" class="text-gray-400 text-[11px] space-y-4 uppercase font-black tracking-tight mb-10"></div>
+                <div class="bg-white/5 border border-white/5 rounded-[45px] p-12 shadow-inner">
+                    <h4 class="text-white font-black text-[13px] uppercase mb-10 border-b border-white/10 pb-5 tracking-[0.3em]">Quick Stats</h4>
+                    <div id="animeStats" class="text-gray-400 text-[11px] space-y-5 uppercase font-black tracking-tight mb-12"></div>
                     
-                    <h4 class="text-white font-black text-[12px] uppercase mb-8 border-b border-white/10 pb-4 tracking-[0.2em]">Main Characters</h4>
-                    <div id="charGrid" class="grid grid-cols-4 gap-5"></div>
+                    <h4 class="text-white font-black text-[13px] uppercase mb-10 border-b border-white/10 pb-5 tracking-[0.3em]">Leading Roles</h4>
+                    <div id="castGrid" class="cast-scroll"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        const API = 'https://graphql.anilist.co';
-        const STREAM_API = 'https://api.consumet.org/anime/gogoanime';
+        const API_URL = 'https://graphql.anilist.co';
+        const STREAM_BASE = 'https://api.consumet.org/anime/gogoanime';
         
-        let playMode = 'sub', 
-            currentAnime = null, 
-            currentEp = 1, 
-            plyrInstance, 
-            hlsInstance, 
-            lastTap = 0, 
-            deferredPrompt;
+        let player, hls, searchDebounce, pwaPrompt;
+        let activeAnime = null, activeEp = 1, currentPlayMode = 'sub', doubleTapTimer = 0;
 
-        // --- 1. INITIALIZATION ---
+        // --- 1. CORE ENGINE STARTUP ---
         window.onload = () => {
-            // Setup Plyr
-            plyrInstance = new Plyr('#player', { 
+            player = new Plyr('#mainVideo', { 
                 controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'fullscreen'],
+                keyboard: { focused: true, global: true },
                 tooltips: { controls: true, seek: true }
             });
-            
-            // Double Tap to Seek Logic
-            const vContainer = document.getElementById('videoContainer');
-            vContainer.addEventListener('touchend', (e) => {
+
+            // Double Tap Seek Handler
+            const frame = document.getElementById('playerFrame');
+            frame.addEventListener('touchend', (e) => {
                 const now = Date.now();
-                if (now - lastTap < 300) {
-                    const rect = vContainer.getBoundingClientRect();
-                    const x = e.changedTouches[0].clientX - rect.left;
-                    if (x > rect.width / 2) {
-                        plyrInstance.forward(10);
-                        showSeekToast('+10s');
+                if (now - doubleTapTimer < 300) {
+                    const rect = frame.getBoundingClientRect();
+                    const touchX = e.changedTouches[0].clientX - rect.left;
+                    if (touchX > rect.width / 2) {
+                        player.forward(10);
+                        createToast('+10s');
                     } else {
-                        plyrInstance.rewind(10);
-                        showSeekToast('-10s');
+                        player.rewind(10);
+                        createToast('-10s');
                     }
                 }
-                lastTap = now;
+                doubleTapTimer = now;
             });
 
-            // Initialize App Modules
-            initFilterButtons();
-            loadHomeData();
-            checkHistorySync();
-            
-            // Auto-Save Interval (Every 5 Seconds)
+            // Lifecycle Intervals
             setInterval(() => {
-                if(plyrInstance && !plyrInstance.paused && currentAnime) {
-                    saveUserProgress(currentAnime.id, currentEp, plyrInstance.currentTime);
+                if(player && !player.paused && activeAnime) {
+                    updateUserHistory(activeAnime.id, activeEp, player.currentTime);
                 }
-            }, 5000);
+            }, 8000);
 
-            // PWA Listener
+            // App Listeners
+            initAppTabs();
+            fetchHomeData();
+            processSyncRequest();
+            
             window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault();
-                deferredPrompt = e;
-                document.getElementById('installBtn').classList.remove('hidden');
+                e.preventDefault(); pwaPrompt = e;
+                document.getElementById('pwaBtn').classList.remove('hidden');
             });
         };
 
-        // --- 2. PROGRESS & HISTORY LOGIC ---
-        function saveUserProgress(id, ep, time) {
-            let history = JSON.parse(localStorage.getItem('ymls_v60_hist')) || [];
-            let index = history.findIndex(item => item.id === id);
+        // --- 2. DATABASE & SYNC LOGIC ---
+        function updateUserHistory(id, ep, time) {
+            let db = JSON.parse(localStorage.getItem('ymls_v60_storage')) || [];
+            let pos = db.findIndex(x => x.id === id);
             
-            const data = { 
-                ...currentAnime, 
+            const payload = { 
+                ...activeAnime, 
                 lastEp: ep, 
                 lastTime: time, 
-                totalEps: currentAnime.episodes,
-                updatedAt: Date.now() 
+                episodeCount: activeAnime.episodes,
+                savedAt: Date.now() 
             };
 
-            if(index !== -1) {
-                history[index] = data;
-            } else {
-                history.unshift(data);
-            }
+            if(pos !== -1) db[pos] = payload;
+            else db.unshift(payload);
             
-            // Keep history limited to 20 items
-            if(history.length > 20) history.pop();
-            localStorage.setItem('ymls_v60_hist', JSON.stringify(history));
+            if(db.length > 30) db.pop();
+            localStorage.setItem('ymls_v60_storage', JSON.stringify(db));
         }
 
-        async function checkHistorySync() {
-            let history = JSON.parse(localStorage.getItem('ymls_v60_hist')) || [];
-            if(history.length === 0) return;
+        async function processSyncRequest() {
+            let db = JSON.parse(localStorage.getItem('ymls_v60_storage')) || [];
+            if(!db.length) return;
 
-            const ids = history.map(h => h.id);
-            const query = `query($ids: [Int]){ Page { media(id_in: $ids) { id episodes nextAiringEpisode { episode } } } }`;
+            const ids = db.map(i => i.id);
+            const query = `query($ids: [Int]){ Page { media(id_in: $ids) { id episodes status nextAiringEpisode { episode } } } }`;
             
             try {
-                const res = await fetch(API, {
+                const res = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ query, variables: { ids } })
                 }).then(r => r.json());
 
-                let hasUpdate = false;
-                res.data.Page.media.forEach(apiItem => {
-                    let local = history.find(h => h.id === apiItem.id);
-                    if(local && apiItem.episodes > (local.totalEps || 0)) {
-                        local.hasNew = true;
-                        local.totalEps = apiItem.episodes;
-                        hasUpdate = true;
+                let refreshed = false;
+                res.data.Page.media.forEach(apiData => {
+                    let localItem = db.find(l => l.id === apiData.id);
+                    if(localItem && apiData.episodes > (localItem.episodeCount || 0)) {
+                        localItem.hasUpdate = true;
+                        localItem.episodeCount = apiData.episodes;
+                        refreshed = true;
                     }
                 });
 
-                if(hasUpdate) localStorage.setItem('ymls_v60_hist', JSON.stringify(history));
+                if(refreshed) localStorage.setItem('ymls_v60_storage', JSON.stringify(db));
                 
-                renderGrid(history, 'continueGrid');
-                document.getElementById('continueSection').classList.remove('hidden');
-            } catch(e) { console.error("Sync Error:", e); }
+                renderMediaGrid(db, 'historyGrid');
+                document.getElementById('historySection').classList.remove('hidden');
+            } catch(err) { console.error("Sync Failure:", err); }
         }
 
         // --- 3. DATA FETCHING ---
-        async function loadHomeData() {
+        async function fetchHomeData() {
             const query = `
             query {
-                trending: Page(perPage: 12) { media(type: ANIME, sort: TRENDING_DESC) { id title { english romaji } coverImage { large } bannerImage episodes description genres averageScore } }
-                top: Page(perPage: 12) { media(type: ANIME, sort: SCORE_DESC) { id title { english romaji } coverImage { large } episodes } }
+                trending: Page(perPage: 15) { media(type: ANIME, sort: TRENDING_DESC) { id title { english romaji } coverImage { large } bannerImage episodes description averageScore genres } }
+                popular: Page(perPage: 15) { media(type: ANIME, sort: POPULARITY_DESC) { id title { english romaji } coverImage { large } episodes } }
             }`;
             
-            try {
-                const r = await fetch(API, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ query }) 
-                }).then(res => res.json());
+            const res = await fetch(API_URL, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ query }) 
+            }).then(r => r.json());
 
-                if(r.data) {
-                    renderGrid(r.data.trending.media, 'trendingGrid');
-                    renderGrid(r.data.top.media, 'topGrid');
-                    setupHero(r.data.trending.media[0]);
-                }
-            } catch(e) { console.error("Home Load Error:", e); }
+            if(res.data) {
+                renderMediaGrid(res.data.trending.media, 'trendingGrid');
+                renderMediaGrid(res.data.popular.media, 'popularGrid');
+                injectHero(res.data.trending.media[0]);
+            }
         }
 
-        async function fetchCastInfo(animeId) {
+        async function fetchDeepMeta(id) {
             const query = `
             query($id: Int) {
                 Media(id: $id) {
                     status
                     season
                     seasonYear
+                    format
                     averageScore
-                    characters(perPage: 8, role: MAIN) {
+                    studios(isMain: true) { nodes { name } }
+                    characters(perPage: 10, role: MAIN) {
                         edges {
                             node { name { full } image { large } }
                             voiceActors(language: JAPANESE) { name { full } }
@@ -353,220 +435,215 @@
                 }
             }`;
             
-            const r = await fetch(API, {
+            const res = await fetch(API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query, variables: { id: animeId } })
-            }).then(res => res.json());
+                body: JSON.stringify({ query, variables: { id } })
+            }).then(r => r.json());
 
-            const m = r.data.Media;
-            document.getElementById('animeDetails').innerHTML = `
+            const m = res.data.Media;
+            document.getElementById('animeStats').innerHTML = `
+                <div class="flex justify-between"><span>Format</span><span class="text-white">${m.format}</span></div>
+                <div class="flex justify-between"><span>Studio</span><span class="text-white">${m.studios.nodes[0]?.name || 'Unknown'}</span></div>
+                <div class="flex justify-between"><span>Global Rating</span><span class="text-white">${m.averageScore}%</span></div>
                 <div class="flex justify-between"><span>Status</span><span class="text-white">${m.status}</span></div>
-                <div class="flex justify-between"><span>Season</span><span class="text-white">${m.season} ${m.seasonYear}</span></div>
-                <div class="flex justify-between"><span>Global Score</span><span class="text-white">${m.averageScore}%</span></div>
             `;
             
-            document.getElementById('charGrid').innerHTML = m.characters.edges.map(e => `
-                <img src="${e.node.image.large}" class="char-img" title="${e.node.name.full} (VA: ${e.voiceActors[0]?.name.full || 'N/A'})">
+            document.getElementById('castGrid').innerHTML = m.characters.edges.map(e => `
+                <div class="character-node">
+                    <img src="${e.node.image.large}" class="character-img">
+                    <p class="text-[8px] font-black text-gray-500 truncate uppercase tracking-tighter">${e.node.name.full}</p>
+                </div>
             `).join('');
         }
 
         // --- 4. RENDER ENGINE ---
-        function renderGrid(list, targetId, isVertical = false) {
-            const container = document.getElementById(targetId);
-            if(!container) return;
+        function renderMediaGrid(items, target, fullWidth = false) {
+            const el = document.getElementById(target);
+            if(!el) return;
 
-            container.innerHTML = list.map(anime => `
-                <div class="anime-card ${isVertical ? 'w-full' : ''}" onclick='showAnimeChoice(${JSON.stringify(anime).replace(/'/g, "&apos;")})'>
-                    <div class="ep-badge">${anime.episodes || '?'} EP</div>
-                    ${anime.hasNew ? '<div class="sync-dot"></div>' : ''}
-                    <img src="${anime.coverImage.large}" class="card-img" loading="lazy">
-                    <div class="p-4 truncate text-[10px] font-black uppercase text-gray-400 tracking-wider">
-                        ${anime.title.english || anime.title.romaji}
+            el.innerHTML = items.map(item => `
+                <div class="anime-card ${fullWidth ? 'w-full' : ''}" onclick='triggerAnimeChoice(${JSON.stringify(item).replace(/'/g, "&apos;")})'>
+                    <div class="ep-tag">${item.episodes || '?'} EP</div>
+                    ${item.hasUpdate ? '<div class="sync-indicator"></div>' : ''}
+                    <div class="card-image-wrapper">
+                        <img src="${item.coverImage.large}" class="card-img" loading="lazy">
+                    </div>
+                    <div class="p-4 truncate text-[10px] font-black uppercase text-gray-400 tracking-widest">
+                        ${item.title.english || item.title.romaji}
                     </div>
                 </div>
             `).join('');
         }
 
-        function setupHero(anime) {
-            const hero = document.getElementById('hero');
-            hero.style.backgroundImage = `url(${anime.bannerImage || anime.coverImage.large})`;
-            document.getElementById('heroTitle').innerText = anime.title.english || anime.title.romaji;
-            document.getElementById('heroDesc').innerHTML = anime.description;
-            document.getElementById('heroMeta').innerHTML = `
-                <span>${anime.averageScore}% SCORE</span>
+        function injectHero(a) {
+            document.getElementById('heroSection').style.backgroundImage = `url(${a.bannerImage || a.coverImage.large})`;
+            document.getElementById('heroTitle').innerText = a.title.english || a.title.romaji;
+            document.getElementById('heroDescription').innerHTML = a.description;
+            document.getElementById('heroDetails').innerHTML = `
+                <span>Score: ${a.averageScore}%</span>
                 <span>•</span>
-                <span>${anime.genres[0]}</span>
+                <span>${a.genres[0]}</span>
                 <span>•</span>
-                <span>${anime.episodes || '??'} EPISODES</span>
+                <span>${a.episodes || '??'} EPs</span>
             `;
-            document.getElementById('heroPlayBtn').onclick = () => launchPlayer(anime);
+            document.getElementById('heroAction').onclick = () => launchStream(a);
         }
 
-        // --- 5. PLAYER ENGINE ---
-        async function launchPlayer(anime, episode = 1) {
-            if(anime) currentAnime = anime;
-            currentEp = episode;
+        // --- 5. STREAMING ENGINE ---
+        async function launchStream(anime, episode = 1) {
+            if(anime) activeAnime = anime;
+            activeEp = episode;
             
-            // UI Transition
-            document.getElementById('playerView').classList.remove('hidden');
-            document.getElementById('playerTitle').innerText = `${currentAnime.title.english || currentAnime.title.romaji} — EPISODE ${episode}`;
+            document.getElementById('playerOverlay').style.display = 'block';
+            document.getElementById('playerMetaTitle').innerText = `${activeAnime.title.english || activeAnime.title.romaji} - EP ${episode}`;
             window.scrollTo(0,0);
 
             try {
-                // Clean title for Consumet
-                const cleanTitle = (currentAnime.title.romaji || currentAnime.title.english).replace(/[^a-zA-Z0-9 ]/g, '');
-                const searchRes = await fetch(`${STREAM_API}/${cleanTitle}`).then(r => r.json());
+                const queryTitle = (activeAnime.title.romaji || activeAnime.title.english).replace(/[^a-zA-Z0-9 ]/g, '');
+                const list = await fetch(`${STREAM_BASE}/${queryTitle}`).then(r => r.json());
                 
-                // Mode Selection (Sub vs Dub)
-                const target = searchRes.results.find(r => playMode === 'dub' ? r.id.includes('-dub') : !r.id.includes('-dub')) || searchRes.results[0];
+                const entry = list.results.find(r => currentPlayMode === 'dub' ? r.id.includes('-dub') : !r.id.includes('-dub')) || list.results[0];
+                const streamData = await fetch(`${STREAM_BASE}/watch/${entry.id}-episode-${episode}`).then(r => r.json());
                 
-                const episodeData = await fetch(`${STREAM_API}/watch/${target.id}-episode-${episode}`).then(r => r.json());
+                setupVideoSource(streamData.sources[0].url);
                 
-                initializeHlsStream(episodeData.sources[0].url);
-                
-                // Render Qualities
-                document.getElementById('serverList').innerHTML = episodeData.sources.map(s => `
-                    <button onclick="initializeHlsStream('${s.url}')" class="px-6 py-4 bg-gray-900 border border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:border-red-600 transition-all">${s.quality}</button>
+                document.getElementById('serverContainer').innerHTML = streamData.sources.map(s => `
+                    <button onclick="setupVideoSource('${s.url}')" class="px-8 py-4 bg-gray-900 border border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:border-red-600 transition-all shadow-lg">${s.quality}</button>
                 `).join('');
                 
-                generateEpisodeList(currentAnime.episodes || 12);
-                fetchCastInfo(currentAnime.id);
+                buildEpisodeGrid(activeAnime.episodes || 12);
+                fetchDeepMeta(activeAnime.id);
 
-            } catch (err) {
-                console.error("Stream Launch Error:", err);
-                alert("Failed to load stream. Try switching Sub/Dub mode.");
+            } catch (e) {
+                console.error("Stream Error:", e);
+                alert("Stream unavailable. Try changing Sub/Dub.");
             }
         }
 
-        function initializeHlsStream(url) {
-            if (hlsInstance) hlsInstance.destroy();
-            const videoElement = document.getElementById('player');
+        function setupVideoSource(m3u8) {
+            if (hls) hls.destroy();
+            const vid = document.getElementById('mainVideo');
             
             if (Hls.isSupported()) {
-                hlsInstance = new Hls({
-                    maxBufferSize: 40 * 1000 * 1000, // 40MB
-                    maxBufferLength: 35,
-                    enableWorker: true
+                hls = new Hls({ 
+                    maxBufferSize: 40000000, 
+                    maxBufferLength: 40,
+                    enableWorker: true,
+                    lowLatencyMode: true
                 });
-                hlsInstance.loadSource(url);
-                hlsInstance.attachMedia(videoElement);
-                hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
-                    // Check for Resume Time
-                    const history = JSON.parse(localStorage.getItem('ymls_v60_hist')) || [];
-                    const savedItem = history.find(h => h.id === currentAnime.id);
-                    if(savedItem && savedItem.lastEp === currentEp) {
-                        videoElement.currentTime = savedItem.lastTime;
-                    }
-                    plyrInstance.play();
+                hls.loadSource(m3u8);
+                hls.attachMedia(vid);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    const db = JSON.parse(localStorage.getItem('ymls_v60_storage')) || [];
+                    const found = db.find(x => x.id === activeAnime.id);
+                    if(found && found.lastEp === activeEp) vid.currentTime = found.lastTime;
+                    player.play();
                 });
             } else {
-                videoElement.src = url;
-                videoElement.play();
+                vid.src = m3u8;
+                vid.play();
             }
         }
 
-        // --- 6. NAVIGATION & SEARCH ---
-        function showPage(pageId) {
-            document.querySelectorAll('.page-view').forEach(view => view.classList.remove('active-view'));
-            document.getElementById(`page-${pageId}`).classList.add('active-view');
-            if(pageId === 'home') document.getElementById('searchBar').value = '';
+        // --- 6. NAVIGATION & SEARCH ENGINE ---
+        function navigateTo(pId) {
+            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+            document.getElementById(`view-${pId}`).classList.add('active');
+            if(pId === 'home') document.getElementById('searchInput').value = '';
             window.scrollTo(0,0);
         }
 
-        function toggleDropdown(id) {
-            document.getElementById(id).classList.toggle('show');
+        function toggleMenu(mId) {
+            document.getElementById(mId).classList.toggle('active');
         }
 
-        function switchTab(type) {
-            const isGen = type === 'genres';
-            document.getElementById('genreList').classList.toggle('hidden', !isGen);
-            document.getElementById('yearList').classList.toggle('hidden', isGen);
-            document.getElementById('tabGen').classList.toggle('active', isGen);
-            document.getElementById('tabYear').classList.toggle('active', !isGen);
+        function showTab(type) {
+            const isCat = type === 'categories';
+            document.getElementById('genreContainer').classList.toggle('hidden', !isCat);
+            document.getElementById('seasonContainer').classList.toggle('hidden', isCat);
+            document.getElementById('tabCategories').classList.toggle('active', isCat);
+            document.getElementById('tabSeasons').classList.toggle('active', !isCat);
         }
 
-        async function handleSearch(query) {
-            if(query.length < 3) return;
-            showPage('filter');
-            document.getElementById('filterTitle').innerText = `Search: ${query}`;
-            
-            const gql = `query($s:String){Page(perPage:30){media(search:$s,type:ANIME,sort:POPULARITY_DESC){id title{english romaji} coverImage{large} episodes}}}`;
-            const r = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query:gql, variables:{s:query}})}).then(res=>res.json());
-            renderGrid(r.data.Page.media, 'filterGrid', true);
+        function triggerSearch(val) {
+            clearTimeout(searchDebounce);
+            if(val.length < 3) return;
+            searchDebounce = setTimeout(async () => {
+                navigateTo('filter');
+                document.getElementById('filterHeadline').innerText = `Search: ${val}`;
+                const query = `query($s:String){Page(perPage:32){media(search:$s,type:ANIME,sort:POPULARITY_DESC){id title{english romaji} coverImage{large} episodes}}}`;
+                const res = await fetch(API_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query, variables:{s:val}})}).then(r=>r.json());
+                renderMediaGrid(res.data.Page.media, 'filterGrid', true);
+            }, 700);
         }
 
-        function initFilterButtons() {
-            const gList = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Sports", "Supernatural", "Thriller"];
-            document.getElementById('genreList').innerHTML = gList.map(g => `
-                <button onclick="fetchFilteredData('${g}', null)" class="bg-white/5 p-5 rounded-2xl text-[10px] font-black uppercase hover:bg-red-600 transition-all">${g}</button>
+        function initAppTabs() {
+            const genres = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Sports", "Supernatural", "Thriller"];
+            document.getElementById('genreContainer').innerHTML = genres.map(g => `
+                <button onclick="applyDbFilter('${g}', null)" class="bg-white/5 p-5 rounded-2xl text-[10px] font-black uppercase hover:bg-red-600 transition-all">${g}</button>
             `).join('');
 
-            let yList = '';
+            let seasons = '';
             for(let i=2026; i>=2016; i--) {
-                yList += `<button onclick="fetchFilteredData(null, ${i})" class="bg-white/5 p-5 rounded-2xl text-[10px] font-black uppercase hover:bg-red-600 transition-all">${i}</button>`;
+                seasons += `<button onclick="applyDbFilter(null, ${i})" class="bg-white/5 p-5 rounded-2xl text-[10px] font-black uppercase hover:bg-red-600 transition-all">${i}</button>`;
             }
-            document.getElementById('yearList').innerHTML = yList;
+            document.getElementById('seasonContainer').innerHTML = seasons;
         }
 
-        async function fetchFilteredData(genre, year) {
-            showPage('filter');
-            document.getElementById('filterTitle').innerText = genre || `Year: ${year}`;
-            toggleDropdown('genreDrop');
+        async function applyDbFilter(genre, year) {
+            navigateTo('filter');
+            toggleMenu('filterDropdown');
+            document.getElementById('filterHeadline').innerText = genre || `Year: ${year}`;
             
-            const gql = `query($g:String, $y:Int){Page(perPage:40){media(genre:$g, seasonYear:$y, type:ANIME, sort:POPULARITY_DESC){id title{english romaji} coverImage{large} episodes}}}`;
-            const r = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query:gql, variables:{g:genre, y:year}})}).then(res=>res.json());
-            renderGrid(r.data.Page.media, 'filterGrid', true);
+            const query = `query($g:String, $y:Int){Page(perPage:40){media(genre:$g, seasonYear:$y, type:ANIME, sort:POPULARITY_DESC){id title{english romaji} coverImage{large} episodes}}}`;
+            const res = await fetch(API_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query, variables:{g:genre, y:year}})}).then(r=>r.json());
+            renderMediaGrid(res.data.Page.media, 'filterGrid', true);
         }
 
-        // --- 7. HELPER FUNCTIONS ---
-        function generateEpisodeList(count) {
+        // --- 7. UTILS ---
+        function buildEpisodeGrid(total) {
             let html = '';
-            for(let i=1; i<=count; i++) {
+            for(let i=1; i<=total; i++) {
                 html += `
-                <button onclick="launchPlayer(null, ${i})" class="w-16 h-16 flex-shrink-0 rounded-2xl bg-gray-900 border ${currentEp===i?'border-red-600 text-red-600 shadow-lg shadow-red-900/20':'border-white/5'} font-black text-sm transition-all hover:scale-110">
+                <button onclick="launchStream(null, ${i})" class="w-16 h-16 flex-shrink-0 rounded-2xl bg-gray-900 border ${activeEp===i?'border-red-600 text-red-600 shadow-xl':'border-white/5'} font-black text-[12px] transition-all hover:scale-110">
                     ${i}
                 </button>`;
             }
-            document.getElementById('epList').innerHTML = html;
+            document.getElementById('episodeList').innerHTML = html;
         }
 
-        function showAnimeChoice(anime) {
-            document.getElementById('choiceOverlay').style.display = 'flex';
-            document.getElementById('choiceImg').src = anime.coverImage.large;
-            document.getElementById('choiceTitle').innerText = anime.title.english || anime.title.romaji;
-            document.getElementById('choicePlay').onclick = () => {
-                document.getElementById('choiceOverlay').style.display = 'none';
-                launchPlayer(anime, anime.lastEp || 1);
-            };
+        function triggerAnimeChoice(anime) {
+            // Simplified for v60 - directly launch
+            launchStream(anime, anime.lastEp || 1);
         }
 
-        function setMode(m) {
-            playMode = m;
-            document.getElementById('subBtn').className = m === 'sub' ? 'px-8 py-3 text-[10px] font-black rounded-xl bg-red-600 shadow-lg' : 'px-8 py-3 text-[10px] font-black rounded-xl bg-gray-800';
-            document.getElementById('dubBtn').className = m === 'dub' ? 'px-8 py-3 text-[10px] font-black rounded-xl bg-red-600 shadow-lg' : 'px-8 py-3 text-[10px] font-black rounded-xl bg-gray-800';
-            if(currentAnime) launchPlayer(currentAnime, currentEp);
+        function setPlayMode(m) {
+            currentPlayMode = m;
+            document.getElementById('modeSub').className = m === 'sub' ? 'px-8 py-3 text-[10px] font-black rounded-xl bg-red-600' : 'px-8 py-3 text-[10px] font-black rounded-xl bg-gray-800';
+            document.getElementById('modeDub').className = m === 'dub' ? 'px-8 py-3 text-[10px] font-black rounded-xl bg-red-600' : 'px-8 py-3 text-[10px] font-black rounded-xl bg-gray-800';
+            if(activeAnime) launchStream(activeAnime, activeEp);
         }
 
-        function closePlayer() {
-            document.getElementById('playerView').classList.add('hidden');
-            plyrInstance.pause();
-            if(hlsInstance) hlsInstance.destroy();
+        function closeStream() {
+            document.getElementById('playerOverlay').style.display = 'none';
+            player.pause();
+            if(hls) hls.destroy();
         }
 
-        function triggerInstall() {
-            if(deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+        function initPWA() {
+            if(pwaPrompt) {
+                pwaPrompt.prompt();
+                pwaPrompt.userChoice.then(() => { pwaPrompt = null; });
             }
         }
 
-        function showSeekToast(text) {
+        function createToast(txt) {
             const t = document.createElement('div');
-            t.className = "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-red-600 text-white px-6 py-3 rounded-full font-black text-xs z-[6000] animate-ping";
-            t.innerText = text;
+            t.className = "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-red-600 text-white px-8 py-4 rounded-3xl font-black text-xs z-[6000] shadow-2xl pointer-events-none uppercase tracking-widest";
+            t.innerText = txt;
             document.body.appendChild(t);
-            setTimeout(() => t.remove(), 500);
+            setTimeout(() => t.remove(), 600);
         }
     </script>
 </body>
