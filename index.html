@@ -630,8 +630,36 @@ function switchTab(type) {
     document.getElementById('tabYear').style.borderColor = !isGen ? '#ef4444' : 'transparent';
 }
 
+// 1. Generate the Year and Genre Buttons on Load
+function initFilters() {
+    const genres = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Thriller"];
+    document.getElementById('genreList').innerHTML = genres.map(g => 
+        `<button onclick="fetchByFilter('${g}', null)" class="bg-white/5 p-4 rounded-xl text-[10px] font-black uppercase hover:bg-red-600 transition-all">${g}</button>`
+    ).join('');
+
+    let yearHtml = '';
+    for(let i = 2026; i >= 2016; i--) {
+        yearHtml += `<button onclick="fetchByFilter(null, ${i})" class="bg-white/5 p-4 rounded-xl text-[10px] font-black uppercase hover:bg-red-600 transition-all">${i}</button>`;
+    }
+    document.getElementById('yearList').innerHTML = yearHtml;
+}
+
+// 2. Tab Switching (Categories vs Years)
+function switchTab(type) {
+    const isGen = type === 'genres';
+    document.getElementById('genreList').classList.toggle('hidden', !isGen);
+    document.getElementById('yearList').classList.toggle('hidden', isGen);
+    
+    // UI Visuals for tabs
+    document.getElementById('tabGen').classList.toggle('text-white', isGen);
+    document.getElementById('tabGen').style.borderColor = isGen ? '#ef4444' : 'transparent';
+    document.getElementById('tabYear').classList.toggle('text-white', !isGen);
+    document.getElementById('tabYear').style.borderColor = !isGen ? '#ef4444' : 'transparent';
+}
+
+// 3. The Core Filter Fetch (v60 Version)
 async function fetchByFilter(genre, year) {
-    showPage('filter'); 
+    showPage('filter'); // Ensure you have a 'page-filter' div in v60
     document.getElementById('filterTitle').innerText = genre || `Year: ${year}`;
     
     const query = `
@@ -652,8 +680,12 @@ async function fetchByFilter(genre, year) {
         body: JSON.stringify({ query, variables: { g: genre, y: year } })
     }).then(res => res.json());
 
+    // Uses your existing v60 render function
     render(response.data.Page.media, 'filterGrid', true); 
     toggleDropdown('genreDrop'); 
+}
+
+// Don't forget to call initFilters() in your window.onload!
 }
 
         }
