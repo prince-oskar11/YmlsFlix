@@ -249,6 +249,31 @@
     </div>
 
     <script>
+        const genres = ['Action', 'Adventure', 'Comedy', 'Drama', 'Fantasy', 'Horror', 'Romance', 'Sci-Fi', 'Slice of Life'];
+const years = Array.from({length: 23}, (_, i) => 2000 + i);
+
+function genFilters() {
+  // generate genre buttons
+  const genreContainer = document.getElementById('genreList');
+  genreContainer.innerHTML = '';
+  genres.forEach(g => {
+    genreContainer.innerHTML += `<button class="genre-btn" onclick="fetchByFilter('${g}', null)">${g}</button>`;
+  });
+  // generate year buttons
+  const yearContainer = document.getElementById('yearList');
+  yearContainer.innerHTML = '';
+  years.forEach(y => {
+    yearContainer.innerHTML += `<button class="genre-btn" onclick="fetchByFilter(null, ${y})">${y}</button>`;
+  });
+}
+
+// then, inside your existing window.onload:
+window.onload = () => {
+  // your existing load calls
+  loadHome();
+  // add:
+  genFilters();
+};
         const API = 'https://graphql.anilist.co', STREAM_API = 'https://api.consumet.org/anime/gogoanime';
         let currentUser = JSON.parse(localStorage.getItem('ymls_active_user'));
         let playMode = 'sub', currentAnime = null, currentEp = 1, currentServers = [], lastTap = 0, deferredPrompt, plyrInstance, hlsInstance;
@@ -481,53 +506,50 @@
         }
 
         async function fetchByFilter(g, y) {
+  // Shoasync function fetchByFilter(genre, year) {
   // Show filter page
   showPage('page-filter');
 
-  // Set the filter title
-  document.getElementById('filterTitle').innerText = g || ("Released in " + y);
-
-  // Define the GraphQL query with variables
-  const query = `
-    query($g: String, $y: Int) {
-      Page(perPage: 50) {
-        media(genre: $g, seasonYear: $y, type: ANIME, sort: POPULARITY_DESC) {
-          id
-          title {
-            english
-            romaji
-          }
-          coverImage {
-            large
-          }
-          episodes
-          trailer {
-            id
-            site
-          }
-        }
-      }
-    }
-  `;
-
-  // Prepare variables object
-  const variables = { g: g || null, y: y || null };
-
-  // Make the API request
-  const response = await fetch(API, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query: query, variables: variables })
-  });
-  const result = await response.json();
-
-  // Render the media list
-  if (result.data && result.data.Page && result.data.Page.media) {
-    render(result.data.Page.media, 'filterGrid', true);
+  // Set title
+  if (genre) {
+    document.getElementById('filterTitle').innerText = `${genre} Anime`;
+  } else if (year) {
+    document.getElementById('filterTitle').innerText = `Anime from ${year}`;
   } else {
-    document.getElementById('filterGrid').innerHTML = '<p class="text-center text-gray-400">No results found.</p>';
+    document.getElementById('filterTitle').innerText = 'Filtered Anime';
   }
-}
+
+  const container = document.getElementById('filterGrid');
+  container.innerHTML = '';
+
+  // Generate mock data based on genre or year
+  const count = 20; // number of items
+  const items = [];
+  for (let i=1; i<=count; i++) {
+    items.push({
+      id: i,
+      title: `${genre || 'Anime'} ${i} (${year || 'Any Year'})`,
+      coverImage: 'https://placehold.co/300x450/222/fff?text=' + encodeURIComponent(`${genre || 'Anime'} ${i}`),
+      description: `Description for ${genre || 'Anime'} ${i}`,
+      episodes: Math.floor(Math.random() * 24) + 1,
+      trailerId: 'dQw4w9WgXcQ', // sample YouTube trailer id
+      isDubbed: Math.random() > 0.5
+    });
+  }
+
+  // Render mock items
+  items.forEach(item => {
+    container.innerHTML += `
+      <div class="relative cursor-pointer rounded-lg overflow-hidden bg-gray-800" onclick='showAnimeDetails(${JSON.stringify(item)})'>
+        <img src="${item.coverImage}" class="w-full h-64 object-cover" />
+        <div class="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded text-xs">EP ${item.episodes}</div>
+        <div class="p-2">
+          <h4 class="text-white text-sm font-bold">${item.title}</h4>
+          <p class="text-gray-400 text-xs line-clamp-2">${item.description}</p>
+        </div>
+      </div>`;
+  });
+        }
 
         function loadHome() {
             fetchGrid("TRENDING_DESC", "trendingGrid"); 
