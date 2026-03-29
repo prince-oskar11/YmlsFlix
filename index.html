@@ -181,7 +181,11 @@
             <h2 class="text-[10px] font-black mb-3 uppercase text-gray-500 tracking-widest">Select Server</h2>
             <div id="serverList" class="flex gap-2 overflow-x-auto no-scrollbar mb-8"></div>
 
-            <button id="trailerBtn" class="bg-indigo-600 w-full py-4 rounded-xl font-black text-[11px] uppercase mb-8 shadow-lg">Watch Trailer</button>
+            <button id="trailerBtn" class="bg-indigo-600 w-full py-4 rounded-xl font-black text-[11px] uppercase mb-4 shadow-lg">Watch Trailer</button>
+            <div class="flex gap-2 mb-8">
+                <button id="downloadBtn" onclick="downloadEpisode()" class="bg-emerald-600 flex-1 py-4 rounded-xl font-black text-[11px] uppercase shadow-lg"><i class="fa fa-download mr-2"></i>Download</button>
+                <button id="nextBtn" onclick="nextEpisode()" class="bg-red-600 flex-1 py-4 rounded-xl font-black text-[11px] uppercase shadow-lg">Next Ep <i class="fa fa-chevron-right ml-2"></i></button>
+            </div>
             
             <h2 class="text-[11px] font-black mb-4 uppercase text-gray-500 tracking-widest">Episodes</h2>
             <div id="epList" class="flex gap-3 overflow-x-auto no-scrollbar mb-12 py-2"></div>
@@ -202,22 +206,9 @@
             plyrInstance = new Plyr('#player', {
                 controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'fullscreen']
             });
-
-            plyrInstance.on('ended', () => {
-                const total = currentAnime.episodes || 1;
-                if(currentEp < total) openPlayer(null, currentEp + 1);
-            });
-
-            // ROTATION CODE
-            plyrInstance.on('enterfullscreen', () => {
-                if (screen.orientation && screen.orientation.lock) {
-                    screen.orientation.lock('landscape').catch(e => console.log(e));
-                }
-            });
-            plyrInstance.on('exitfullscreen', () => {
-                if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
-            });
-
+            plyrInstance.on('ended', () => nextEpisode());
+            plyrInstance.on('enterfullscreen', () => { if (screen.orientation?.lock) screen.orientation.lock('landscape').catch(()=>{}); });
+            plyrInstance.on('exitfullscreen', () => { if (screen.orientation?.unlock) screen.orientation.unlock(); });
             setupUI(); fetchHero(); loadHome(); genFilters(); 
         };
 
@@ -230,19 +221,8 @@
         function triggerInstall() {
             if(!deferredPrompt) return;
             deferredPrompt.prompt();
-            deferredPrompt.userChoice.then(() => {
-                deferredPrompt = null;
-                document.getElementById('installBtn').classList.add('hidden');
-            });
+            deferredPrompt.userChoice.then(() => { deferredPrompt = null; document.getElementById('installBtn').classList.add('hidden'); });
         }
-
-        // DOUBLE-TAP SEEK
-        document.getElementById('player').addEventListener('dblclick', function(e) {
-            const rect = this.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            if (x < rect.width / 2) plyrInstance.rewind(10);
-            else plyrInstance.forward(10);
-        });
 
         function showPage(p) { 
             document.querySelectorAll('.page-view').forEach(v=>v.classList.remove('active-view')); 
@@ -269,7 +249,10 @@
 
         function updateActiveChip(format) {
             document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('cat-active'));
-            if(format) document.getElementById(`chip-${format}`).classList.add('cat-active');
+            if(format) {
+                const target = document.getElementById(`chip-${format}`);
+                if(target) target.classList.add('cat-active');
+            }
         }
 
         async function handleSearch(term) {
@@ -301,8 +284,16 @@
             if(a) currentAnime = a;
             currentEp = ep;
             document.getElementById('playerView').classList.remove('hidden');
-            document.getElementById('playerTitle').innerText = currentAnime.title.english || currentAnime.title.romaji;
+            document.getElementById('playerTitle').innerText = (currentAnime.title.english || currentAnime.title.romaji) + " - Ep " + ep;
             document.getElementById('playerLoader').classList.remove('hidden');
+
+            const tBtn = document.getElementById('trailerBtn');
+            if(currentAnime.trailer && currentAnime.trailer.site === 'youtube') {
+                tBtn.classList.remove('hidden');
+                tBtn.onclick = () => window.open(`https://www.youtube.com/watch?v=${currentAnime.trailer.id}`, '_blank');
+            } else {
+                tBtn.classList.add('hidden');
+            }
 
             try {
                 const queryTitle = (currentAnime.title.romaji || currentAnime.title.english).replace(/[^a-zA-Z0-9 ]/g, '');
@@ -313,9 +304,8 @@
                 
                 const infoRes = await fetch(`${STREAM_API}/info/${target.id}`);
                 const infoData = await infoRes.json();
-                
-                // Find episode by number
                 const episode = infoData.episodes.find(e => e.number == ep) || infoData.episodes[0];
+                
                 const linkRes = await fetch(`${STREAM_API}/watch/${episode.id}`);
                 const linkData = await linkRes.json();
                 
@@ -325,30 +315,21 @@
                         ${s.quality}
                     </button>
                 `).join('');
-
                 switchServer(0);
-
-                // Trailer logic
-                const tBtn = document.getElementById('trailerBtn');
-                if(currentAnime.trailer?.site === 'youtube') {
-                    tBtn.classList.remove('hidden');
-                    tBtn.onclick = () => window.open(`https://youtube.com/watch?v=${currentAnime.trailer.id}`, '_blank');
-                } else tBtn.classList.add('hidden');
-
             } catch (err) {
-                console.log(err);
+                console.error("Stream Error:", err);
                 document.getElementById('playerLoader').classList.add('hidden');
             }
             saveHistory(currentAnime); renderEpisodes(currentAnime); fetchRecommendations(currentAnime.id);
         }
 
         function switchServer(index) {
+            if(!currentServers[index]) return;
             const video = document.getElementById('player');
             const streamUrl = currentServers[index].url;
             document.getElementById('playerLoader').classList.remove('hidden');
-            
+            if (hlsInstance) hlsInstance.destroy();
             if (Hls.isSupported()) {
-                if (hlsInstance) hlsInstance.destroy();
                 hlsInstance = new Hls();
                 hlsInstance.loadSource(streamUrl);
                 hlsInstance.attachMedia(video);
@@ -358,11 +339,20 @@
                 });
             } else {
                 video.src = streamUrl;
-                video.addEventListener('loadedmetadata', () => {
-                    document.getElementById('playerLoader').classList.add('hidden');
-                    plyrInstance.play();
-                });
+                video.onloadedmetadata = () => { document.getElementById('playerLoader').classList.add('hidden'); plyrInstance.play(); };
             }
+        }
+
+        function downloadEpisode() {
+            if(!currentServers.length) return alert("No download links available");
+            const bestQuality = currentServers.find(s => s.quality === '1080p') || currentServers.find(s => s.quality === '720p') || currentServers[0];
+            window.open(bestQuality.url, '_blank');
+        }
+
+        function nextEpisode() {
+            const total = currentAnime?.episodes || 1000;
+            if(currentEp < total) openPlayer(null, currentEp + 1);
+            else alert("Reached end of available episodes");
         }
 
         function closePlayer() { 
@@ -475,4 +465,4 @@
         }
     </script>
 </body>
-</html>
+    </html>
