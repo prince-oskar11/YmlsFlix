@@ -3,171 +3,340 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YmlsFlix Pro</title>
+    <title>YmlsFlix Pro | Premium Anime Streaming</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #0a0a0a; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .hero-bg {
-            height: 60vh;
-            background: linear-gradient(to bottom, rgba(10,10,10,0.5), #0a0a0a), url('https://images.alphacoders.com/605/605359.jpg');
-            background-size: cover;
-            background-position: center;
-            transition: background 0.5s ease-in-out;
-        }
-        .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); }
-        .poster-card:hover { transform: scale(1.05); transition: 0.3s; cursor: pointer; }
-        .ep-badge { position: absolute; top: 10px; left: 10px; background: #6366f1; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
-        .wish-btn { position: absolute; top: 10px; right: 10px; color: white; text-shadow: 0 0 5px black; }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-thumb { background: #6366f1; border-radius: 10px; }
+        :root { --primary: #6366f1; --bg: #050505; }
+        body { background-color: var(--bg); color: white; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .hero-bg { height: 70vh; background-size: cover; background-position: center; transition: 0.8s; position: relative; }
+        .hero-overlay { background: linear-gradient(0deg, var(--bg) 0%, rgba(5,5,5,0.4) 50%, rgba(5,5,5,0.8) 100%); position: absolute; inset: 0; }
+        .active-view { display: block !important; }
+        .hidden-view { display: none; }
+        .poster-card { transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .poster-card:hover { transform: scale(1.08); z-index: 10; }
+        .skeleton { background: linear-gradient(90deg, #111 25%, #222 50%, #111 75%); background-size: 200% 100%; animation: loading 1.5s infinite; }
+        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        #player-container.rotate { transform: rotate(90deg); width: 100vh; height: 100vw; position: fixed; top: 0; left: 0; z-index: 9999; }
     </style>
 </head>
 <body>
 
-<nav class="p-4 flex justify-between items-center sticky top-0 z-50 glass">
-    <h1 class="text-2xl font-bold text-red-600 tracking-tighter">YMLSFLIX <span class="text-white">PRO</span></h1>
-    <div class="flex gap-6 text-xl">
-        <i class="fas fa-home cursor-pointer hover:text-indigo-500" onclick="location.reload()"></i>
-        <i class="fas fa-th-large cursor-pointer hover:text-indigo-500" onclick="toggleSection('genres')"></i>
-        <i class="fas fa-heart cursor-pointer hover:text-indigo-500" onclick="toggleSection('wishlist')"></i>
-        <i class="fas fa-user-circle cursor-pointer hover:text-indigo-500" onclick="toggleSection('profile')"></i>
-    </div>
-</nav>
-
-<div id="main-content">
-    <div class="hero-bg flex items-end p-8" id="hero">
-        <div>
-            <h2 class="text-5xl font-bold mb-4" id="hero-title">Welcome to YmlsFlix</h2>
-            <p class="max-w-xl text-gray-300 mb-6">Stream your favorite anime masterpieces in high definition.</p>
-        </div>
-    </div>
-
-    <div class="px-8 -mt-10">
-        <div class="flex gap-4 items-center mb-6">
-            <div class="relative flex-1">
-                <i class="fas fa-search absolute left-4 top-4 text-gray-400"></i>
-                <input type="text" id="searchInput" oninput="searchAnime(this.value)" placeholder="Search for anime..." class="w-full bg-zinc-900 border border-zinc-700 py-3 pl-12 pr-4 rounded-lg focus:outline-none focus:border-indigo-500">
-                <div id="searchResults" class="absolute w-full bg-zinc-900 mt-2 rounded-lg z-50 max-h-96 overflow-y-auto hidden"></div>
-            </div>
-            <button class="bg-indigo-600 px-6 py-3 rounded-lg font-bold hover:bg-indigo-700">INSTALL</button>
-        </div>
-
-        <div class="flex gap-4 mb-8">
-            <button class="bg-zinc-800 px-4 py-2 rounded-full hover:bg-zinc-700">TV SERIES</button>
-            <button class="bg-zinc-800 px-4 py-2 rounded-full hover:bg-zinc-700">MOVIES</button>
-            <button class="bg-zinc-800 px-4 py-2 rounded-full hover:bg-zinc-700">OVA</button>
-        </div>
-
-        <section class="mb-10">
-            <h3 class="text-xl font-bold mb-4 text-orange-400 uppercase tracking-widest">Trending Now</h3>
-            <div id="trending-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
-        </section>
-
-        <section class="mb-10">
-            <h3 class="text-xl font-bold mb-4 text-yellow-500 uppercase tracking-widest">Top Rated Masterpieces</h3>
-            <div id="top-rated-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"></div>
-        </section>
+<div id="auth-screen" class="fixed inset-0 z-[200] bg-black flex items-center justify-center">
+    <div class="bg-zinc-900 p-8 rounded-2xl w-full max-w-md border border-zinc-800">
+        <h2 id="auth-title" class="text-3xl font-bold mb-6 text-indigo-500 text-center">YMLSFLIX PRO</h2>
+        <input type="text" id="auth-user" placeholder="Username or Email" class="w-full bg-black border border-zinc-700 p-3 rounded mb-4 focus:border-indigo-500 outline-none">
+        <input type="password" id="auth-pass" placeholder="Password" class="w-full bg-black border border-zinc-700 p-3 rounded mb-6 focus:border-indigo-500 outline-none">
+        <button onclick="handleAuth()" class="w-full bg-indigo-600 py-3 rounded-lg font-bold hover:bg-indigo-700 transition">SIGN IN / SIGN UP</button>
+        <p class="text-xs text-zinc-500 mt-4 text-center">Credentials are saved locally for this session.</p>
     </div>
 </div>
 
-<div id="modal" class="fixed inset-0 bg-black bg-opacity-90 z-[100] hidden overflow-y-auto p-4">
-    <div class="max-w-4xl mx-auto bg-zinc-900 rounded-xl overflow-hidden mt-10">
-        <div id="trailer-container" class="aspect-video w-full bg-black"></div>
-        <div class="p-6">
-            <div class="flex justify-between items-start">
-                <h2 id="modal-title" class="text-3xl font-bold"></h2>
-                <button onclick="closeModal()" class="text-2xl">&times;</button>
+<nav class="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-black/60 backdrop-blur-md">
+    <div class="flex items-center gap-8">
+        <h1 class="text-2xl font-black text-indigo-500 cursor-pointer" onclick="showView('home')">YMLSFLIX PRO</h1>
+        <div class="hidden md:flex gap-6 text-gray-400 font-medium">
+            <span class="hover:text-white cursor-pointer" onclick="showView('home')"><i class="fas fa-home mr-2"></i>Home</span>
+            <span class="hover:text-white cursor-pointer" onclick="showView('genres')"><i class="fas fa-th-large mr-2"></i>Genres</span>
+            <span class="hover:text-white cursor-pointer" onclick="showView('wishlist')"><i class="fas fa-heart mr-2"></i>Wishlist</span>
+        </div>
+    </div>
+    <div class="flex items-center gap-4">
+        <div id="user-display" class="text-sm font-bold mr-2"></div>
+        <i class="fas fa-user-circle text-2xl cursor-pointer hover:text-indigo-400" onclick="showView('profile')"></i>
+    </div>
+</nav>
+
+<main class="pt-20">
+    <div id="view-home" class="view active-view">
+        <div id="hero" class="hero-bg flex items-center px-12">
+            <div class="hero-overlay"></div>
+            <div class="relative z-10 max-w-2xl">
+                <span class="bg-indigo-600 text-[10px] font-bold px-2 py-1 rounded">PREMIUM</span>
+                <h2 id="hero-title" class="text-6xl font-black my-4 uppercase italic">Loading...</h2>
+                <div class="flex gap-4">
+                    <button class="bg-white text-black px-8 py-3 rounded-md font-bold hover:bg-gray-200">▶ PLAY NOW</button>
+                    <button class="bg-zinc-800/80 px-8 py-3 rounded-md font-bold backdrop-blur-md">+ WISHLIST</button>
+                </div>
             </div>
-            <div class="flex gap-4 my-4">
-                <button class="bg-white text-black px-6 py-2 rounded font-bold" onclick="alert('Rotating to fullscreen... Playing Now')">PLAY NOW</button>
-                <button class="bg-zinc-700 px-6 py-2 rounded font-bold" id="modal-wishlist-btn">ADD TO WISHLIST</button>
+        </div>
+
+        <div class="px-12 -mt-20 relative z-20">
+            <div class="flex gap-4 items-center mb-8">
+                <div class="relative flex-1">
+                    <input type="text" id="search-bar" oninput="liveSearch(this.value)" placeholder="Search for anime, movies..." class="w-full bg-zinc-900/90 border border-zinc-700 py-4 px-12 rounded-xl focus:ring-2 ring-indigo-500 outline-none">
+                    <i class="fas fa-search absolute left-4 top-5 text-zinc-500"></i>
+                    <div id="search-results" class="absolute w-full mt-2 bg-zinc-900 border border-zinc-800 rounded-xl hidden z-50"></div>
+                </div>
+                <button class="bg-indigo-600 h-14 px-8 rounded-xl font-bold">INSTALL</button>
             </div>
-            <p id="modal-synopsis" class="text-gray-400 leading-relaxed"></p>
+
+            <div class="flex gap-4 mb-10 overflow-x-auto pb-2">
+                <button onclick="fetchCategory('tv')" class="bg-zinc-800 px-6 py-2 rounded-full whitespace-nowrap hover:bg-indigo-600 transition">TV SERIES</button>
+                <button onclick="fetchCategory('movie')" class="bg-zinc-800 px-6 py-2 rounded-full whitespace-nowrap hover:bg-indigo-600 transition">MOVIES</button>
+                <button onclick="fetchCategory('ova')" class="bg-zinc-800 px-6 py-2 rounded-full whitespace-nowrap hover:bg-indigo-600 transition">OVA</button>
+            </div>
+
+            <section class="mb-12"><h3 class="text-xl font-bold mb-6 italic border-l-4 border-indigo-500 pl-3">TRENDING NOW</h3><div id="grid-trending" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6"></div></section>
+            <section class="mb-12"><h3 class="text-xl font-bold mb-6 italic border-l-4 border-indigo-500 pl-3">UPCOMING RELEASES</h3><div id="grid-upcoming" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6"></div></section>
+        </div>
+    </div>
+
+    <div id="view-genres" class="view hidden-view px-12 pt-10">
+        <h2 class="text-4xl font-black mb-8">EXPLORE <span class="text-indigo-500">GENRES</span></h2>
+        <div class="flex gap-8 mb-10">
+            <select onchange="filterByGenre(this.value)" class="bg-zinc-900 p-4 rounded-xl border border-zinc-700 w-64 outline-none">
+                <option value="">Select Genre</option>
+                <option value="1">Action</option><option value="2">Adventure</option><option value="4">Comedy</option><option value="8">Drama</option>
+            </select>
+            <select onchange="filterByYear(this.value)" class="bg-zinc-900 p-4 rounded-xl border border-zinc-700 w-64 outline-none">
+                <option value="">Release Year</option>
+                <script>for(let y=2026; y>=2000; y--) document.write(`<option value="${y}">${y}</option>`)</script>
+            </select>
+        </div>
+        <div id="grid-genres" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6"></div>
+    </div>
+
+    <div id="view-wishlist" class="view hidden-view px-12 pt-10">
+        <h2 class="text-4xl font-black mb-8">YOUR <span class="text-indigo-500">WISHLIST</span></h2>
+        <div id="grid-wishlist" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6"></div>
+    </div>
+
+    <div id="view-profile" class="view hidden-view px-12 pt-10 max-w-4xl mx-auto">
+        <div class="bg-zinc-900 p-10 rounded-3xl border border-zinc-800">
+            <div class="flex items-center gap-6 mb-10">
+                <div class="w-24 h-24 bg-indigo-600 rounded-full flex items-center justify-center text-4xl font-bold" id="profile-init">U</div>
+                <div>
+                    <h2 id="profile-name" class="text-3xl font-bold">User Name</h2>
+                    <p class="text-zinc-500">Premium Member</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mb-10">
+                <button onclick="clearHistory()" class="bg-red-500/20 text-red-500 p-4 rounded-xl font-bold hover:bg-red-500 hover:text-white transition">CLEAR HISTORY</button>
+                <button onclick="logout()" class="bg-zinc-800 p-4 rounded-xl font-bold hover:bg-zinc-700 transition">SIGN OUT</button>
+            </div>
+            <h3 class="font-bold mb-4">WATCH HISTORY</h3>
+            <div id="history-list" class="space-y-2 text-zinc-400"></div>
+        </div>
+    </div>
+</main>
+
+<div id="stream-modal" class="fixed inset-0 z-[100] bg-black hidden overflow-y-auto">
+    <div id="player-container" class="aspect-video bg-zinc-900 relative">
+        <div id="video-source" class="w-full h-full flex items-center justify-center"></div>
+        <button onclick="closeStream()" class="absolute top-4 right-4 bg-black/50 w-10 h-10 rounded-full text-white text-xl">&times;</button>
+        <button onclick="toggleRotation()" class="absolute bottom-4 right-4 bg-indigo-600 p-2 rounded text-xs">ROTATE VIEW</button>
+    </div>
+    
+    <div class="p-8 max-w-6xl mx-auto grid md:grid-cols-3 gap-10">
+        <div class="md:col-span-2">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="stream-title" class="text-4xl font-black"></h2>
+                <div id="stream-labels" class="flex gap-2"></div>
+            </div>
+            <div class="flex gap-4 mb-8">
+                <button onclick="addToWishlistGlobal()" class="bg-indigo-600 px-6 py-2 rounded font-bold">ADD TO WISHLIST</button>
+                <button class="bg-zinc-800 px-6 py-2 rounded font-bold" onclick="alert('Episode 2 starting...')">NEXT EPISODE</button>
+            </div>
+            <h4 class="text-indigo-500 font-bold mb-2 uppercase tracking-tighter">Synopsis</h4>
+            <p id="stream-synopsis" class="text-zinc-400 leading-relaxed mb-8"></p>
+        </div>
+        <div>
+            <h4 class="text-indigo-500 font-bold mb-4 uppercase tracking-tighter">Characters</h4>
+            <div id="stream-chars" class="grid grid-cols-2 gap-4"></div>
         </div>
     </div>
 </div>
 
 <script>
-    const API_BASE = "https://api.jikan.moe/v4";
+    const JIKAN = "https://api.jikan.moe/v4";
+    let currentUser = null;
+    let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+    let history = JSON.parse(localStorage.getItem('history')) || [];
+    let currentAnime = null;
 
-    async function fetchData(endpoint, containerId) {
-        try {
-            const response = await fetch(`${API_BASE}/${endpoint}`);
-            const data = await response.json();
-            renderAnime(data.data.slice(0, 6), containerId);
-            
-            if(containerId === 'top-rated-grid') {
-                document.getElementById('hero').style.backgroundImage = `linear-gradient(to bottom, rgba(10,10,10,0.5), #0a0a0a), url('${data.data[0].images.jpg.large_image_url}')`;
-                document.getElementById('hero-title').innerText = data.data[0].title;
-            }
-        } catch (error) { console.error("Error fetching data:", error); }
+    // --- AUTH LOGIC ---
+    function handleAuth() {
+        const user = document.getElementById('auth-user').value;
+        if(user.length < 3) return alert("Enter a valid name/email");
+        currentUser = user;
+        localStorage.setItem('currentUser', user);
+        document.getElementById('auth-screen').style.display = 'none';
+        document.getElementById('user-display').innerText = user;
+        document.getElementById('profile-name').innerText = user;
+        document.getElementById('profile-init').innerText = user[0].toUpperCase();
+        initApp();
     }
 
-    function renderAnime(animeList, containerId) {
+    // --- NAVIGATION ---
+    function showView(viewId) {
+        document.querySelectorAll('.view').forEach(v => {
+            v.classList.add('hidden-view');
+            v.classList.remove('active-view');
+        });
+        document.getElementById(`view-${viewId}`).classList.add('active-view');
+        document.getElementById(`view-${viewId}`).classList.remove('hidden-view');
+        window.scrollTo(0,0);
+        if(viewId === 'wishlist') renderWishlist();
+        if(viewId === 'profile') renderHistory();
+    }
+
+    // --- DATA FETCHING ---
+    async function initApp() {
+        const top = await fetch(`${JIKAN}/top/anime?limit=1`).then(r => r.json());
+        const anime = top.data[0];
+        document.getElementById('hero').style.backgroundImage = `url(${anime.images.jpg.large_image_url})`;
+        document.getElementById('hero-title').innerText = anime.title;
+        
+        fetchGrid('top/anime?filter=airing', 'grid-trending');
+        fetchGrid('seasons/upcoming', 'grid-upcoming');
+    }
+
+    async function fetchGrid(endpoint, containerId) {
+        const resp = await fetch(`${JIKAN}/${endpoint}`);
+        const { data } = await resp.json();
         const container = document.getElementById(containerId);
-        container.innerHTML = animeList.map(anime => `
-            <div class="relative poster-card" onclick="openModal(${anime.mal_id})">
-                <span class="ep-badge">EP ${anime.episodes || '??'}</span>
-                <i class="fas fa-heart wish-btn" onclick="event.stopPropagation(); alert('Added to Wishlist!')"></i>
-                <img src="${anime.images.jpg.image_url}" class="w-full h-64 object-cover rounded-lg shadow-lg">
-                <p class="mt-2 text-sm font-semibold truncate">${anime.title}</p>
-                <p class="text-xs text-gray-500">${anime.type} • ${anime.status}</p>
-            </div>
-        `).join('');
+        container.innerHTML = data.slice(0, 12).map(item => animeCardTemplate(item)).join('');
     }
 
-    async function searchAnime(query) {
-        const resultsDiv = document.getElementById('searchResults');
-        if (query.length < 3) { resultsDiv.classList.add('hidden'); return; }
-        
-        const resp = await fetch(`${API_BASE}/anime?q=${query}`);
-        const data = await resp.json();
-        
-        resultsDiv.classList.remove('hidden');
-        resultsDiv.innerHTML = data.data.slice(0, 5).map(anime => `
-            <div class="flex items-center gap-4 p-3 hover:bg-zinc-800 cursor-pointer" onclick="openModal(${anime.mal_id})">
-                <img src="${anime.images.jpg.small_image_url}" class="w-12 h-16 object-cover rounded">
+    function animeCardTemplate(anime) {
+        const isDubbed = anime.title.toLowerCase().includes('dub') || Math.random() > 0.5; // Simulate Dub availability
+        return `
+            <div class="poster-card relative group cursor-pointer" onclick="openStream(${anime.mal_id})">
+                <div class="absolute top-2 left-2 z-20 bg-black/70 px-2 py-1 rounded text-[10px] font-bold">
+                    EP ${anime.episodes || '??'}
+                </div>
+                <div class="absolute top-2 right-2 z-20">
+                    <i class="fas fa-heart text-white hover:text-red-500 drop-shadow-md" onclick="event.stopPropagation(); quickWish(${anime.mal_id}, '${anime.title.replace(/'/g, "")}', '${anime.images.jpg.image_url}')"></i>
+                </div>
+                <img src="${anime.images.jpg.image_url}" class="w-full h-72 object-cover rounded-xl border border-zinc-800">
+                <div class="mt-3">
+                    <p class="text-sm font-bold truncate">${anime.title}</p>
+                    <div class="flex justify-between text-[10px] text-zinc-500 mt-1">
+                        <span>${anime.type || 'TV'}</span>
+                        <span class="text-indigo-400 font-bold">${isDubbed ? 'SUB | DUB' : 'SUB'}</span>
+                    </div>
+                    ${anime.airing ? `<p class="text-[9px] text-green-500 mt-1">Airing Now</p>` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    // --- SEARCH ---
+    async function liveSearch(q) {
+        const box = document.getElementById('search-results');
+        if(q.length < 3) { box.classList.add('hidden'); return; }
+        const resp = await fetch(`${JIKAN}/anime?q=${q}`);
+        const { data } = await resp.json();
+        box.classList.remove('hidden');
+        box.innerHTML = data.slice(0, 6).map(a => `
+            <div class="flex items-center gap-4 p-3 hover:bg-white/5 cursor-pointer" onclick="openStream(${a.mal_id})">
+                <img src="${a.images.jpg.small_image_url}" class="w-12 h-16 rounded object-cover">
                 <div>
-                    <p class="font-bold text-sm">${anime.title}</p>
-                    <p class="text-xs text-gray-400">${anime.year || 'N/A'}</p>
+                    <p class="text-sm font-bold">${a.title}</p>
+                    <p class="text-xs text-zinc-500">${a.year || 'N/A'}</p>
                 </div>
             </div>
         `).join('');
     }
 
-    async function openModal(id) {
-        const resp = await fetch(`${API_BASE}/anime/${id}/full`);
+    // --- STREAMING & DETAILS ---
+    async function openStream(id) {
+        document.getElementById('search-results').classList.add('hidden');
+        const resp = await fetch(`${JIKAN}/anime/${id}/full`);
         const { data } = await resp.json();
+        currentAnime = data;
+
+        document.getElementById('stream-modal').classList.remove('hidden');
+        document.getElementById('stream-title').innerText = data.title;
+        document.getElementById('stream-synopsis').innerText = data.synopsis;
         
-        document.getElementById('modal-title').innerText = data.title;
-        document.getElementById('modal-synopsis').innerText = data.synopsis;
-        document.getElementById('modal').classList.remove('hidden');
-        
-        if (data.trailer.youtube_id) {
-            document.getElementById('trailer-container').innerHTML = `<iframe class="w-full h-full" src="https://www.youtube.com/embed/${data.trailer.youtube_id}" frameborder="0" allowfullscreen></iframe>`;
+        // Trailer logic
+        if(data.trailer.youtube_id) {
+            document.getElementById('video-source').innerHTML = `<iframe class="w-full h-full" src="https://www.youtube.com/embed/${data.trailer.youtube_id}?autoplay=1" frameborder="0" allowfullscreen></iframe>`;
         } else {
-            document.getElementById('trailer-container').innerHTML = `<div class="flex items-center justify-center h-full text-gray-500">No Trailer Available</div>`;
+            document.getElementById('video-source').innerHTML = `<div class="bg-zinc-800 w-full h-full flex flex-col items-center justify-center"><i class="fas fa-play text-6xl mb-4"></i>No Trailer - Streaming Simulation Active</div>`;
+        }
+
+        // Labels
+        document.getElementById('stream-labels').innerHTML = `
+            <span class="bg-zinc-800 px-3 py-1 rounded text-xs">Score: ${data.score || 'N/A'}</span>
+            <span class="bg-zinc-800 px-3 py-1 rounded text-xs">${data.status}</span>
+        `;
+
+        // Characters
+        const charResp = await fetch(`${JIKAN}/anime/${id}/characters`);
+        const chars = await charResp.json();
+        document.getElementById('stream-chars').innerHTML = chars.data.slice(0, 4).map(c => `
+            <div class="flex items-center gap-2 bg-zinc-800/50 p-2 rounded-lg">
+                <img src="${c.character.images.jpg.image_url}" class="w-10 h-10 rounded-full object-cover">
+                <p class="text-[10px] font-bold truncate">${c.character.name}</p>
+            </div>
+        `).join('');
+
+        // Save to History
+        if(!history.includes(data.title)) {
+            history.unshift(data.title);
+            localStorage.setItem('history', JSON.stringify(history.slice(0, 10)));
         }
     }
 
-    function closeModal() {
-        document.getElementById('modal').classList.add('hidden');
-        document.getElementById('trailer-container').innerHTML = '';
+    function closeStream() {
+        document.getElementById('stream-modal').classList.add('hidden');
+        document.getElementById('video-source').innerHTML = '';
     }
 
-    function toggleSection(section) {
-        if(section === 'profile') {
-            const confirmClear = confirm("Are you sure you want to clear history?");
-            if(confirmClear) alert("History Cleared!");
-        } else {
-            alert("Opening " + section + " section...");
+    function toggleRotation() {
+        document.getElementById('player-container').classList.toggle('rotate');
+    }
+
+    // --- WISHLIST & PROFILE ---
+    function quickWish(id, title, img) {
+        if(wishlist.find(i => i.id === id)) return alert("Already in Wishlist!");
+        wishlist.push({id, title, img});
+        localStorage.setItem('wishlist', JSON.stringify(wishlist));
+        alert("Added to Wishlist!");
+    }
+
+    function addToWishlistGlobal() {
+        if(!currentAnime) return;
+        quickWish(currentAnime.mal_id, currentAnime.title, currentAnime.images.jpg.image_url);
+    }
+
+    function renderWishlist() {
+        const container = document.getElementById('grid-wishlist');
+        if(wishlist.length === 0) { container.innerHTML = "<p class='col-span-full text-zinc-600'>Nothing here yet...</p>"; return; }
+        container.innerHTML = wishlist.map(item => `
+            <div class="relative group" onclick="openStream(${item.id})">
+                <img src="${item.img}" class="w-full h-72 object-cover rounded-xl border border-zinc-800">
+                <p class="mt-2 text-sm font-bold truncate">${item.title}</p>
+                <button class="absolute top-2 right-2 bg-red-600 w-6 h-6 rounded" onclick="event.stopPropagation(); removeFromWishlist(${item.id})">&times;</button>
+            </div>
+        `).join('');
+    }
+
+    function removeFromWishlist(id) {
+        wishlist = wishlist.filter(i => i.id !== id);
+        localStorage.setItem('wishlist', JSON.stringify(wishlist));
+        renderWishlist();
+    }
+
+    function renderHistory() {
+        document.getElementById('history-list').innerHTML = history.map(h => `<div class="p-3 bg-zinc-800/30 rounded">Watched: ${h}</div>`).join('');
+    }
+
+    function clearHistory() {
+        if(confirm("Are you sure you want to clear your watch history?")) {
+            history = [];
+            localStorage.setItem('history', JSON.stringify(history));
+            renderHistory();
         }
     }
 
-    // Initialize
-    fetchData('top/anime?filter=bypopularity', 'trending-grid');
-    fetchData('top/anime?filter=favorite', 'top-rated-grid');
+    function logout() {
+        localStorage.removeItem('currentUser');
+        location.reload();
+    }
 </script>
 </body>
 </html>
