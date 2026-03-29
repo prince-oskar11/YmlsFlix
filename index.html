@@ -3,14 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>YMLSFLIX PRO | v60.0 ULTIMATE</title>
-
+<title>YMLSFLIX PRO | v60.0</title>
 <!-- Manifest -->
 <link rel="manifest" href="manifest.json" />
 
-<!-- Tailwind CSS & FontAwesome -->
+<!-- Tailwind & Font Awesome -->
 <script src="https://cdn.tailwindcss.com"></script>
-<link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" />
 
 <!-- Plyr & HLS -->
 <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
@@ -40,8 +39,6 @@ body {
 .page-view.active { display: block; }
 #scrollable { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 #scrollable::-webkit-scrollbar { display:none; }
-
-/* Additional styling for layout & UI components */
 </style>
 </head>
 <body>
@@ -51,7 +48,7 @@ body {
   <button id="installBtn" class="bg-indigo-600 px-4 py-2 rounded-full font-bold text-sm uppercase shadow-lg hover:bg-indigo-500">Install App</button>
 </div>
 
-<!-- Navigation Bar -->
+<!-- Navigation -->
 <nav class="fixed top-0 w-full z-[2500] bg-black/50 backdrop-blur-lg p-4 flex justify-between items-center">
   <h1 class="text-2xl font-black tracking-tighter cursor-pointer" onclick="showPage('home')">YMLSFLIX PRO</h1>
   <div class="flex gap-4 text-xl text-gray-400">
@@ -61,7 +58,7 @@ body {
   </div>
 </nav>
 
-<!-- Dropdown for Genres & Years -->
+<!-- Dropdown for genres and years -->
 <div class="absolute right-4 top-16 bg-[#0f1117] p-4 rounded-lg shadow-lg hidden" id="genreDrop">
   <h4 class="mb-2 font-bold text-white">Categories</h4>
   <div id="genreList" class="grid grid-cols-3 gap-2"></div>
@@ -72,23 +69,23 @@ body {
 <!-- Main Content -->
 <div class="pt-20" id="mainContent">
 
-<!-- Home Page Content -->
+<!-- Home Page -->
 <div id="page-home" class="page-view active">
 
   <!-- Hero Banner -->
-  <section id="hero" class="relative h-[60vh] flex items-end bg-cover bg-center" style="background-image: url('https://placehold.co/1920x1080/05070a/ef4444?text=Loading...');">
+  <section id="hero" class="relative h-[60vh] bg-cover bg-center" style="background-image: url('https://placehold.co/1920x1080/05070a/ef4444?text=Loading...');">
     <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
     <div class="relative p-8 text-white z-10 max-w-2xl">
       <h2 id="heroTitle" class="text-4xl font-black mb-4 uppercase"></h2>
       <p id="heroDesc" class="mb-4 text-sm line-clamp-3"></p>
       <div class="flex gap-4">
-        <button id="heroPlayBtn" class="bg-white text-black px-8 py-3 rounded-full font-bold uppercase text-sm shadow-lg hover:bg-red-600 hover:text-white transition">Stream Now</button>
+        <button id="heroStreamBtn" class="bg-white text-black px-8 py-3 rounded-full font-bold uppercase text-sm shadow-lg hover:bg-red-600 hover:text-white transition">Stream Now</button>
         <button id="heroTrailerBtn" class="bg-white/10 backdrop-blur-md text-white px-8 py-3 rounded-full font-bold uppercase text-sm border border-white/20 hover:bg-white/20 transition">Trailer</button>
       </div>
     </div>
   </section>
 
-  <!-- Content Sections -->
+  <!-- Content sections -->
   <section class="p-4 space-y-12">
 
     <!-- Trending -->
@@ -168,7 +165,7 @@ const API='https://graphql.anilist.co', STREAM_API='https://api.consumet.org/ani
 let currentUser=JSON.parse(localStorage.getItem('ymls_active_user'));
 let playMode='sub', currentAnime=null, currentEp=1, currentServers=[], hlsInstance=null, plyrInstance=null;
 
-// ================== PWA Install Prompt ==================
+// ================== PWA Install ==================
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
@@ -179,7 +176,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
   };
 });
 
-// ================== Show Page Function ==================
+// ================== Show Page ==================
 function showPage(pageID){
   document.querySelectorAll('.page-view').forEach(p => p.classList.toggle('active', p.id===pageID));
 }
@@ -189,7 +186,7 @@ function toggleDropdown(id){
   document.getElementById(id).classList.toggle('hidden');
 }
 
-// ================== Fetch and Render Upcoming Shows ==================
+// ================== Fetch & Render Upcoming Shows ==================
 async function fetchUpcomingShows() {
   try {
     const res= await fetch('https://api.jikan.moe/v4/seasons/coming');
@@ -245,7 +242,7 @@ function fetchGrid(s,t){
   .then(r=>render(r.data.Page.media,t));
 }
 
-// ================== Render media items ==================
+// ================== Render media ==================
 function render(list, targetId, isGrid=false){
   const wishlist= currentUser? (currentUser.wishlist||[]): (JSON.parse(localStorage.getItem('ymls_guest_wishlist'))||[]);
   document.getElementById(targetId).innerHTML= list.map(a => {
@@ -262,7 +259,7 @@ function render(list, targetId, isGrid=false){
   }).join('');
 }
 
-// ================== Load homepage data ==================
+// ================== Load homepage ==================
 function loadHome() {
   fetchGrid("TRENDING_DESC", "trendingGrid");
   fetchGrid("SCORE_DESC", "ratedGrid");
@@ -275,7 +272,7 @@ function loadHome() {
   }
 }
 
-// ================== Fetch hero data ==================
+// ================== Fetch hero ==================
 async function fetchHero() {
   const q= `query{Page(perPage:1){media(type:ANIME,sort:TRENDING_DESC){id title{english romaji} bannerImage description episodes trailer{id site}}}}`;
   const r= await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({query:q})}).then(res=>res.json());
@@ -283,7 +280,7 @@ async function fetchHero() {
   document.getElementById('hero').style.backgroundImage= `url(${top.bannerImage})`;
   document.getElementById('heroTitle').innerText= top.title.english || top.title.romaji;
   document.getElementById('heroDesc').innerHTML= top.description;
-  document.getElementById('heroPlayBtn').onclick= ()=> openPlayer(top);
+  document.getElementById('heroStreamBtn').onclick= ()=> openPlayer(top);
   if(top.trailer?.site==='youtube'){
     document.getElementById('heroTrailerBtn').onclick= ()=> { showTrailer(top.trailer.id); };
   }
@@ -319,7 +316,7 @@ async function openPlayer(a, ep=1){
   fetchRecommendations(currentAnime.id);
 }
 
-// ================== Load stream sources ==================
+// ================== Load streams ==================
 async function loadStreamSources(a, ep=1){
   try{
     const title= (a.title.romaji||a.title.english).replace(/[^a-zA-Z0-9 ]/g,'');
@@ -333,7 +330,7 @@ async function loadStreamSources(a, ep=1){
   } catch(e){ console.log('Stream fetch error:', e); }
 }
 
-// ================== Render stream sources ==================
+// ================== Render sources ==================
 function renderStreamSources(sources){
   const container= document.getElementById('serverList');
   container.innerHTML= sources.map((s,i)=>`
@@ -406,7 +403,7 @@ function showTrailer(trailerId){
 }
 function closeTrailer(){ document.getElementById('trailerOverlay').classList.add('hidden'); }
 
-// ================== Wishlist Functions ==================
+// ================== Toggle Wish ==================
 function toggleWish(a, e=null){
   if(e) e.stopPropagation();
   let list= currentUser? (currentUser.wishlist||[]): (JSON.parse(localStorage.getItem('ymls_guest_wishlist'))||[]);
@@ -448,15 +445,23 @@ async function fetchHero() {
   document.getElementById('hero').style.backgroundImage= `url(${top.bannerImage})`;
   document.getElementById('heroTitle').innerText= top.title.english || top.title.romaji;
   document.getElementById('heroDesc').innerHTML= top.description;
-  document.getElementById('heroPlayBtn').onclick= ()=> openPlayer(top);
+  document.getElementById('heroStreamBtn').onclick= ()=> { openPlayer(top); };
   if(top.trailer?.site==='youtube'){
     document.getElementById('heroTrailerBtn').onclick= ()=> { showTrailer(top.trailer.id); };
   }
 }
 
-// ================== Initialization ==================
-window.onload= ()=> {
-  // Generate genre & year filters
+// ================== Generate Filters ==================
+function genFilters() {
+  const genres=["Action","Adventure","Comedy","Drama","Fantasy","Horror","Mystery","Romance","Sci-Fi","Sports","Supernatural","Thriller","Psychological"];
+  document.getElementById('genreList').innerHTML= genres.map(x => `<button onclick="fetchByFilter('${x}')" class="genre-btn">${x}</button>`).join('');
+  let yH=''; for(let y=2026; y>=2000; y--) yH+=`<button onclick="fetchByFilter('',${y})" class="genre-btn">${y}</button>`;
+  document.getElementById('yearList').innerHTML=yH;
+}
+
+// ================== Load initial data ==================
+window.onload= ()=>{
+  // Generate filters
   genFilters();
 
   // Load homepage grids
@@ -474,10 +479,9 @@ window.onload= ()=> {
     tooltips:{controls:true,seek:true}
   });
 
-  // Register service worker
+  // Register Service Worker
   if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 </script>
-
 </body>
 </html>
