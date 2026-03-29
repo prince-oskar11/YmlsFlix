@@ -1,8 +1,11 @@
 const CACHE_NAME = 'ymlsflix-v60'; 
+
+// All static UI assets that make the app work offline
 const assets = [
-  './',               // Points to the current directory
-  'index.html',       // Relative path (safer than /index.html)
-  'manifest.json',    // Relative path
+  './',
+  'index.html',
+  'style.css',        // New external CSS file
+  'manifest.json',
   'https://cdn.tailwindcss.com',
   'https://cdn.plyr.io/3.7.8/plyr.css',
   'https://cdn.plyr.io/3.7.8/plyr.js',
@@ -15,7 +18,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting(); 
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      // Use addAll to ensure all UI dependencies are stored for offline boot
+      // Caching these files allows for "Instant Boot"
       return cache.addAll(assets);
     })
   );
@@ -26,7 +29,7 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
   // 1. CRITICAL: Bypass cache for video streams and dynamic API data
-  // Prevents the browser from trying to "save" video chunks which causes crashes
+  // We NEVER cache .m3u8 or .ts files as they are huge and dynamic.
   if (
     url.href.includes('.m3u8') || 
     url.href.includes('.ts') || 
@@ -34,12 +37,13 @@ self.addEventListener('fetch', (event) => {
     url.hostname.includes('anilist.co') ||
     url.hostname.includes('googlevideo.com') 
   ) {
-    return; // Direct network request for media and API
+    return; // Direct network request
   }
 
   // 2. Cache-First Strategy for static assets (CSS, JS, Fonts)
   event.respondWith(
     caches.match(event.request).then((response) => {
+      // Return from cache, or fetch from network if not found
       return response || fetch(event.request).catch(() => {
         // Fallback to the main app shell if the user is totally offline
         if (event.request.mode === 'navigate') {
@@ -60,5 +64,6 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
+  // Take control of the page immediately without requiring a refresh
   self.clients.claim();
 });
