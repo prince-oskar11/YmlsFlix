@@ -483,7 +483,7 @@
         async function fetchByFilter(g, y) {
             showPage('filter'); 
             document.getElementById('filterTitle').innerText = g || "Released in " + y;
-            const q = `query($g:String,$y:Int){Page(perPage:50){media(genre:$g,seasonYear:$y,type:ANIME,sort:POPULARITY_DESC){id title{english romaji} coverImage{large} episodes trailer{id site}}}}`;
+            const q = `query($g:String,$y:Int){Page(perPage:50){media(genre:$g,Year:$y,type:ANIME,sort:POPULARITY_DESC){id title{english romaji} coverImage{large} episodes trailer{id site}}}}`;
             const r = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query:q, variables:{g, y}})}).then(res=>res.json());
             render(r.data.Page.media, "filterGrid", true);
         }
