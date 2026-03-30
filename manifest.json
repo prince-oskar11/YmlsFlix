@@ -1,93 +1,69 @@
-{
-  "name": "YMLSFLIX PRO",
-  "short_name": "YMLSFLIX",
-  "description": "Premium Anime & Movie Streaming Platform",
-  "start_url": "./",
-  "scope": "./",
-  "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#05070a",
-  "theme_color": "#ef4444",
-  "categories": ["entertainment", "video"],
-  "icons": [
-    {
-      "src": "https://placehold.co/192x192/05070a/ef4444?text=Y",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "https://placehold.co/512x512/05070a/ef4444?text=Y",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable any"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "https://placehold.co/1080x1920/05070a/ffffff?text=YMLSFLIX+PRO",
-      "sizes": "1080x1920",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Premium Home Screen"
-    },
-    {
-      "src": "https://placehold.co/1920x1080/05070a/ffffff?text=CINEMA+MODE",
-      "sizes": "1920x1080",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Immersive Player"
-    }
-  ]
-}
+const CACHE_NAME = 'ymlsflix-v60'; 
 
+// All static UI assets that make the app work offline
+const assets = [
+  './',
+  'index.html',
+  'style.css',        // New external CSS file
+  'manifest.json',
+  'https://cdn.tailwindcss.com',
+  'https://cdn.plyr.io/3.7.8/plyr.css',
+  'https://cdn.plyr.io/3.7.8/plyr.js',
+  'https://cdn.jsdelivr.net/npm/hls.js@latest',
+  'https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css'
+];
 
+// Install Service Worker and cache core UI assets
+self.addEventListener('install', (event) => {
+  self.skipWaiting(); 
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      // Caching these files allows for "Instant Boot"
+      return cache.addAll(assets);
+    })
+  );
+});
 
-run_server.py
+// Fetching Assets with Smart Logic
+self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
 
-import http.server
-import socketserver
-import socket
-import os
+  // 1. CRITICAL: Bypass cache for video streams and dynamic API data
+  // We NEVER cache .m3u8 or .ts files as they are huge and dynamic.
+  if (
+    url.href.includes('.m3u8') || 
+    url.href.includes('.ts') || 
+    url.hostname.includes('consumet.org') ||
+    url.hostname.includes('anilist.co') ||
+    url.hostname.includes('googlevideo.com') 
+  ) {
+    return; // Direct network request
+  }
 
-PORT = 8080
+  // 2. Cache-First Strategy for static assets (CSS, JS, Fonts)
+  event.respondWith(
+    caches.match(event.request).then((response) => {
+      // Return from cache, or fetch from network if not found
+      return response || fetch(event.request).catch(() => {
+        // Fallback to the main app shell if the user is totally offline
+        if (event.request.mode === 'navigate') {
+          return caches.match('./');
+        }
+      });
+    })
+  );
+});
 
-# This function finds your computer's IP address on your local Wi-Fi
-def get_ip():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    try:
-        s.connect(('8.8.8.8', 1))
-        IP = s.getsockname()[0]
-    except Exception:
-        IP = '127.0.0.1'
-    finally:
-        s.close()
-    return IP
-
-class MyHandler(http.server.SimpleHTTPRequestHandler):
-    def end_headers(self):
-        # Crucial for PWA: These headers help the browser recognize the Service Worker
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate')
-        super().end_headers()
-
-# Fix for PWA MIME types
-MyHandler.extensions_map.update({
-    '.manifest': 'application/x-web-app-manifest+json',
-    '.json': 'application/json',
-    '.js': 'application/javascript',
-    '.css': 'text/css',
-})
-
-with socketserver.TCPServer(("", PORT), MyHandler) as httpd:
-    my_ip = get_ip()
-    print("===============================================")
-    print("   🚀 YMLSFLIX PRO - LOCAL DEV SERVER")
-    print("===============================================")
-    print(f"  COMPUTER: http://localhost:{PORT}")
-    print(f"  MOBILE:   http://{my_ip}:{PORT}")
-    print("-----------------------------------------------")
-    print("  Note: Both devices must be on the same Wi-Fi.")
-    print("  Press CTRL+C to shut down the server.")
-    print("===============================================")
-    httpd.serve_forever()
+// Activate & Cleanup: Removes old versions of the app automatically
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) => {
+      return Promise.all(
+        keys.filter(key => key !== CACHE_NAME)
+            .map(key => caches.delete(key))
+      );
+    })
+  );
+  // Take control of the page immediately without requiring a refresh
+  self.clients.claim();
+});
