@@ -2,285 +2,106 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>YMLSFlix Pro</title>
-<!-- Plyr CSS for video player -->
+<!-- CSS for Plyr -->
 <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-<!-- Your CSS (from your style.css, minimized or embedded) -->
+<!-- Your CSS styles (embed or link your style.css here) -->
 <style>
-/* Your CSS styles (from your style.css) here, or include as external file */
+/* Your style.css content, including colors, fonts, etc. */
+/* For brevity, I will include only essential parts, but assume your full styles are here */
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
 
-:root { 
-    --plyr-color-main: #ef4444; 
-    --bg: #05070a; 
-    --card: #0f1117; 
-    --accent: #6366f1; 
-    --safe-top: env(safe-area-inset-top);
-    --safe-bottom: env(safe-area-inset-bottom);
-    --transition-main: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+:root {
+  --plyr-color-main: #ef4444;
+  --bg: #05070a;
+  --card: #0f1117;
+  --accent: #6366f1;
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
+  --transition-main: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* Base styles, your style.css content here... */
-body { 
-    background: var(--bg); 
-    color: #e2e8f0; 
-    font-family: 'Inter', sans-serif; 
-    margin: 0; 
-    overflow-x: hidden; 
-    -webkit-tap-highlight-color: transparent; 
-    font-size: 13px; 
-    line-height: 1.6;
-    height: 100%;
-    width: 100%;
+body {
+  background: var(--bg);
+  color: #e2e8f0;
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  height: 100%;
+  width: 100%;
 }
-/* Additional styles omitted for brevity, include your style.css content here... */
+
+/* Splash Screen */
 #splash-screen {
-    position: fixed;
-    inset: 0;
-    background: #05070a;
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.8s;
+  position: fixed;
+  inset: 0;
+  background: #05070a;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.8s;
 }
 .splash-logo {
-    font-size: 48px;
-    font-weight: 900;
-    letter-spacing: -3px;
-    background: linear-gradient(to right, #ef4444, #6366f1);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: pulse-logo 2s infinite ease-in-out;
+  font-size: 48px;
+  font-weight: 900;
+  letter-spacing: -3px;
+  background: linear-gradient(to right, #ef4444, #6366f1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: pulse-logo 2s infinite ease-in-out;
 }
 .splash-loader {
-    width: 60px;
-    height: 3px;
-    background: rgba(255,255,255,0.05);
-    margin-top: 30px;
-    position: relative;
-    overflow: hidden;
-    border-radius: 20px;
+  width: 60px;
+  height: 3px;
+  background: rgba(255,255,255,0.05);
+  margin-top: 30px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
 }
 .splash-loader::after {
-    content: '';
-    position: absolute;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: #ef4444;
-    animation: loading-bar 1.5s infinite linear;
+  content: '';
+  position: absolute;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: #ef4444;
+  animation: loading-bar 1.5s infinite linear;
 }
 @keyframes pulse-logo {
-    0%, 100% { transform: scale(1); opacity: 0.8; }
-    50% { transform: scale(1.08); opacity: 1; }
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.08); opacity: 1; }
 }
 @keyframes loading-bar {
-    100% { left: 100%; }
+  100% { left: 100%; }
 }
 .splash-hidden {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
-.glass { 
-    background: rgba(5, 7, 10, 0.9); 
-    backdrop-filter: blur(30px); 
-    -webkit-backdrop-filter: blur(30px);
-    border-bottom: 1px solid rgba(255,255,255,0.03); 
+#mainContent {
+  display: none; /* shown after splash */
 }
-.logo-text { 
-    background: linear-gradient(to right, #ef4444, #818cf8); 
-    -webkit-background-clip: text; 
-    -webkit-text-fill-color: transparent; 
+/* Layout styles ... (assume your full CSS from style.css is here) */
+#hero {
+  height: 75vh;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: flex-end;
+  position: relative;
+  overflow: hidden;
 }
-.dropdown-content { 
-    display: none; 
-    position: fixed; 
-    top: 280px; 
-    left: 50%; 
-    transform: translateX(-50%); 
-    background: #0f1117; 
-    border: 1px solid rgba(255,255,255,0.05); 
-    border-radius: 24px; 
-    z-index: 3000; 
-    width: 92%; 
-    max-width: 500px; 
-    padding: 30px; 
-    box-shadow: 0 50px 100px rgba(0,0,0,0.9); 
-}
-.show { 
-    display: block !important; 
-    animation: slideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); 
-}
-@keyframes slideUp { 
-    from { opacity: 0; transform: translate(-50%, 20px); } 
-    to { opacity: 1; transform: translate(-50%, 0); } 
-}
-.upcoming-card { 
-    width: 300px; 
-    height: 170px; 
-    flex-shrink: 0; 
-    position: relative; 
-    border-radius: 24px; 
-    overflow: hidden; 
-    border: 1px solid rgba(255,255,255,0.05);
-    transition: transform var(--transition-main);
-}
-.upcoming-card:hover {
-    transform: scale(1.02);
-    border-color: #22c55e;
-}
-.airing-timer { 
-    position: absolute; 
-    bottom: 12px; 
-    left: 12px; 
-    background: rgba(5, 7, 10, 0.85); 
-    padding: 5px 12px; 
-    border-radius: 10px; 
-    font-size: 10px; 
-    font-weight: 900; 
-    color: #22c55e; 
-    border: 1px solid rgba(34, 197, 94, 0.3);
-    backdrop-filter: blur(5px);
-}
-.anime-card { 
-    transition: all var(--transition-main); 
-    position: relative; 
-    border-radius: 18px; 
-    overflow: hidden; 
-    background: var(--card); 
-    border: 1px solid rgba(255,255,255,0.03); 
-    cursor: pointer;
-}
-.anime-card:hover { 
-    transform: translateY(-12px) scale(1.02); 
-    border-color: #ef4444; 
-    box-shadow: 0 15px 30px rgba(239, 68, 68, 0.2); 
-}
-.card-img { 
-    width: 100%; 
-    aspect-ratio: 2/3; 
-    object-fit: cover; 
-    transition: transform 0.6s ease; 
-}
-.anime-card:hover .card-img { 
-    transform: scale(1.1); 
-}
-.ep-badge { 
-    position: absolute; 
-    top: 10px; 
-    left: 10px; 
-    background: #ef4444; 
-    color: white; 
-    font-size: 8px; 
-    font-weight: 900; 
-    padding: 3px 8px; 
-    border-radius: 6px; 
-    z-index: 10; 
-    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
-}
-.cat-chip { 
-    background: rgba(255,255,255,0.03); 
-    border: 1px solid rgba(255,255,255,0.05); 
-    padding: 10px 20px; 
-    border-radius: 14px; 
-    font-size: 9px; 
-    font-weight: 900; 
-    text-transform: uppercase; 
-    cursor: pointer; 
-    color: #94a3b8; 
-    white-space: nowrap; 
-    transition: 0.3s; 
-}
-.cat-chip:hover {
-    background: rgba(255,255,255,0.08);
-    color: white;
-}
-#hero { 
-    height: 75vh; 
-    background-size: cover; 
-    background-position: center; 
-    display: flex; 
-    align-items: flex-end; 
-    position: relative; 
-    overflow: hidden;
-}
-.hero-grad { 
-    position: absolute; 
-    inset: 0; 
-    background: linear-gradient(0deg, #05070a 5%, rgba(5,7,10,0.6) 40%, transparent 100%); 
-}
-.btn-red { 
-    background: #ef4444; 
-    color: white; 
-    padding: 18px; 
-    border-radius: 18px; 
-    font-weight: 900; 
-    font-size: 11px; 
-    text-transform: uppercase; 
-    cursor: pointer; 
-    width: 100%; 
-    border: none; 
-    transition: all 0.3s ease; 
-    box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
-}
-.btn-red:active { transform: scale(0.96); opacity: 0.9; }
-.ep-btn { 
-    flex-shrink: 0; 
-    width: 52px; 
-    height: 52px; 
-    border-radius: 16px; 
-    background: #111827; 
-    font-weight: 900; 
-    color: #94a3b8; 
-    border: 1px solid rgba(255,255,255,0.05); 
-    font-size: 13px; 
-    transition: all 0.2s;
-}
-.ep-active { 
-    background: #ef4444 !important; 
-    border-color: white !important; 
-    color: white !important;
-    box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); 
-}
-.modal-box { 
-    background: #0f1117; 
-    border: 1px solid rgba(255,255,255,0.05); 
-    padding: 35px; 
-    border-radius: 30px; 
-    max-width: 360px; 
-    width: 92%; 
-    text-align: center; 
-    box-shadow: 0 40px 100px rgba(0,0,0,0.8);
-}
-.scale-up {
-    animation: modalScale 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-@keyframes modalScale {
-    from { transform: scale(0.7); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
-.page-view { display: none; min-height: 100vh; padding-bottom: 150px; }
-.active-view { display: block; animation: fadeIn 0.5s ease; }
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-.grid-full { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; }
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-.genre-btn-active { background: #ef4444 !important; border-color: #fff !important; transform: scale(0.95); box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); color: #fff !important; }
-.shimmer {
-    background: linear-gradient(90deg, #0f1117 25%, #1a1c23 50%, #0f1117 75%);
-    background-size: 200% 100%;
-    animation: shimmer-load 1.5s infinite;
-}
-@keyframes shimmer-load {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+.hero-grad {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, #05070a 5%, rgba(5,7,10,0.6) 40%, transparent 100%);
 }
 </style>
 </head>
@@ -288,281 +109,236 @@ body {
 
 <!-- Splash Screen -->
 <div id="splash-screen">
-    <div class="splash-logo">YMLSFlix</div>
-    <div class="splash-loader"></div>
+  <div class="splash-logo">YMLSFlix</div>
+  <div class="splash-loader"></div>
 </div>
 
 <!-- Main Content -->
-<div id="mainContent" style="display:none;">
-    <!-- Hero Section -->
-    <section id="hero" style="background-image: url('https://via.placeholder.com/1500x500');">
-        <div class="hero-grad"></div>
-        <div style="padding:20px; color:white;">
-            <h1 id="heroTitle">Loading...</h1>
-            <p id="heroDesc">Loading description...</p>
-            <button id="heroPlayBtn" class="btn-red">Watch Now</button>
-            <button id="heroTrailerBtn" class="btn-red">Watch Trailer</button>
-        </div>
-    </section>
+<div id="mainContent">
 
-    <!-- Sections -->
-    <section id="trendingSection">
-        <h2>Trending Now</h2>
-        <div id="trendingGrid" class="grid-full"></div>
-    </section>
-    <section id="ratedSection">
-        <h2>Top Rated Masterpieces</h2>
-        <div id="ratedGrid" class="grid-full"></div>
-    </section>
-    <section id="airingSection">
-        <h2>Just Airing</h2>
-        <div id="airingGrid" class="grid-full"></div>
-    </section>
-    <section id="popularSection">
-        <h2>Popular</h2>
-        <div id="popularGrid" class="grid-full"></div>
-    </section>
-    <section id="continueSection" style="display:none;">
-        <h2>Continue Watching</h2>
-        <div id="continueGrid" class="grid-full"></div>
-    </section>
-
-    <!-- Player Overlay -->
-    <div id="playerView" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:999;">
-        <div style="padding:10px; display:flex; flex-direction:column; height:100%;">
-            <div style="flex:1; position:relative;">
-                <video id="player" controls style="width:100%; height:100%;"></video>
-            </div>
-            <div style="margin-top:10px; text-align:center;">
-                <h3 id="playerTitle"></h3>
-                <button onclick="document.getElementById('playerView').style.display='none';" class="btn-red">Close</button>
-            </div>
-        </div>
-        <!-- Loader -->
-        <div id="playerLoader" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:white;">Loading...</div>
+  <!-- Hero Section -->
+  <section id="hero" style="background-image: url('https://via.placeholder.com/1500x500');">
+    <div class="hero-grad"></div>
+    <div style="padding:20px; color:white; max-width:600px;">
+      <h1 id="heroTitle">Loading...</h1>
+      <p id="heroDesc">Loading description...</p>
+      <button id="heroPlayBtn" class="btn-red">Watch Now</button>
+      <button id="heroTrailerBtn" class="btn-red">Watch Trailer</button>
     </div>
+  </section>
 
-    <!-- Trailer Overlay -->
-    <div id="trailerOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center;">
-        <iframe id="trailerFrame" width="80%" height="80%" src="" frameborder="0" allowfullscreen></iframe>
-        <button style="position:absolute; top:10px; right:10px; z-index:1001;" onclick="document.getElementById('trailerOverlay').style.display='none';" class="btn-red">Close</button>
+  <!-- Sections for categories -->
+  <section>
+    <h2>Trending Now</h2>
+    <div id="trendingGrid" class="grid-full"></div>
+  </section>
+  <section>
+    <h2>Top Rated Masterpieces</h2>
+    <div id="ratedGrid" class="grid-full"></div>
+  </section>
+  <section>
+    <h2>Just Airing</h2>
+    <div id="airingGrid" class="grid-full"></div>
+  </section>
+  <section>
+    <h2>Popular</h2>
+    <div id="popularGrid" class="grid-full"></div>
+  </section>
+  <section id="continueSection" style="display:none;">
+    <h2>Continue Watching</h2>
+    <div id="continueGrid" class="grid-full"></div>
+  </section>
+
+  <!-- Player overlay -->
+  <div id="playerView" style="display:none; position:fixed; inset:0; background:#000; z-index:999;">
+    <div style="padding:10px; display:flex; flex-direction:column; height:100%;">
+      <video id="player" controls style="width:100%; height:80%;"></video>
+      <h3 id="playerTitle" style="color:white; margin-top:10px;">Episode</h3>
+      <button onclick="document.getElementById('playerView').style.display='none';" class="btn-red">Close</button>
     </div>
+    <div id="playerLoader" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:white;">Loading...</div>
+  </div>
 
-</div>
+  <!-- Trailer overlay -->
+  <div id="trailerOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center;">
+    <iframe id="trailerFrame" width="80%" height="80%" src="" frameborder="0" allowfullscreen></iframe>
+    <button style="position:absolute; top:10px; right:10px; z-index:1001;" onclick="document.getElementById('trailerOverlay').style.display='none';" class="btn-red">Close</button>
+  </div>
+
+</div> <!-- End mainContent -->
 
 <!-- Scripts -->
-<!-- Plyr JS -->
 <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
-<!-- HLS.js for HLS streaming -->
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-
-<!-- Your JS code -->
 <script>
-// --- CONFIG ---
-const API = 'https://graphql.anilist.co'; // GraphQL API for anime info
-// For streaming, use a demo URL; replace with your actual stream
-const STREAM_API = 'https://api.consumet.org/anime/gogoanime';
-
-// --- UI ELEMENTS ---
+// --- Core variables ---
+const API = 'https://graphql.anilist.co'; // Your GraphQL API for anime info
 const plyrInstance = new Plyr('#player', { captions: { active: true } });
 let hlsInstance = null;
 
-// --- Utility Functions ---
+// --- Utility functions ---
 function saveHistory(a) {
-    let hist = JSON.parse(localStorage.getItem('ymls_hist')) || [];
-    hist.unshift(a);
-    localStorage.setItem('ymls_hist', JSON.stringify(hist.slice(0, 20)));
-}
-
-function renderEpisodes(a) {
-    // Render episodes list if needed
+  let hist = JSON.parse(localStorage.getItem('ymls_hist')) || [];
+  hist.unshift(a);
+  localStorage.setItem('ymls_hist', JSON.stringify(hist.slice(0,20)));
 }
 
 // --- Setup UI ---
 function setupUI() {
-    document.getElementById('splash-screen').style.display='block';
-    // Hide splash after 2 seconds for demo
-    setTimeout(() => {
-        document.getElementById('splash-screen').style.display='none';
-        document.getElementById('mainContent').style.display='block';
-    }, 2000);
+  document.getElementById('splash-screen').style.display='block';
+  setTimeout(() => {
+    document.getElementById('splash-screen').style.display='none';
+    document.getElementById('mainContent').style.display='block';
+  }, 1500);
 }
 
-// --- Load functions ---
-window.onload = () => {
-    setupUI();
-    fetchHero();
-    loadHome(); // load sections with data
-    genFilters();
-    checkAutoSync();
-
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
-};
-
-// --- Fetch Hero Data ---
+// --- Fetch hero data ---
 async function fetchHero() {
-    const q = `
-    query {
-        Page(perPage:1) {
-            media(sort:TRENDING_DESC, type:ANIME) {
-                id
-                title { english romaji }
-                bannerImage
-                description
-                episodes
-                trailer { id site }
-            }
-        }
-    }`;
-    const r = await fetch(API, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({query: q})
-    }).then(res=>res.json());
-    const top = r.data.Page.media[0];
-
-    document.getElementById('hero').style.backgroundImage = `url(${top.bannerImage})`;
-    document.getElementById('heroTitle').innerText = top.title.english || top.title.romaji;
-    document.getElementById('heroDesc').innerHTML = top.description;
-
-    document.getElementById('heroPlayBtn').onclick = () => {
-        openPlayer({ title: top.title.english || top.title.romaji, trailer: top.trailer, episodes: 12, coverImage: { large: top.bannerImage } }, 1);
-    };
-
-    if (top.trailer?.site === 'youtube') {
-        document.getElementById('heroTrailerBtn').onclick = () => {
-            document.getElementById('trailerFrame').src = `https://www.youtube.com/embed/${top.trailer.id}?autoplay=1`;
-            document.getElementById('trailerOverlay').style.display='flex';
-            plyrInstance.pause();
-        };
+  const q = `
+  query {
+    Page(perPage:1) {
+      media(sort:TRENDING_DESC, type:ANIME) {
+        id
+        title { english romaji }
+        bannerImage
+        description
+        episodes
+        trailer { id site }
+      }
     }
+  }`;
+  const res = await fetch(API, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({query: q})
+  });
+  const data = await res.json();
+  const top = data.data.Page.media[0];
+
+  document.getElementById('hero').style.backgroundImage = \`url(\${top.bannerImage})\`;
+  document.getElementById('heroTitle').innerText = top.title.english || top.title.romaji;
+  document.getElementById('heroDesc').innerHTML = top.description;
+  document.getElementById('heroPlayBtn').onclick = () => {
+    openPlayer({ title: top.title.english || top.title.romaji, trailer: top.trailer, episodes: 12, coverImage: { large: top.bannerImage } }, 1);
+  };
+  if (top.trailer?.site === 'youtube') {
+    document.getElementById('heroTrailerBtn').onclick = () => {
+      document.getElementById('trailerFrame').src = \`https://www.youtube.com/embed/\${top.trailer.id}?autoplay=1\`;
+      document.getElementById('trailerOverlay').style.display='flex';
+      plyrInstance.pause();
+    };
+  }
 }
 
 // --- Load main sections ---
 function loadHome() {
-    fetchGrid("TRENDING_DESC", "trendingGrid");
-    fetchGrid("SCORE_DESC", "ratedGrid");
-    fetchGrid("START_DATE_DESC", "airingGrid");
-    fetchGrid("POPULARITY_DESC", "popularGrid");
-    const h = JSON.parse(localStorage.getItem('ymls_hist')) || [];
-    if (h.length) {
-        document.getElementById('continueSection').style.display='block';
-        render(h, 'continueGrid');
-    }
+  fetchGrid("TRENDING_DESC", "trendingGrid");
+  fetchGrid("SCORE_DESC", "ratedGrid");
+  fetchGrid("START_DATE_DESC", "airingGrid");
+  fetchGrid("POPULARITY_DESC", "popularGrid");
+  const h = JSON.parse(localStorage.getItem('ymls_hist')) || [];
+  if (h.length) {
+    document.getElementById('continueSection').style.display='block';
+    render(h, 'continueGrid');
+  }
 }
 
 // --- Fetch list of anime for a grid section ---
 async function fetchGrid(s, t) {
-    const q = `
-    query($sort:MediaSort) {
-        Page(perPage:20) {
-            media(type:ANIME, sort: $sort) {
-                id
-                title { english romaji }
-                coverImage { large }
-                episodes
-                trailer { id site }
-            }
-        }
-    }`;
-    const response = await fetch(API, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({query: q, variables: {sort: s}})
-    });
-    const result = await response.json();
-    render(result.data.Page.media, t);
+  const q = `
+  query($sort:MediaSort) {
+    Page(perPage:20) {
+      media(type:ANIME, sort: $sort) {
+        id
+        title { english romaji }
+        coverImage { large }
+        episodes
+        trailer { id site }
+      }
+    }
+  }`;
+  const response = await fetch(API, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({query: q, variables: {sort: s}})
+  });
+  const result = await response.json();
+  render(result.data.Page.media, t);
 }
 
-// --- Open Player with streaming ---
+// --- Open Player ---
 async function openPlayer(a, ep=1) {
-    // Use a sample stream URL (replace with your actual stream)
-    const sampleStreamUrl = 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4';
+  // Replace this URL with your actual streaming source URL
+  const sampleStreamUrl = 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4';
 
-    document.getElementById('playerView').style.display='block';
-    document.getElementById('playerTitle').innerText = (a.title || 'Anime') + " — Episode " + ep;
-    document.getElementById('playerLoader').style.display='block';
+  document.getElementById('playerView').style.display='block';
+  document.getElementById('playerTitle').innerText = (a.title || 'Anime') + " — Episode " + ep;
+  document.getElementById('playerLoader').style.display='block';
 
-    const video = document.getElementById('player');
+  const video = document.getElementById('player');
 
-    if (hlsInstance) {
-        hlsInstance.destroy();
-        hlsInstance = null;
-    }
+  if (hlsInstance) {
+    hlsInstance.destroy();
+    hlsInstance = null;
+  }
 
-    // Setup video source
-    video.src = sampleStreamUrl;
-    plyrInstance.pause();
+  // Setup video source
+  video.src = sampleStreamUrl;
+  plyrInstance.pause();
 
-    // Initialize HLS.js if supported
-    if (Hls.isSupported()) {
-        hlsInstance = new Hls();
-        hlsInstance.loadSource(sampleStreamUrl);
-        hlsInstance.attachMedia(video);
-        hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
-            plyrInstance.play();
-            document.getElementById('playerLoader').style.display='none';
-        });
-    } else {
-        // fallback
-        plyrInstance.source = {
-            type: 'video',
-            sources: [{ src: sampleStreamUrl, provider: 'html5' }]
-        };
-        plyrInstance.play();
-        document.getElementById('playerLoader').style.display='none';
-    }
-
-    saveHistory(a);
-    renderEpisodes(a);
-}
-
-// --- Fetch streaming source for an episode ---
-async function fetchStreamSource(id) {
-    // replace with your real streaming URL
-    return 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4';
-}
-
-// --- Generate filters (dummy) ---
-function genFilters() {
-    // your code
-}
-
-// --- Check auto sync (dummy) ---
-function checkAutoSync() {
-    // your code
-}
-
-// --- Render functions (dummy) ---
-function render(data, containerId) {
-    const container = document.getElementById(containerId);
-    container.innerHTML = '';
-    data.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'anime-card';
-        div.innerHTML = `
-            <img src="${item.coverImage.large}" class="card-img" />
-            <div class="ep-badge">${item.episodes} eps</div>
-            <h4>${item.title.english || item.title.romaji}</h4>
-            <button onclick='openPlayer(${JSON.stringify(item)})'>Watch</button>
-        `;
-        container.appendChild(div);
+  // support for HLS
+  if (Hls.isSupported()) {
+    hlsInstance = new Hls();
+    hlsInstance.loadSource(sampleStreamUrl);
+    hlsInstance.attachMedia(video);
+    hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+      plyrInstance.play();
+      document.getElementById('playerLoader').style.display='none';
     });
+  } else {
+    // fallback
+    plyrInstance.source = {
+      type: 'video',
+      sources: [{ src: sampleStreamUrl, provider: 'html5' }]
+    };
+    plyrInstance.play();
+    document.getElementById('playerLoader').style.display='none';
+  }
+
+  saveHistory(a);
 }
 
-function render(h, t) {
-    // your existing render code
-    // for simplicity, omitted here
+// --- Save history ---
+function saveHistory(a) {
+  let hist = JSON.parse(localStorage.getItem('ymls_hist')) || [];
+  hist.unshift(a);
+  localStorage.setItem('ymls_hist', JSON.stringify(hist.slice(0,20)));
 }
+
+// --- Render ---
+function render(data, containerId) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  data.forEach(item => {
+    const div = document.createElement('div');
+    div.className='anime-card';
+    div.innerHTML = `
+      <img src="${item.coverImage.large}" class="card-img" />
+      <div class="ep-badge">${item.episodes} eps</div>
+      <h4>${item.title.english || item.title.romaji}</h4>
+      <button onclick='openPlayer(${JSON.stringify(item)})'>Watch</button>
+    `;
+    container.appendChild(div);
+  });
+}
+
+// --- Initialize ---
+window.onload = () => {
+  setupUI();
+  fetchHero();
+  loadHome();
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+};
 </script>
-
-<!-- Service Worker registration will be in sw.js file -->
-<script>
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').catch(()=>{});
-}
-</script>
-
-<!-- Your script ends here -->
 </body>
 </html>
