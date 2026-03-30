@@ -493,6 +493,7 @@
             fetchGrid("SCORE_DESC", "ratedGrid");
             fetchGrid("START_DATE_DESC", "airingGrid"); 
             fetchGrid("POPULARITY_DESC", "popularGrid");
+            fetchGrid("START_DATE_ASC", "upcomingGrid");
             
             const h = JSON.parse(localStorage.getItem('ymls_hist')) || [];
             if(h.length) { 
