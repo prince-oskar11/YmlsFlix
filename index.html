@@ -611,6 +611,13 @@
             let yH = ''; for(let y=2026; y>=2000; y--) yH += `<button onclick="fetchByFilter('', ${y})" class="genre-btn">${y}</button>`;
             document.getElementById('yearList').innerHTML = yH;
         }
+
+        function showPage(p) { 
+            document.querySelectorAll('.page-view').forEach(v=>v.classList.remove('active-view')); 
+            document.getElementById(`page-${p}`).classList.add('active-view'); 
+            if(p === 'home') updateActiveChip(null);
+            window.scrollTo(0,0); 
+            document.querySelectorAll('.dropdown-content').forEach(x=>x.classList.remove('show'));
     </script>
 </body>
 </html>
