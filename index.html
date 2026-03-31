@@ -468,16 +468,14 @@
 
         function loadHome() {
             fetchGrid("TRENDING_DESC", "trendingGrid");
-            fetchGrid("SCORE_DESC", "ratedGrid");
-            fetchGrid("START_DATE_DESC", "airingGrid");
             fetchGrid("POPULARITY_DESC", "popularGrid");
+            fetchGrid("SCORE_DESC", "ratedGrid");
             const uQ = `query{Page(perPage:20){media(status:NOT_YET_RELEASED,type:ANIME,sort:POPULARITY_DESC,format_in:[TV,MOVIE,OVA]){id idMal title{english romaji} coverImage{large} episodes trailer{id site}}}}`;
             fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query:uQ})}).then(r=>r.json()).then(j=>render(j.data.Page.media, "upcomingGrid"));
+            const aQ = `query{Page(perPage:20){airingSchedules(airingAt_greater:${Math.floor(Date.now()/1000)},sort:TIME){media{id idMal title{english romaji} coverImage{large} episodes trailer{id site}}}}}`;
+            fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query:aQ})}).then(r=>r.json()).then(j=>render(j.data.Page.airingSchedules.map(s => s.media), "airingGrid"));
             const h = JSON.parse(localStorage.getItem('ymls_hist')) || [];
-            if(h.length) {
-                document.getElementById('continueSection').classList.remove('hidden');
-                render(h, 'continueGrid');
-            }
+            if(h.length) { document.getElementById('continueSection').classList.remove('hidden'); render(h, 'continueGrid'); }
         }
 
         function fetchGrid(s, t) {
