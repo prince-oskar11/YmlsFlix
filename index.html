@@ -449,22 +449,19 @@
             render(r.data.Page.media, "filterGrid", true);
         }
 
-        async function fetchByFormat(f) {
-            showPage('filter'); 
-            document.querySelectorAll('.cat-chip').forEach(c=>c.classList.remove('cat-active'));
-            document.getElementById(`chip-${f}`).classList.add('cat-active');
-            document.getElementById('filterTitle').innerText = f + " Masterpieces";
-            const q = `query($f:MediaFormat){Page(perPage:50){media(type:ANIME,format:$f,sort:POPULARITY_DESC){id title{english romaji} coverImage{large} episodes trailer{id site}}}}`;
-            const r = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query:q, variables:{f}})}).then(res=>res.json());
-            render(r.data.Page.media, "filterGrid", true);
+        showPage('filter'); updateActiveChip(f);
+            document.getElementById('filterTitle').innerText = f === 'MOVIE' ? "Anime Movies" : f;
+            const query = `query($f:MediaFormat){Page(perPage:50){media(type:ANIME,format:$f,sort:POPULARITY_DESC){id idMal title{english romaji} coverImage{large} episodes trailer{id site}}}}`;
+            const res = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query, variables:{f}})});
+            const json = await res.json(); render(json.data.Page.media, "filterGrid", true);
         }
 
-        async function fetchByFilter(g, y) {
-            showPage('filter'); 
-            document.getElementById('filterTitle').innerText = g || "Released in " + y;
-            const q = `query($g:String,$y:Int){Page(perPage:50){media(genre:$g,seasonYear:$y,type:ANIME,sort:POPULARITY_DESC){id title{english romaji} coverImage{large} episodes trailer{id site}}}}`;
-            const r = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query:q, variables:{g, y}})}).then(res=>res.json());
-            render(r.data.Page.media, "filterGrid", true);
+        async function fetchByFilter(g, y) { 
+            showPage('filter'); updateActiveChip(null);
+            document.getElementById('filterTitle').innerText = g || y;
+            const query = `query($g:String,$y:Int){Page(perPage:50){media(genre:$g,Year:$y,type:ANIME,sort:POPULARITY_DESC,format_in:[TV,MOVIE,OVA]){id idMal title{english romaji} coverImage{large} episodes trailer{id site}}}}`;
+            const res = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query, variables:{g, y}})});
+            const json = await res.json(); render(json.data.Page.media, "filterGrid", true);
         }
 
         function loadHome() {
