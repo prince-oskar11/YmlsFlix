@@ -560,10 +560,10 @@
         }
 
         function switchTab(t) { 
-            document.getElementById('genreList').classList.toggle('hidden', t!=='genres'); 
-            document.getElementById('yearList').classList.toggle('hidden', t!=='years'); 
-            document.getElementById('tab-gen').classList.toggle('border-red-600', t==='genres');
-            document.getElementById('tab-year').classList.toggle('border-red-600', t==='years');
+            document.getElementById('genreList').classList.toggle('hidden', t !== 'genres'); 
+            document.getElementById('yearList').classList.toggle('hidden', t !== 'years'); 
+            document.getElementById('tab-gen').classList.toggle('border-red-600', t==='genres'); 
+            document.getElementById('tab-year').classList.toggle('border-red-600', t==='years'); 
         }
 
         async function fetchRecommendations(id) {
@@ -582,10 +582,9 @@
         }
 
         function genFilters() {
-            const g = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Sports", "Supernatural", "Thriller", "Psychological"];
-            document.getElementById('genreList').innerHTML = g.map(x => `<button onclick="fetchByFilter('${x}', null)" class="genre-btn">${x}</button>`).join('');
-            let yH = ''; 
-            for(let y=2026; y>=2000; y--) yH += `<button onclick="fetchByFilter('', ${y})" class="genre-btn">${y}</button>`;
+            const g = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Slice of Life", "Sports", "Supernatural", "Thriller"];
+            document.getElementById('genreList').innerHTML = g.map(x => `<button onclick="fetchByFilter('${x}')" class="genre-btn">${x}</button>`).join('');
+            let yH = ''; for(let y=2026; y>=2000; y--) yH += `<button onclick="fetchByFilter('', ${y})" class="genre-btn">${y}</button>`;
             document.getElementById('yearList').innerHTML = yH;
         }
     </script>
