@@ -562,11 +562,21 @@
             `).join(''); 
         }
 
-        function switchTab(t) { 
-            document.getElementById('genreList').classList.toggle('hidden', t!=='genres'); 
-            document.getElementById('yearList').classList.toggle('hidden', t!=='years'); 
-            document.getElementById('tab-gen').classList.toggle('border-red-600', t==='genres');
-            document.getElementById('tab-year').classList.toggle('border-red-600', t==='years');
+        function switchTab(t) {
+    // Show the selected tab, hide the other
+    if (t === 'genres') {
+        document.getElementById('genreList').classList.remove('hidden');
+        document.getElementById('yearList').classList.add('hidden');
+        // Highlight the Categories tab
+        document.getElementById('tab-gen').classList.add('border-red-600');
+        document.getElementById('tab-year').classList.remove('border-red-600');
+    } else if (t === 'years') {
+        document.getElementById('genreList').classList.add('hidden');
+        document.getElementById('yearList').classList.remove('hidden');
+        // Highlight the Year tab
+        document.getElementById('tab-gen').classList.remove('border-red-600');
+        document.getElementById('tab-year').classList.add('border-red-600');
+    }
         }
 
         async function fetchRecommendations(id) {
