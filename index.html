@@ -425,6 +425,21 @@
                 if(!a) return '';
                 const inWish = wishlist.some(x => x.id === a.id);
                 return `
+<div class="anime-card ${isGrid ? 'w-full' : ''}" onclick='showChoice(${JSON.stringify(a)})'>
+    <div class="ep-badge">${a.episodes || '?'} EP</div>
+    ${a.hasNew ? '<div class="sync-dot"></div>' : ''}
+    <div class="wish-heart ${inWish ? 'wish-active' : ''}" onclick='toggleWish(${JSON.stringify(a)}, event)'>
+        <i class="fa fa-${inWish ? 'heart' : 'heart-o'}"></i>
+    </div>
+    <div class="relative">
+        <img src="${a.coverImage.large}" class="card-img" loading="lazy" />
+        <!-- Rating badge -->
+        <div class="rating-badge">${a.rating || 'NA'}</div>
+    </div>
+    <div class="p-3 truncate text-[10px] font-black uppercase text-gray-400 tracking-tight">
+        ${a.title.english || a.title.romaji}
+    </div>
+</div>`;
                 <div class="anime-card ${isGrid ? 'w-full' : ''}" onclick='showChoice(${JSON.stringify(a)})'>
                     <div class="ep-badge">${a.episodes || '?'} EP</div>
                     ${a.hasNew ? '<div class="sync-dot"></div>' : ''}
