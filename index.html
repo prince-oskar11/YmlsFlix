@@ -1,67 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>YMLSFLIX PRO | v60.0 ULTIMATE</title>
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest.json" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         :root { --plyr-color-main: #ef4444; --bg: #05070a; --card: #0f1117; --accent: #6366f1; }
-        
         body { background: var(--bg); color: #e2e8f0; font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; font-size: 13px; }
-        
         /* Layout & UI Components */
         .glass { background: rgba(5, 7, 10, 0.98); backdrop-filter: blur(25px); border-bottom: 1px solid rgba(255,255,255,0.05); }
         .logo-text { background: linear-gradient(to right, #ef4444, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        
         .dropdown-content { display: none; position: fixed; top: 120px; left: 50%; transform: translateX(-50%); background: #0f1117; border: 1px solid #1f2937; border-radius: 20px; z-index: 3000; width: 95%; max-width: 450px; padding: 25px; box-shadow: 0 40px 80px rgba(0,0,0,0.9); }
         .show { display: block !important; animation: slideUp 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
         @keyframes slideUp { from { opacity: 0; transform: translate(-50%, 15px); } to { opacity: 1; transform: translate(-50%, 0); } }
-
         /* Anime Cards & Interactions */
         .anime-card { transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; position: relative; border-radius: 12px; overflow: hidden; background: var(--card); width: 145px; flex-shrink: 0; border: 1px solid #1f2937; }
         .anime-card:hover { transform: translateY(-8px); border-color: #ef4444; box-shadow: 0 10px 20px rgba(239, 68, 68, 0.15); }
         .card-img { width: 100%; aspect-ratio: 2/3; object-fit: cover; transition: 0.5s; }
         .anime-card:hover .card-img { transform: scale(1.05); }
-        
         /* Multi-Option Wishlist System */
         .ep-badge { position: absolute; top: 8px; left: 8px; background: #ef4444; color: white; font-size: 8px; font-weight: 900; padding: 2px 7px; border-radius: 5px; z-index: 10; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
         .wish-heart { position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 20; color: white; transition: 0.3s; border: 1px solid rgba(255,255,255,0.1); }
         .wish-heart:active { transform: scale(1.3); }
         .wish-active { color: #ef4444 !important; background: white; border-color: #ef4444; }
-
         /* Overlay Modals */
         #choiceOverlay, #confirmOverlay, #trailerOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.94); z-index: 5000; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
         .modal-box { background: #0f1117; border: 1px solid #1f2937; padding: 35px; border-radius: 30px; max-width: 340px; width: 92%; text-align: center; }
-
         /* Chips & Filters */
         .cat-chip { background: #111827; border: 1px solid #1f2937; padding: 9px 18px; border-radius: 50px; font-size: 10px; font-weight: 900; text-transform: uppercase; cursor: pointer; color: #94a3b8; white-space: nowrap; transition: 0.3s; }
         .cat-active { background: #ef4444 !important; color: white !important; transform: translateY(-2px); border-color: white; }
         .genre-btn { background: #1a1c23; border: 1px solid #2d2d2d; color: #e2e8f0; padding: 12px; border-radius: 12px; font-size: 10px; font-weight: 700; transition: 0.2s; }
         .genre-btn:hover { background: var(--accent); border-color: white; }
-
         #hero { height: 60vh; background-size: cover; background-position: center; display: flex; align-items: flex-end; padding-bottom: 70px; position: relative; }
         .hero-grad { position: absolute; inset: 0; background: linear-gradient(0deg, #05070a 12%, rgba(5,7,10,0.4) 50%, transparent 100%); }
-        
         .page-view { display: none; min-height: 100vh; padding-bottom: 120px; }
         .active-view { display: block; }
         .grid-full { display: grid; grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 18px; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        
         .btn-red { background: #ef4444; color: white; padding: 15px; border-radius: 15px; font-weight: 900; font-size: 11px; text-transform: uppercase; cursor: pointer; width: 100%; border:none; transition: 0.3s; }
         .btn-red:active { transform: scale(0.96); opacity: 0.9; }
-        
         .ep-btn { flex-shrink: 0; width: 48px; height: 48px; border-radius: 14px; background: #111827; font-weight: 900; color: white; border: 1px solid #1f2937; font-size: 12px; transition: 0.3s; }
         .ep-active { background: #ef4444 !important; border-color: white !important; box-shadow: 0 0 18px rgba(239, 68, 68, 0.5); }
-        
         /* Sync Notification Dot */
         .sync-dot { position: absolute; bottom: 8px; right: 8px; width: 8px; height: 8px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 10px #22c55e; }
     </style>
@@ -70,7 +56,7 @@
 
     <div id="choiceOverlay" onclick="this.style.display='none'">
         <div class="modal-box" onclick="event.stopPropagation()">
-            <img id="choiceImg" class="w-40 h-56 mx-auto rounded-2xl mb-6 object-cover shadow-2xl border-2 border-gray-800/50">
+            <img id="choiceImg" class="w-40 h-56 mx-auto rounded-2xl mb-6 object-cover shadow-2xl border-2 border-gray-800/50" />
             <h3 id="choiceTitle" class="text-white font-black uppercase text-xs mb-8 leading-tight tracking-wide"></h3>
             <div class="space-y-3">
                 <button id="choicePlay" class="btn-red"><i class="fa fa-play mr-2"></i> Start Streaming</button>
@@ -115,7 +101,7 @@
             <div class="flex gap-3">
                 <div class="relative flex-1">
                     <i class="fa fa-search absolute left-5 top-1/2 -translate-y-1/2 text-gray-500"></i>
-                    <input type="text" id="searchBar" class="bg-[#111827] border border-[#1f2937] text-white pl-14 pr-5 py-4 rounded-2xl w-full outline-none focus:border-red-500 transition-all" placeholder="Search for anime, movies..." oninput="handleSearch(this.value)">
+                    <input type="text" id="searchBar" class="bg-[#111827] border border-[#1f2937] text-white pl-14 pr-5 py-4 rounded-2xl w-full outline-none focus:border-red-500 transition-all" placeholder="Search for anime, movies..." oninput="handleSearch(this.value)" />
                 </div>
                 <button id="installBtn" onclick="triggerInstall()" class="hidden bg-indigo-600 text-[10px] font-black px-6 rounded-2xl uppercase tracking-widest hover:bg-indigo-500">Install</button>
             </div>
@@ -139,8 +125,8 @@
         <div id="profileDrop" class="dropdown-content">
             <div id="authBox">
                 <h3 class="text-white font-black text-[10px] uppercase mb-6 text-center tracking-[0.3em]">Premium Sync</h3>
-                <input type="text" id="authEmail" placeholder="Enter Username" class="bg-[#111827] p-4 rounded-xl w-full mb-3 border border-[#1f2937] outline-none focus:border-accent">
-                <input type="password" id="authPass" placeholder="Enter Password" class="bg-[#111827] p-4 rounded-xl w-full mb-6 border border-[#1f2937] outline-none focus:border-accent">
+                <input type="text" id="authEmail" placeholder="Enter Username" class="bg-[#111827] p-4 rounded-xl w-full mb-3 border border-[#1f2937] outline-none focus:border-accent" />
+                <input type="password" id="authPass" placeholder="Enter Password" class="bg-[#111827] p-4 rounded-xl w-full mb-6 border border-[#1f2937] outline-none focus:border-accent" />
                 <div class="flex gap-3">
                     <button onclick="handleAuth('login')" class="btn-red flex-1">Login</button>
                     <button onclick="handleAuth('signup')" class="btn-red flex-1 bg-gray-700">Register</button>
@@ -171,7 +157,6 @@
                 </div>
             </div>
         </header>
-
         <main class="container mx-auto p-6 space-y-20">
             <section id="continueSection" class="hidden">
                 <div class="flex items-center justify-between mb-6">
@@ -179,9 +164,7 @@
                     <span class="text-[9px] text-gray-600 font-bold uppercase">Auto-Saved</span>
                 </div>
                 <div id="continueGrid" class="flex gap-6 overflow-x-auto no-scrollbar pb-3"></div>
-
             </section>
-            
             <section><h2 class="text-[11px] font-black mb-7 uppercase text-orange-500 tracking-[0.4em]">Trending Now</h2><div id="trendingGrid" class="flex gap-6 overflow-x-auto no-scrollbar pb-3"></div></section>
             <section><h2 class="text-[11px] font-black mb-7 uppercase text-yellow-500 tracking-[0.4em]">Top Rated Masterpieces</h2><div id="ratedGrid" class="flex gap-6 overflow-x-auto no-scrollbar pb-3"></div></section>
             <section><h2 class="text-[11px] font-black mb-7 uppercase text-blue-500 tracking-[0.4em]">Just Airing</h2><div id="airingGrid" class="flex gap-6 overflow-x-auto no-scrollbar pb-3"></div></section>
@@ -214,7 +197,6 @@
             </div>
             <button onclick="closePlayer(); showPage('home');" class="w-12 h-12 rounded-2xl bg-gray-900 hover:bg-gray-800 flex items-center justify-center transition"><i class="fa fa-home"></i></button>
         </div>
-
         <div class="w-full aspect-video bg-black relative group" id="videoContainer">
             <video id="player" playsinline controls class="w-full h-full"></video>
             <div id="playerLoader" class="absolute inset-0 flex items-center justify-center bg-black/95 z-10 hidden">
@@ -227,22 +209,18 @@
                 </div>
             </div>
         </div>
-
         <div class="p-8 container mx-auto">
             <h2 class="text-[10px] font-black mb-5 uppercase text-gray-600 tracking-widest">Switch Server</h2>
             <div id="serverList" class="flex gap-3 overflow-x-auto no-scrollbar mb-10 pb-2"></div>
-            
             <div class="flex flex-col sm:flex-row gap-4 mb-14">
                 <button id="trailerBtn" class="bg-indigo-600 flex-1 py-5 rounded-2xl font-black text-xs uppercase shadow-xl hover:bg-indigo-500 transition-all"><i class="fa fa-video-camera mr-2"></i>Official Trailer</button>
                 <button onclick="nextEpisode()" class="bg-red-600 flex-1 py-5 rounded-2xl font-black text-xs uppercase shadow-xl hover:bg-red-500 transition-all">Next Episode <i class="fa fa-chevron-right ml-2"></i></button>
             </div>
-
             <div class="flex items-center justify-between mb-6">
                 <h2 class="text-[11px] font-black uppercase text-gray-500 tracking-[0.3em]">Episode Selector</h2>
                 <div id="totalEpDisplay" class="text-[10px] font-bold text-red-600"></div>
             </div>
             <div id="epList" class="flex gap-4 overflow-x-auto no-scrollbar mb-20 py-4"></div>
-            
             <h2 class="text-[11px] font-black mb-8 uppercase text-red-600 tracking-[0.5em] text-center">Similar Series Recommendations</h2>
             <div id="recommendGrid" class="flex gap-6 overflow-x-auto no-scrollbar pb-12"></div>
         </div>
@@ -452,7 +430,7 @@
                     <div class="wish-heart ${inWish ? 'wish-active' : ''}" onclick='toggleWish(${JSON.stringify(a)}, event)'>
                         <i class="fa fa-${inWish ? 'heart' : 'heart-o'}"></i>
                     </div>
-                    <img src="${a.coverImage.large}" class="card-img" loading="lazy">
+                    <img src="${a.coverImage.large}" class="card-img" loading="lazy" />
                     <div class="p-3 truncate text-[10px] font-black uppercase text-gray-400 tracking-tight">
                         ${a.title.english || a.title.romaji}
                     </div>
@@ -489,15 +467,14 @@
         }
 
         function loadHome() {
-            fetchGrid("TRENDING_DESC", "trendingGrid"); 
+            fetchGrid("TRENDING_DESC", "trendingGrid");
             fetchGrid("SCORE_DESC", "ratedGrid");
-            fetchGrid("START_DATE_DESC", "airingGrid"); 
+            fetchGrid("START_DATE_DESC", "airingGrid");
             fetchGrid("POPULARITY_DESC", "popularGrid");
-            
             const h = JSON.parse(localStorage.getItem('ymls_hist')) || [];
-            if(h.length) { 
-                document.getElementById('continueSection').classList.remove('hidden'); 
-                render(h, 'continueGrid'); 
+            if(h.length) {
+                document.getElementById('continueSection').classList.remove('hidden');
+                render(h, 'continueGrid');
             }
         }
 
@@ -509,19 +486,21 @@
         }
 
         async function fetchHero() {
-            const q = `query{Page(perPage:1){media(type:ANIME,sort:TRENDING_DESC){id title{english romaji} bannerImage description episodes trailer{id site}}}}`;
+            const q = `query{Page(perPage:1){media(type:ANIME,sort:SCORE_DESC){id title{english romaji} bannerImage description episodes trailer{id site}}}}`;
             const r = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query:q})}).then(res=>res.json());
             const top = r.data.Page.media[0];
-            
-            document.getElementById('hero').style.backgroundImage = `url(${top.bannerImage})`;
+
+            // Fix background image to a real-life image URL
+            document.getElementById('hero').style.backgroundImage = `url(https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80)`;
+
+            // Set the title and description
             document.getElementById('heroTitle').innerText = top.title.english || top.title.romaji;
             document.getElementById('heroDesc').innerHTML = top.description;
             document.getElementById('heroPlayBtn').onclick = () => openPlayer(top);
-            
             if(top.trailer?.site === 'youtube') {
                 document.getElementById('heroTrailerBtn').onclick = () => {
-                    document.getElementById('trailerFrame').src = `https://www.youtube.com/embed/${top.trailer.id}?autoplay=1`; 
-                    document.getElementById('trailerOverlay').style.display = 'flex'; 
+                    document.getElementById('trailerFrame').src = `https://www.youtube.com/embed/${top.trailer.id}?autoplay=1`;
+                    document.getElementById('trailerOverlay').style.display = 'flex';
                 };
             }
         }
@@ -543,7 +522,7 @@
         function renderWishlist() { 
             const w = currentUser ? (currentUser.wishlist || []) : (JSON.parse(localStorage.getItem('ymls_guest_wishlist')) || []); 
             render(w, 'wishlistGrid', true); 
-            document.getElementById('wishCount').innerText = w.length + " Titles Saved";
+            document.getElementById('wishCount').innerText = w.length + " Items Saved";
         }
 
         function toggleDropdown(id) { 
@@ -607,11 +586,10 @@
         function genFilters() {
             const g = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Sports", "Supernatural", "Thriller", "Psychological"];
             document.getElementById('genreList').innerHTML = g.map(x => `<button onclick="fetchByFilter('${x}', null)" class="genre-btn">${x}</button>`).join('');
-            
             let yH = ''; 
             for(let y=2026; y>=2000; y--) yH += `<button onclick="fetchByFilter('', ${y})" class="genre-btn">${y}</button>`;
             document.getElementById('yearList').innerHTML = yH;
         }
     </script>
 </body>
-                                                                                                                                                    </html>
+</html>
