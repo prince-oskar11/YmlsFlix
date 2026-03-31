@@ -1,46 +1,45 @@
-import http.server
-import socketserver
-import socket
-import os
-
-PORT = 8080
-
-# This function finds your computer's IP address on your local Wi-Fi
-def get_ip():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    try:
-        s.connect(('8.8.8.8', 1))
-        IP = s.getsockname()[0]
-    except Exception:
-        IP = '127.0.0.1'
-    finally:
-        s.close()
-    return IP
+import json
 
 class MyHandler(http.server.SimpleHTTPRequestHandler):
-    def end_headers(self):
-        # Crucial for PWA: These headers help the browser recognize the Service Worker
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate')
-        super().end_headers()
-
-# Fix for PWA MIME types
-MyHandler.extensions_map.update({
-    '.manifest': 'application/x-web-app-manifest+json',
-    '.json': 'application/json',
-    '.js': 'application/javascript',
-    '.css': 'text/css',
-})
-
-with socketserver.TCPServer(("", PORT), MyHandler) as httpd:
-    my_ip = get_ip()
-    print("===============================================")
-    print("   🚀 YMLSFLIX PRO - LOCAL DEV SERVER")
-    print("===============================================")
-    print(f"  COMPUTER: http://localhost:{PORT}")
-    print(f"  MOBILE:   http://{my_ip}:{PORT}")
-    print("-----------------------------------------------")
-    print("  Note: Both devices must be on the same Wi-Fi.")
-    print("  Press CTRL+C to shut down the server.")
-    print("===============================================")
-    httpd.serve_forever()
+    def do_GET(self):
+        if self.path == "/manifest.json":
+            # Generate your dynamic manifest here
+            manifest_data = {
+                "name": "YMLSFLIX PRO",
+                "short_name": "YMLSFLIX",
+                "description": "Premium Anime & Movie Streaming Platform",
+                "start_url": "/index.html",
+                "display": "standalone",
+                "orientation": "any",
+                "background_color": "#05070a",
+                "theme_color": "#ef4444",
+                "icons": [
+                    {
+                        "src": "https://your-cdn.com/icons/icon-192.png",
+                        "sizes": "192x192",
+                        "type": "image/png",
+                        "purpose": "any"
+                    },
+                    {
+                        "src": "https://your-cdn.com/icons/icon-512.png",
+                        "sizes": "512x512",
+                        "type": "image/png",
+                        "purpose": "maskable"
+                    }
+                ],
+                "screenshots": [
+                    {
+                        "src": "https://your-cdn.com/screenshots/screen-1080x1920.png",
+                        "sizes": "1080x1920",
+                        "type": "image/png",
+                        "form_factor": "narrow",
+                        "label": "Home Screen"
+                    }
+                ]
+            }
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps(manifest_data).encode())
+        else:
+            super().do_GET()
