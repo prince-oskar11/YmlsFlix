@@ -55,32 +55,16 @@
 </head>
 <body>
 
-    <div id="choiceOverlay" onclick="this.style.display='none'" style="display:none; position:fixed; inset:0; background-color: rgba(0,0,0,0.94); z-index:9999; align-items: center; justify-content: center;">
-  <div class="modal-box" onclick="event.stopPropagation()" style="background:#222; max-width:400px; width:92%; padding:20px; border-radius:8px; overflow-y:auto; max-height:90vh;">
-    <img id="choiceImg" class="w-40 h-56 mx-auto rounded-2xl mb-6 object-cover shadow-2xl border-2 border-gray-800/50" />
-    <h3 id="choiceTitle" class="text-white font-black uppercase text-xs mb-8 leading-tight tracking-wide"></h3>
-    <div class="space-y-3 mb-4">
-      <button id="choicePlay" class="btn-red"><i class="fa fa-play mr-2"></i> Start Streaming</button>
-      <button id="choiceWish" class="btn-red bg-gray-800 text-gray-400 hover:text-white">Add to Wishlist</button>
-      <button onclick="document.getElementById('choiceOverlay').style.display='none'" class="text-gray-600 font-bold text-[10px] uppercase mt-4 tracking-[0.2em] block w-full">Dismiss</button>
-    </div>
-    <!-- New "Information" section -->
-    <div class="mt-6 p-4 bg-gray-900 rounded-lg border border-gray-700">
-      <h4 class="text-white font-semibold mb-4">Information</h4>
-      
-      <!-- Characters -->
-      <div class="mb-4">
-        <h5 class="text-gray-300 font-medium mb-2">Characters</h5>
-        <div id="charactersSection" class="text-gray-400 text-sm">Loading characters...</div>
-      </div>
-      
-      <!-- Synopsis -->
-      <div>
-        <h5 class="text-gray-300 font-medium mb-2">Synopsis</h5>
-        <p id="synopsisSection" class="text-gray-400 text-sm"><span id="ageRating"></span> <span id="synopsisText">Loading synopsis...</span></p>
-      </div>
-    </div>
-  </div>
+    <div id="choiceOverlay" onclick="this.style.display='none'">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <img id="choiceImg" class="w-40 h-56 mx-auto rounded-2xl mb-6 object-cover shadow-2xl border-2 border-gray-800/50" />
+            <h3 id="choiceTitle" class="text-white font-black uppercase text-xs mb-8 leading-tight tracking-wide"></h3>
+            <div class="space-y-3">
+                <button id="choicePlay" class="btn-red"><i class="fa fa-play mr-2"></i> Start Streaming</button>
+                <button id="choiceWish" class="btn-red bg-gray-800 text-gray-400 hover:text-white">Add to Wishlist</button>
+                <button onclick="document.getElementById('choiceOverlay').style.display='none'" class="text-gray-600 font-bold text-[10px] uppercase mt-4 tracking-[0.2em] block w-full">Dismiss</button>
+            </div>
+        </div>
     </div>
 
     <div id="trailerOverlay" onclick="closeTrailer()">
@@ -245,7 +229,7 @@
     </div>
 
     <script>
-        const API = 'https://graphql.anilist.co';
+        const API = 'https://graphql.anilist.co', STREAM_API = 'https://api.consumet.org/anime/gogoanime';
         let currentUser = JSON.parse(localStorage.getItem('ymls_active_user'));
         let playMode = 'sub', currentAnime = null, currentEp = 1, currentServers = [], lastTap = 0, deferredPrompt, plyrInstance, hlsInstance;
 
@@ -327,47 +311,6 @@
             render(hist, 'continueGrid');
         }
 
-        async function fetchAnimeDetails(anime) {
-  const query = `
-    query ($id: Int) {
-      Media(id: $id) {
-        description(asHtml: false)
-        characters {
-          edges {
-            node {
-              name {
-                full
-              }
-            }
-          }
-        }
-      }
-    }
-  `;
-  const variables = { id: anime.id };
-  try {
-    const response = await fetch(API, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query, variables })
-    });
-    const data = await response.json();
-    if (data.data && data.data.Media) {
-      // Set description (synopsis)
-      anime.synopsis = data.data.Media.description || '';
-      // Set characters array
-      anime.characters = data.data.Media.characters.edges.map(e => e.node.name.full);
-    } else {
-      anime.synopsis = 'No description available.';
-      anime.characters = [];
-    }
-  } catch (e) {
-    console.error('Error fetching anime details:', e);
-    anime.synopsis = 'Error loading description.';
-    anime.characters = [];
-  }
-        }
-
         // DUAL WISHLIST SYSTEM
         function showChoice(a) {
             document.getElementById('choiceOverlay').style.display = 'flex';
@@ -377,45 +320,6 @@
             document.getElementById('choicePlay').onclick = () => { 
                 document.getElementById('choiceOverlay').style.display='none'; 
                 openPlayer(a); 
-                // Fetch detailed info (characters & description)
-  await fetchAnimeDetails(a);
-
-  document.getElementById('choiceOverlay').style.display = 'flex';
-  document.getElementById('choiceImg').src = a.coverImage.large;
-  document.getElementById('choiceTitle').innerText = a.title.english || a.title.romaji;
-
-  document.getElementById('choicePlay').onclick = () => { 
-    document.getElementById('choiceOverlay').style.display='none'; 
-    openPlayer(a); 
-  };
-
-  document.getElementById('choiceWish').onclick = () => { 
-    document.getElementById('choiceOverlay').style.display='none'; 
-    toggleWish(a); 
-  };
-
-  // Populate characters
-  document.getElementById('charactersSection').innerText = a.characters.length > 0 ? a.characters.join(', ') : 'Characters info not available';
-
-  // Populate synopsis and age rating
-  const ageRating = a.ageRating || 'All Ages';
-  document.getElementById('ageRating').innerText = `[${ageRating}]`;
-  document.getElementById('synopsisText').innerText = a.synopsis || 'Synopsis not available';
-}
-
-// --- Example: Load some sample anime data and trigger showChoice ---
-const sampleAnime = {
-  id: 15125, // Example Anime ID from AniList
-  title: { english: "Fullmetal Alchemist: Brotherhood", romaji: "Fullmetal Alchemist: Brotherhood" },
-  coverImage: { large: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx5115-8s5X8M0iQhQz.jpg" },
-  // You should have these properties from your data source
-  characters: [], // Will be fetched
-  synopsis: "",   // Will be fetched
-  ageRating: "13+"
-};
-
-// Call showChoice with sample data (or your real data)
-showChoice(sampleAnime);
             };
             
             document.getElementById('choiceWish').onclick = () => { 
@@ -702,31 +606,4 @@ showChoice(sampleAnime);
             document.getElementById('genreList').classList.toggle('hidden', t!=='genres'); 
             document.getElementById('yearList').classList.toggle('hidden', t!=='years'); 
             document.getElementById('tab-gen').classList.toggle('border-red-600', t==='genres');
-            document.getElementById('tab-year').classList.toggle('border-red-600', t==='years');
-        }
-
-        async function fetchRecommendations(id) {
-            const q = `query($id:Int){Media(id:$id){recommendations(perPage:15){nodes{mediaRecommendation{id title{english romaji} coverImage{large} episodes trailer{id site}}}}}}`;
-            const r = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query:q, variables:{id}})}).then(res=>res.json());
-            render(r.data.Media.recommendations.nodes.map(n=>n.mediaRecommendation).filter(x=>x), 'recommendGrid');
-        }
-
-        function setupUI() { 
-            if(currentUser) { 
-                document.getElementById('authBox').classList.add('hidden'); 
-                document.getElementById('userBox').classList.remove('hidden'); 
-                document.getElementById('userDisplay').innerText = currentUser.name; 
-            } 
-            setMode('sub');
-        }
-
-        function genFilters() {
-            const g = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Sports", "Supernatural", "Thriller", "Psychological"];
-            document.getElementById('genreList').innerHTML = g.map(x => `<button onclick="fetchByFilter('${x}', null)" class="genre-btn">${x}</button>`).join('');
-            let yH = ''; 
-            for(let y=2026; y>=2000; y--) yH += `<button onclick="fetchByFilter('', ${y})" class="genre-btn">${y}</button>`;
-            document.getElementById('yearList').innerHTML = yH;
-        }
-    </script>
-</body>
-    </html>
+            document.getElementById('tab-year').
