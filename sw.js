@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ymlsflix-v60'; 
+const CACHE_NAME = 'ymlflix-v60'; 
 
 // All static UI assets that make the app work offline
 const assets = [
