@@ -479,8 +479,7 @@
     </div>`;
   }).join('');
   }
-        
-        <div class="anime-card ${isGrid ? 'w-full' : ''}" onclick='showChoice(${JSON.stringify(a)})'>
+     <div class="anime-card ${isGrid ? 'w-full' : ''}" onclick='showChoice(${JSON.stringify(a)})'>
     <div class="ep-badge">${a.episodes || '?'} EP</div>
     ${a.hasNew ? '<div class="sync-dot"></div>' : ''}
     <div class="wish-heart ${inWish ? 'wish-active' : ''}" onclick='toggleWish(${JSON.stringify(a)}, event)'>
