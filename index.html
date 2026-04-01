@@ -478,6 +478,12 @@
       </div>`;
     }).join('');
         }
+        // Call this function to start loading data, fetching ratings, and rendering
+  // For example, on page load:
+  window.onload = () => {
+    loadAnimeWithRatings();
+    // ... your other init code
+  };
 
         // SEARCH & FILTER ENGINE
         async function handleSearch(term) {
@@ -631,12 +637,6 @@
             for(let y=2026; y>=2000; y--) yH += `<button onclick="fetchByFilter('', ${y})" class="genre-btn">${y}</button>`;
             document.getElementById('yearList').innerHTML = yH;
         }
-        // Call this function to start loading data, fetching ratings, and rendering
-  // For example, on page load:
-  window.onload = () => {
-    loadAnimeWithRatings();
-    // ... your other init code
-  };
     </script>
 </body>
     </html>
