@@ -229,6 +229,10 @@
     </div>
 
     <script>
+        const API = 'https://graphql.anilist.co', STREAM_API = 'https://api.consumet.org/anime/gogoanime';
+        let currentUser = JSON.parse(localStorage.getItem('ymls_active_user'));
+        let playMode = 'sub', currentAnime = null, currentEp = 1, currentServers = [], lastTap = 0, deferredPrompt, plyrInstance, hlsInstance;
+
         function handleRemoteControl(e) {
   switch (e.key) {
     case 'Enter':
@@ -537,13 +541,21 @@
             render(r.data.Page.media, "filterGrid", true);
         }
 
-        async function fetchByFilter(g, y) {
-            showPage('filter'); 
-            document.getElementById('filterTitle').innerText = g || "Released in " + y;
-            const q = `query($g:String,$y:Int){Page(perPage:50){media(genre:$g,seasonYear:$y,type:ANIME,sort:POPULARITY_DESC){id title{english romaji} coverImage{large} episodes trailer{id site}}}}`;
-            const r = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query:q, variables:{g, y}})}).then(res=>res.json());
-            render(r.data.Page.media, "filterGrid", true);
+        async ffunction fetchByFilter(genre, year) {
+    const data = // your data here
+    const filteredData = data.filter(item => {
+        if (genre) {
+            return item.genre === genre;
+        } else {
+            return true;
         }
+    });
+    if (year) {
+        return filteredData.filter(item => item.year === year);
+    } else {
+        return filteredData;
+    }
+}
 
         function loadHome() {
             fetchGrid("TRENDING_DESC", "trendingGrid");
@@ -663,12 +675,18 @@
         }
 
         function genFilters() {
-            const g = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Sports", "Supernatural", "Thriller", "Psychological"];
-            document.getElementById('genreList').innerHTML = g.map(x => `<button onclick="fetchByFilter('${x}', null)" class="genre-btn">${x}</button>`).join('');
-            let yH = ''; 
-            for(let y=2026; y>=2000; y--) yH += `<button onclick="fetchByFilter('', ${y})" class="genre-btn">${y}</button>`;
-            document.getElementById('yearList').innerHTML = yH;
-        }
+    const g = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Sports", "Supernatural", "Thriller", "Psychological"];
+    document.getElementById('genreList').innerHTML = g.map(x => `<button onclick="fetchByFilter('${x}', null)" class="genre-btn">${x}</button>`).join('');
+    let yH = ''; 
+    for(let y=2026; y>=2000; y--) yH += `<button onclick="fetchDataByYear(${y})" class="genre-btn">${y}</button>`;
+    document.getElementById('yearList').innerHTML = yH;
+}
+        function fetchDataByYear(year) {
+    const data = fetchByFilter(null, year);
+    // render the filtered data
+    render(data);
+}
+
     </script>
 </body>
     </html>
