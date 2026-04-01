@@ -421,39 +421,48 @@
 
         // GRID RENDERING LOGIC
         // Function to fetch ratings from Jikan API using anime title
-  async function fetchRatingsForAnime(animeList) {
-    for (let anime of animeList) {
-      try {
-        const searchTitle = encodeURIComponent(anime.title.english || anime.title.romaji);
-        const response = await fetch(`https://api.jikan.moe/v4/anime?q=${searchTitle}&limit=1`);
-        const data = await response.json();
+  async function function fetchRatingsForAnime(animeList) {
+  for (let anime of animeList) {
+    try {
+      const searchTitle = encodeURIComponent(anime.title.english || anime.title.romaji);
+      const response = await fetch(`https://api.jikan.moe/v4/anime?q=${searchTitle}&limit=1`);
+      const data = await response.json();
 
-        if (data.data && data.data.length > 0) {
-          const animeData = data.data[0];
-          // Assign the score (rating between 0-10)
-          anime.rating = animeData.score ? animeData.score.toFixed(1) : 'N/A';
-        } else {
-          anime.rating = 'N/A';
-        }
-      } catch (e) {
-        console.error(`Error fetching rating for ${anime.title.english || anime.title.romaji}`, e);
+      if (data.data && data.data.length > 0) {
+        const animeData = data.data[0];
+        anime.rating = animeData.score ? animeData.score.toFixed(1) : 'N/A';
+      } else {
         anime.rating = 'N/A';
       }
+    } catch (e) {
+      console.error(`Error fetching rating for '${anime.title.english || anime.title.romaji}':`, e);
+      anime.rating = 'N/A';
     }
+  }
   }
 
   // Function to load your anime data, fetch ratings, then render
   async function loadAnimeWithRatings() {
-    // Replace this with your actual fetch logic for your anime data
-    const response = await fetch('your-anime-data-api'); // <-- your data source
-    const data = await response.json();
+  // Replace this with your actual data fetch if needed
+  const data = [
+    {
+      id: 1,
+      title: { english: "Fullmetal Alchemist: Brotherhood", romaji: "Hagane no Renkinjutsushi: Brotherhood" },
+      coverImage: { large: "https://upload.wikimedia.org/wikipedia/en/7/7e/FullmetalAlchemistBrotherhoodPoster.jpg" },
+      episodes: 64
+    },
+    {
+      id: 2,
+      title: { english: "Attack on Titan", romaji: "Shingeki no Kyojin" },
+      coverImage: { large: "https://upload.wikimedia.org/wikipedia/en/9/92/Attack_on_Titan_the_Final_Season_Poster.jpg" },
+      episodes: 75
+    }
+    // Add your actual data here or replace this with your fetch call
+  ];
 
-    // Fetch ratings for each anime
-    await fetchRatingsForAnime(data);
-
-    // Render the anime list with ratings
-    render(data, 'yourContainerId');
-  }
+  await fetchRatingsForAnime(data);
+  render(data, 'anime-container');
+}
 
         function render(l, t, isGrid=false) {
     const wishlist = currentUser ? (currentUser.wishlist || []) : (JSON.parse(localStorage.getItem('ymls_guest_wishlist')) || []);
