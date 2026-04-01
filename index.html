@@ -245,7 +245,7 @@
     </div>
 
     <script>
-        const API = 'https://graphql.anilist.co', STREAM_API = 'https://api.consumet.org/anime/gogoanime';
+        const API = 'https://graphql.anilist.co';
         let currentUser = JSON.parse(localStorage.getItem('ymls_active_user'));
         let playMode = 'sub', currentAnime = null, currentEp = 1, currentServers = [], lastTap = 0, deferredPrompt, plyrInstance, hlsInstance;
 
@@ -327,6 +327,47 @@
             render(hist, 'continueGrid');
         }
 
+        async function fetchAnimeDetails(anime) {
+  const query = `
+    query ($id: Int) {
+      Media(id: $id) {
+        description(asHtml: false)
+        characters {
+          edges {
+            node {
+              name {
+                full
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+  const variables = { id: anime.id };
+  try {
+    const response = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, variables })
+    });
+    const data = await response.json();
+    if (data.data && data.data.Media) {
+      // Set description (synopsis)
+      anime.synopsis = data.data.Media.description || '';
+      // Set characters array
+      anime.characters = data.data.Media.characters.edges.map(e => e.node.name.full);
+    } else {
+      anime.synopsis = 'No description available.';
+      anime.characters = [];
+    }
+  } catch (e) {
+    console.error('Error fetching anime details:', e);
+    anime.synopsis = 'Error loading description.';
+    anime.characters = [];
+  }
+        }
+
         // DUAL WISHLIST SYSTEM
         function showChoice(a) {
             document.getElementById('choiceOverlay').style.display = 'flex';
@@ -336,6 +377,45 @@
             document.getElementById('choicePlay').onclick = () => { 
                 document.getElementById('choiceOverlay').style.display='none'; 
                 openPlayer(a); 
+                // Fetch detailed info (characters & description)
+  await fetchAnimeDetails(a);
+
+  document.getElementById('choiceOverlay').style.display = 'flex';
+  document.getElementById('choiceImg').src = a.coverImage.large;
+  document.getElementById('choiceTitle').innerText = a.title.english || a.title.romaji;
+
+  document.getElementById('choicePlay').onclick = () => { 
+    document.getElementById('choiceOverlay').style.display='none'; 
+    openPlayer(a); 
+  };
+
+  document.getElementById('choiceWish').onclick = () => { 
+    document.getElementById('choiceOverlay').style.display='none'; 
+    toggleWish(a); 
+  };
+
+  // Populate characters
+  document.getElementById('charactersSection').innerText = a.characters.length > 0 ? a.characters.join(', ') : 'Characters info not available';
+
+  // Populate synopsis and age rating
+  const ageRating = a.ageRating || 'All Ages';
+  document.getElementById('ageRating').innerText = `[${ageRating}]`;
+  document.getElementById('synopsisText').innerText = a.synopsis || 'Synopsis not available';
+}
+
+// --- Example: Load some sample anime data and trigger showChoice ---
+const sampleAnime = {
+  id: 15125, // Example Anime ID from AniList
+  title: { english: "Fullmetal Alchemist: Brotherhood", romaji: "Fullmetal Alchemist: Brotherhood" },
+  coverImage: { large: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx5115-8s5X8M0iQhQz.jpg" },
+  // You should have these properties from your data source
+  characters: [], // Will be fetched
+  synopsis: "",   // Will be fetched
+  ageRating: "13+"
+};
+
+// Call showChoice with sample data (or your real data)
+showChoice(sampleAnime);
             };
             
             document.getElementById('choiceWish').onclick = () => { 
