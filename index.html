@@ -55,34 +55,38 @@
 </head>
 <body>
 
-    <!-- Modal with new "Information" section -->
-<div id="choiceOverlay" onclick="this.style.display='none'" style="display:none; position:fixed; inset:0; background-color: rgba(0,0,0,0.94); z-index:9999; align-items: center; justify-content: center;">
-  <div class="modal-box" onclick="event.stopPropagation()" style="background:#222; max-width:400px; width:92%; padding:20px; border-radius:8px; overflow-y:auto; max-height:90vh;">
-    <img id="choiceImg" class="w-40 h-56 mx-auto rounded-2xl mb-6 object-cover shadow-2xl border-2 border-gray-800/50" />
-    <h3 id="choiceTitle" class="text-white font-black uppercase text-xs mb-8 leading-tight tracking-wide"></h3>
-    <div class="space-y-3 mb-4">
-      <button id="choicePlay" class="btn-red"><i class="fa fa-play mr-2"></i> Start Streaming</button>
-      <button id="choiceWish" class="btn-red bg-gray-800 text-gray-400 hover:text-white">Add to Wishlist</button>
-      <button onclick="document.getElementById('choiceOverlay').style.display='none'" class="text-gray-600 font-bold text-[10px] uppercase mt-4 tracking-[0.2em] block w-full">Dismiss</button>
+    <div id="choiceOverlay" onclick="this.style.display='none'">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <img id="choiceImg" class="w-40 h-56 mx-auto rounded-2xl mb-6 object-cover shadow-2xl border-2 border-gray-800/50" />
+            <h3 id="choiceTitle" class="text-white font-black uppercase text-xs mb-8 leading-tight tracking-wide"></h3>
+            <div class="space-y-3">
+                <button id="choicePlay" class="btn-red"><i class="fa fa-play mr-2"></i> Start Streaming</button>
+                <button id="choiceWish" class="btn-red bg-gray-800 text-gray-400 hover:text-white">Add to Wishlist</button>
+                <button onclick="document.getElementById('choiceOverlay').style.display='none'" class="text-gray-600 font-bold text-[10px] uppercase mt-4 tracking-[0.2em] block w-full">Dismiss</button>
+            </div>
+        </div>
     </div>
-    <!-- New "Information" section -->
-    <div class="mt-6 p-4 bg-gray-900 rounded-lg border border-gray-700">
-      <h4 class="text-white font-semibold mb-4">Information</h4>
-      
-      <!-- Characters -->
-      <div class="mb-4">
-        <h5 class="text-gray-300 font-medium mb-2">Characters</h5>
-        <div id="charactersSection" class="text-gray-400 text-sm">Loading characters...</div>
-      </div>
-      
-      <!-- Synopsis -->
-      <div>
-        <h5 class="text-gray-300 font-medium mb-2">Synopsis</h5>
-        <p id="synopsisSection" class="text-gray-400 text-sm"><span id="ageRating"></span> <span id="synopsisText">Loading synopsis...</span></p>
-      </div>
+
+    <div id="trailerOverlay" onclick="closeTrailer()">
+        <div class="relative w-full max-w-5xl aspect-video bg-black rounded-3xl overflow-hidden mx-4 shadow-2xl border border-white/5">
+            <button onclick="closeTrailer()" class="absolute top-4 right-4 z-[6000] text-white bg-red-600 w-10 h-10 rounded-full font-black">✕</button>
+            <iframe id="trailerFrame" class="w-full h-full" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        </div>
     </div>
-  </div>
-</div>
+
+    <div id="confirmOverlay">
+        <div class="modal-box">
+            <div class="w-16 h-16 bg-red-600/20 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fa fa-exclamation-triangle"></i>
+            </div>
+            <h3 class="text-white font-black uppercase text-xs mb-3">Hard Reset?</h3>
+            <p class="text-gray-500 text-[10px] mb-8 uppercase tracking-widest leading-loose">This will wipe your account sync, history, and wishlist permanently.</p>
+            <div class="flex gap-3">
+                <button onclick="confirmClearHistory()" class="btn-red flex-1">Reset</button>
+                <button onclick="document.getElementById('confirmOverlay').style.display='none'" class="btn-red flex-1 bg-gray-800">Cancel</button>
+            </div>
+        </div>
+    </div>
 
     <nav class="fixed top-0 w-full z-[2500] glass p-5">
         <div class="container mx-auto flex items-center justify-between">
@@ -309,35 +313,19 @@
 
         // DUAL WISHLIST SYSTEM
         function showChoice(a) {
-            // Show loading placeholders
-  document.getElementById('charactersSection').innerText = 'Loading characters...';
-  document.getElementById('synopsisText').innerText = 'Loading synopsis...';
-
-  // Fetch detailed info
-  await fetchAnimeDetails(a);
-
-  // Show modal
-  document.getElementById('choiceOverlay').style.display = 'flex';
-
-  // Populate modal with basic info
-  document.getElementById('choiceImg').src = a.coverImage.large;
-  document.getElementById('choiceTitle').innerText = a.title.english || a.title.romaji;
-
-  document.getElementById('choicePlay').onclick = () => { 
-    document.getElementById('choiceOverlay').style.display='none'; 
-    // your openPlayer() function if needed
-  };
-  document.getElementById('choiceWish').onclick = () => { 
-    document.getElementById('choiceOverlay').style.display='none'; 
-    // your toggleWish() function if needed
-  };
-
-  // Populate characters and synopsis
-  document.getElementById('charactersSection').innerText = a.characters.length > 0 ? a.characters.join(', ') : 'Characters info not available';
-
-  const ageRating = a.ageRating || 'All Ages';
-  document.getElementById('ageRating').innerText = `[${ageRating}]`;
-  document.getElementById('synopsisText').innerText = a.synopsis || 'Synopsis not available';
+            document.getElementById('choiceOverlay').style.display = 'flex';
+            document.getElementById('choiceImg').src = a.coverImage.large;
+            document.getElementById('choiceTitle').innerText = a.title.english || a.title.romaji;
+            
+            document.getElementById('choicePlay').onclick = () => { 
+                document.getElementById('choiceOverlay').style.display='none'; 
+                openPlayer(a); 
+            };
+            
+            document.getElementById('choiceWish').onclick = () => { 
+                document.getElementById('choiceOverlay').style.display='none'; 
+                toggleWish(a); 
+            };
         }
 
         function toggleWish(a, e = null) {
@@ -491,7 +479,6 @@
     </div>`;
   }).join('');
   }
-        
         // SEARCH & FILTER ENGINE
         async function handleSearch(term) {
             if(term.length < 2) return;
