@@ -232,7 +232,49 @@
         const API = 'https://graphql.anilist.co', STREAM_API = 'https://api.consumet.org/anime/gogoanime';
         let currentUser = JSON.parse(localStorage.getItem('ymls_active_user'));
         let playMode = 'sub', currentAnime = null, currentEp = 1, currentServers = [], lastTap = 0, deferredPrompt, plyrInstance, hlsInstance;
+document.addEventListener('keydown', handleRemoteControl);
 
+    function handleRemoteControl(e) {
+      const focusable = document.querySelectorAll('.focusable');
+      const active = document.activeElement;
+      let index = Array.prototype.indexOf.call(focusable, active);
+      if (index === -1) index = 0;
+
+      switch (e.key) {
+        case 'ArrowUp':
+          e.preventDefault();
+          index = (index - 1 + focusable.length) % focusable.length;
+          focusable[index].focus();
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          index = (index + 1) % focusable.length;
+          focusable[index].focus();
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          if (focusable.length > 1) {
+            index = (index - 1 + focusable.length) % focusable.length;
+            focusable[index].focus();
+          }
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          if (focusable.length > 1) {
+            index = (index + 1) % focusable.length;
+            focusable[index].focus();
+          }
+          break;
+        case 'Enter':
+        case ' ':
+          e.preventDefault();
+          if (active) active.click();
+          break;
+        default:
+          break;
+      }
+    }  
+        
         // AUTHENTICATION LOGIC
         function handleAuth(mode) {
             const user = document.getElementById('authEmail').value.trim();
