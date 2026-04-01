@@ -1,6 +1,6 @@
 {
-  "name": "YMLSFLIX PRO",
-  "short_name": "YMLSFLIX",
+  "name": "YMLFLIX PRO",
+  "short_name": "YMLFLIX",
   "description": "Premium Anime & Movie Streaming Platform",
   "start_url": "./",
   "scope": "./",
