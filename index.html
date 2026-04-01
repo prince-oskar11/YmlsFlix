@@ -233,48 +233,6 @@
         let currentUser = JSON.parse(localStorage.getItem('ymls_active_user'));
         let playMode = 'sub', currentAnime = null, currentEp = 1, currentServers = [], lastTap = 0, deferredPrompt, plyrInstance, hlsInstance;
 
-        function handleRemoteControl(e) {
-  switch (e.key) {
-    case 'Enter':
-    case ' ':
-      e.preventDefault();
-      if (active) active.click();
-      break;
-    case 'ArrowRight':
-      // Move to next anime or episode
-      if (currentAnime) {
-        if (currentEp < currentAnime.episodes) {
-          currentEp++;
-        } else {
-          // Move to next anime
-          // You can implement this logic here
-        }
-      }
-      break;
-    case 'ArrowLeft':
-      // Move to previous episode or anime
-      if (currentAnime) {
-        if (currentEp > 1) {
-          currentEp--;
-        } else {
-          // Move to previous anime
-          // You can implement this logic here
-        }
-      }
-      break;
-    case 'ArrowUp':
-      // Change play mode to subtitles
-      playMode = 'sub';
-      break;
-    case 'ArrowDown':
-      // Change play mode to audio
-      playMode = 'audio';
-      break;
-    default:
-      break;
-  }
-}  
-        
         // AUTHENTICATION LOGIC
         function handleAuth(mode) {
             const user = document.getElementById('authEmail').value.trim();
@@ -675,17 +633,15 @@
         }
 
         function genFilters() {
-    const g = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Sports", "Supernatural", "Thriller", "Psychological"];
-    document.getElementById('genreList').innerHTML = g.map(x => `<button onclick="fetchByFilter('${x}', null)" class="genre-btn">${x}</button>`).join('');
-    let yH = ''; 
-    for(let y=2026; y>=2000; y--) yH += `<button onclick="fetchDataByYear(${y})" class="genre-btn">${y}</button>`;
-    document.getElementById('yearList').innerHTML = yH;
-}
+            const g = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Sports", "Supernatural", "Thriller", "Psychological"];
+            document.getElementById('genreList').innerHTML = g.map(x => `<button onclick="fetchByFilter('${x}', null)" class="genre-btn">${x}</button>`).join('');
+            let yH = ''; 
+            for(let y=2026; y>=2000; y--) yH += `<button onclick="fetchDataByYear(${y})" class="genre-btn">${y}</button>`;
+            document.getElementById('yearList').innerHTML = yH;
+        }
         function fetchDataByYear(year) {
-    const data = fetchByFilter(null, year);
-    // render the filtered data
-    render(data);
-}
+            const data = fetchByFilter(null, year);
+        }
 
     </script>
 </body>
