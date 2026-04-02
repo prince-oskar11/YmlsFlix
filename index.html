@@ -52,6 +52,23 @@
         .sync-dot { position: absolute; bottom: 8px; right: 8px; width: 8px; height: 8px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 10px #22c55e; }
         .rating-badge {position: absolute; bottom: 8px;right: 8px; background: rgba(239, 68, 68, 0.8); /* semi-transparent red */ color: white;font-size: 9px; padding: 2px 6px; border-radius: 8px; font-weight: bold; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.3);}
     </style>
+    body.dark-mode {
+  background-color: #111;
+  color: #ccc;
+}
+
+body.dark-mode .glass {
+  background: rgba(15, 17, 23, 0.98);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+body.dark-mode input,
+body.dark-mode button {
+  background-color: #222;
+  border-color: #444;
+  color: #eee;
+}
+    
 </head>
 <body>
 
@@ -106,6 +123,10 @@
                 </div>
                 <button id="installBtn" onclick="triggerInstall()" class="hidden bg-indigo-600 text-[10px] font-black px-6 rounded-2xl uppercase tracking-widest hover:bg-indigo-500">Install</button>
             </div>
+            <!-- Dark Mode Toggle Button -->
+ id="darkModeToggle" class="fixed bottom-4 right-20 p-3 bg-gray-800 rounded-full z-50" title="Toggle Dark Mode">
+  <i class="fa fa-moon-o"></i>
+            
             <div class="flex gap-3 mt-5 overflow-x-auto no-scrollbar pb-1">
                 <div id="chip-TV" onclick="fetchByFormat('TV')" class="cat-chip">TV Series</div>
                 <div id="chip-MOVIE" onclick="fetchByFormat('MOVIE')" class="cat-chip">Movies</div>
@@ -233,6 +254,12 @@
         let currentUser = JSON.parse(localStorage.getItem('ymls_active_user'));
         let playMode = 'sub', currentAnime = null, currentEp = 1, currentServers = [], lastTap = 0, deferredPrompt, plyrInstance, hlsInstance;
 
+        function toggleDarkMode() {
+  document.body.classList.toggle('dark-mode');
+}
+
+document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+        
         // AUTHENTICATION LOGIC
         function handleAuth(mode) {
             const user = document.getElementById('authEmail').value.trim();
