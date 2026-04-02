@@ -435,21 +435,12 @@
       anime.rating = 'N/A';
     }
   }));
-  }
-  }
+}
 
-  // Function to load your anime data, fetch ratings, then render
-  async function loadAnimeWithRatings() {
-    // Replace this with your actual fetch logic for your anime data
-    const response = await fetch('your-anime-data-api'); // <-- your data source
-    const data = await response.json();
-
-    // Fetch ratings for each anime
-    await fetchRatingsForAnime(data);
-
-    // Render the anime list with ratings
-    renderWithRatings(data, 'yourContainerId');
-  }
+// 2. ADD IT HERE ✅
+async function renderWithRatings(list, target, isGrid = false) {
+  await fetchRatingsForAnime(list);
+  render(list, target, isGrid);
 
   // Your existing render() function, updated to include rating badge
   function render(l, t, isGrid=false) {
