@@ -90,3 +90,22 @@ with socketserver.TCPServer(("", PORT), MyHandler) as httpd:
     print("  Press CTRL+C to shut down the server.")
     print("===============================================")
     httpd.serve_forever()
+
+body.dark-mode {
+  background-color: #111;
+  color: #ccc;
+}
+
+body.dark-mode .glass {
+  background: rgba(15, 17, 23, 0.98);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+body.dark-mode input,
+body.dark-mode button {
+  background-color: #222;
+  border-color: #444;
+  color: #eee;
+}
+    
+    
