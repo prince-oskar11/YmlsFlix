@@ -452,7 +452,7 @@
   }
 
   // Your existing render() function, updated to include rating badge
-  function renderWithRatings(l, t, isGrid=false) {
+  function render(l, t, isGrid=false) {
   const wishlist = currentUser ? (currentUser.wishlist || []) : (JSON.parse(localStorage.getItem('ymls_guest_wishlist')) || []);
   document.getElementById(t).innerHTML = l.map(a => {
     if(!a) return '';
@@ -490,7 +490,7 @@
             document.querySelectorAll('.cat-chip').forEach(c=>c.classList.remove('cat-active'));
             document.getElementById(`chip-${f}`).classList.add('cat-active');
             document.getElementById('filterTitle').innerText = f + " Masterpieces";
-            const q = `query($f:MediaFormat){Page(perPage:50){media(type:ANIME,format:$f,sort:POPULARITY_DESC){id title{english romaji} coverImage{large} episodrenderWithRatingsid site}}}}`;
+            const q = `query($f:MediaFormat){Page(perPage:50){media(type:ANIME,format:$f,sort:POPULARITY_DESC){id title{english romaji} coverImage{large} episodes trailer{id site}}}}
             const r = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query:q, variables:{f}})}).then(res=>res.json());
             renderWithRatings(r.data.Page.media, "filterGrid", true);
         }
@@ -608,7 +608,7 @@
         async function fetchRecommendations(id) {
             const q = `query($id:Int){Media(id:$id){recommendations(perPage:15){nodes{mediaRecommendation{id title{english romaji} coverImage{large} episodes trailer{id site}}}}}}`;
             const r = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query:q, variables:{id}})}).then(res=>res.json());
-            render(r.data.Media.recommendations.nodes.map(n=>n.mediaRecommendation).filter(x=>x), 'recommendGrid');
+            renderWithRatings(r.data.Media.recommendations.nodes.map(n=>n.mediaRecommendation).filter(x=>x), 'recommendGrid');
         }
 
         function setupUI() { 
