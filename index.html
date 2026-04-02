@@ -51,6 +51,23 @@
         /* Sync Notification Dot */
         .sync-dot { position: absolute; bottom: 8px; right: 8px; width: 8px; height: 8px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 10px #22c55e; }
         .rating-badge {position: absolute; bottom: 8px;right: 8px; background: rgba(239, 68, 68, 0.8); /* semi-transparent red */ color: white;font-size: 9px; padding: 2px 6px; border-radius: 8px; font-weight: bold; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.3);}
+        /* Add Dark Mode Styles Here */
+  body.dark-mode {
+    background-color: #111;
+    color: #ccc;
+  }
+
+  body.dark-mode .glass {
+    background: rgba(15, 17, 23, 0.98);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+
+  body.dark-mode input,
+  body.dark-mode button {
+    background-color: #222;
+    border-color: #444;
+    color: #eee;
+  }
     </style>
 </head>
 <body>
@@ -105,10 +122,6 @@
                 </div>
                 <button id="installBtn" onclick="triggerInstall()" class="hidden bg-indigo-600 text-[10px] font-black px-6 rounded-2xl uppercase tracking-widest hover:bg-indigo-500">Install</button>
             </div>
-            <!-- Dark Mode Toggle Button -->
-<button id="darkModeToggle" class="fixed bottom-4 right-20 p-3 bg-gray-800 rounded-full z-50" title="Toggle Dark Mode">
-  <i class="fa fa-moon-o"></i>
-</button>
             
             <div class="flex gap-3 mt-5 overflow-x-auto no-scrollbar pb-1">
                 <div id="chip-TV" onclick="fetchByFormat('TV')" class="cat-chip">TV Series</div>
@@ -142,6 +155,28 @@
                 <h4 id="userDisplay" class="font-black text-white uppercase text-base mb-6 tracking-wider"></h4>
                 <button onclick="document.getElementById('confirmOverlay').style.display='flex'" class="btn-red bg-gray-900 mb-3 border border-red-900/40 text-red-500">Wipe All Cache</button>
                 <button onclick="handleLogout()" class="btn-red bg-red-950/30 text-red-500">Sign Out</button>
+                <div id="profileDrop" class="dropdown-content">
+    <div id="authBox">
+        <h3 class="text-white font-black text-[10px] uppercase mb-6 text-center tracking-[0.3em]">Premium Sync</h3>
+        <input type="text" id="authEmail" placeholder="Enter Username" class="bg-[#111827] p-4 rounded-xl w-full mb-3 border border-[#1f2937] outline-none focus:border-accent" />
+        <input type="password" id="authPass" placeholder="Enter Password" class="bg-[#111827] p-4 rounded-xl w-full mb-6 border border-[#1f2937] outline-none focus:border-accent" />
+        <div class="flex gap-3">
+            <button onclick="handleAuth('login')" class="btn-red flex-1">Login</button>
+            <button onclick="handleAuth('signup')" class="btn-red flex-1 bg-gray-700">Register</button>
+        </div>
+    </div>
+    <div id="userBox" class="hidden text-center">
+        <div class="w-20 h-20 bg-gradient-to-tr from-red-600 to-indigo-600 rounded-full mx-auto mb-4 flex items-center justify-center text-3xl font-black shadow-2xl">Y</div>
+        <h4 id="userDisplay" class="font-black text-white uppercase text-base mb-6 tracking-wider"></h4>
+        <button onclick="document.getElementById('confirmOverlay').style.display='flex'" class="btn-red bg-gray-900 mb-3 border border-red-900/40 text-red-500">Wipe All Cache</button>
+        <button onclick="handleLogout()" class="btn-red bg-red-950/30 text-red-500">Sign Out</button>
+        
+        <!-- Dark Mode Toggle Button -->
+    <button id="darkModeToggle" class="mt-4 p-3 bg-gray-800 rounded-full z-50" title="Toggle Dark Mode" style="margin-top: 20px;">
+      <i class="fa fa-moon-o"></i>
+    </button>
+    </div>
+</div>
             </div>
         </div>
     </nav>
