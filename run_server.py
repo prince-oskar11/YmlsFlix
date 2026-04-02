@@ -5,8 +5,8 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
         if self.path == "/manifest.json":
             # Generate your dynamic manifest here
             manifest_data = {
-                "name": "YMLFLIX PRO",
-                "short_name": "YMLFLIX",
+                "name": "YMLSFLIX PRO",
+                "short_name": "YMLSFLIX",
                 "description": "Premium Anime & Movie Streaming Platform",
                 "start_url": "/index.html",
                 "display": "standalone",
