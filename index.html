@@ -438,17 +438,17 @@
 }
 
 // 2. ADD IT HERE ✅
-async function renderWithRatings(list, target, isGrid = false) {
-  await fetchRatingsForAnime(list);
-  render(list, target, isGrid);
-}
+        async function renderWithRatings(list, target, isGrid = false) {
+            await fetchRatingsForAnime(list)
+                render(list, target, isGrid);
+        }
   // Your existing render() function, updated to include rating badge
-  function render(l, t, isGrid=false) {
-  const wishlist = currentUser ? (currentUser.wishlist || []) : (JSON.parse(localStorage.getItem('ymls_guest_wishlist')) || []);
-  document.getElementById(t).innerHTML = l.map(a => {
-    if(!a) return '';
-    const inWish = wishlist.some(x => x.id === a.id);
-    return `
+        function render(l, t, isGrid=false) {
+            const wishlist = currentUser ? (currentUser.wishlist || []) : (JSON.parse(localStorage.getItem('ymls_guest_wishlist')) || []);
+            document.getElementById(t).innerHTML = l.map(a => {
+                if(!a) return '';
+                const inWish = wishlist.some(x => x.id === a.id);
+                return `
     <div class="anime-card ${isGrid ? 'w-full' : ''}" onclick='showChoice(${JSON.stringify(a)})'>
         <div class="ep-badge">${a.episodes || '?'} EP</div>
         ${a.hasNew ? '<div class="sync-dot"></div>' : ''}
@@ -481,7 +481,7 @@ async function renderWithRatings(list, target, isGrid = false) {
             document.querySelectorAll('.cat-chip').forEach(c=>c.classList.remove('cat-active'));
             document.getElementById(`chip-${f}`).classList.add('cat-active');
             document.getElementById('filterTitle').innerText = f + " Masterpieces";
-            const q = `query($f:MediaFormat){Page(perPage:50){media(type:ANIME,format:$f,sort:POPULARITY_DESC){id title{english romaji} coverImage{large} episodes trailer{id site}}}}
+            const q = `query($f:MediaFormat){Page(perPage:50){media(type:ANIME,format:$f,sort:POPULARITY_DESC){id title{english romaji} coverImage{large} episodes trailer{id site}}}}`;
             const r = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query:q, variables:{f}})}).then(res=>res.json());
             renderWithRatings(r.data.Page.media, "filterGrid", true);
         }
