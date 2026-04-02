@@ -441,7 +441,7 @@
 async function renderWithRatings(list, target, isGrid = false) {
   await fetchRatingsForAnime(list);
   render(list, target, isGrid);
-
+}
   // Your existing render() function, updated to include rating badge
   function render(l, t, isGrid=false) {
   const wishlist = currentUser ? (currentUser.wishlist || []) : (JSON.parse(localStorage.getItem('ymls_guest_wishlist')) || []);
