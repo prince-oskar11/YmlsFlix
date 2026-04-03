@@ -429,8 +429,15 @@
                 const target = s.results.find(r => playMode === 'dub' ? r.id.includes('-dub') : !r.id.includes('-dub')) || s.results[0];
                 const info = await fetch(`${STREAM_API}/info/${target.id}`).then(r=>r.json());
                 const epObj = info.episodes.find(e => e.number == ep) || info.episodes[0];
-                const links = await fetch(`${STREAM_API}/watch/${epObj.id}`).then(r=>r.json());
-                
+                const res = await fetch(`http://localhost:3000/stream/${epObj.id}`);
+              const data = await res.json();
+              
+              currentServers = [
+                {
+                  url: data.stream,
+                  quality: "auto"
+                }
+              ];
                 currentServers = links.sources;
                 document.getElementById('serverList').innerHTML = currentServers.map((s, i) => `
                     <button onclick="switchServer(${i})" class="px-5 py-3 bg-gray-900 rounded-xl text-[10px] font-bold border border-gray-800 hover:border-red-500 whitespace-nowrap transition">
@@ -450,24 +457,34 @@
         }
 
         function switchServer(idx) {
-            if (hlsInstance) hlsInstance.destroy();
-            const v = document.getElementById('player'), url = currentServers[idx].url;
-            
-            if (Hls.isSupported()) {
-                hlsInstance = new Hls(); 
-                hlsInstance.loadSource(url); 
-                hlsInstance.attachMedia(v);
-                hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => { 
-                    document.getElementById('playerLoader').classList.add('hidden'); 
-                    plyrInstance.play(); 
-                });
-            } else if (v.canPlayType('application/vnd.apple.mpegurl')) {
-                v.src = url;
-                v.addEventListener('loadedmetadata', () => {
-                    document.getElementById('playerLoader').classList.add('hidden');
-                    plyrInstance.play();
-                });
-            }
+    if (hlsInstance) hlsInstance.destroy();
+
+    const v = document.getElementById('player');
+    const url = currentServers[idx].url;
+
+    document.getElementById('playerLoader').classList.remove('hidden');
+
+    if (Hls.isSupported()) {
+        hlsInstance = new Hls({
+            maxBufferLength: 30,
+            maxMaxBufferLength: 60
+        });
+
+        hlsInstance.loadSource(url);
+        hlsInstance.attachMedia(v);
+
+        hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+            document.getElementById('playerLoader').classList.add('hidden');
+            plyrInstance.play();
+        });
+
+    } else if (v.canPlayType('application/vnd.apple.mpegurl')) {
+        v.src = url;
+        v.addEventListener('loadedmetadata', () => {
+            document.getElementById('playerLoader').classList.add('hidden');
+            plyrInstance.play();
+        });
+    }
         }
 
         // GRID RENDERING LOGIC
