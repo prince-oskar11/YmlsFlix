@@ -1,112 +1,77 @@
 const express = require("express");
 const axios = require("axios");
-
+const cors = require("cors");
 const app = express();
+app.use(cors());
 
-// 🔹 Providers
+const PORT = process.env.PORT || 3000;
+const CACHE_TIME = 60000; // 1 min cache
+const cache = new Map();
+
+// Multi-provider base URLs
 const PROVIDERS = [
-  "zoro",
-  "gogoanime",
-  "animepahe"
+  { name: "Zoro", base: "https://api.consumet.org/anime/zoro" },
+  { name: "Gogo", base: "https://api.consumet.org/anime/gogoanime" },
+  { name: "AnimePahe", base: "https://api.consumet.org/anime/animepahe" }
 ];
 
-const BASE = "https://api.consumet.org/anime";
-
-// 🔹 Cache
-const cache = new Map();
-const CACHE_TIME = 60 * 1000;
-
-// 🔥 MULTI-PROVIDER STREAM
+// 🔹 Stream endpoint
 app.get("/stream/:id", async (req, res) => {
   const id = req.params.id;
 
+  if (cache.has(id)) return res.json(cache.get(id));
+
   try {
-    // ✅ cache
-    if (cache.has(id)) {
-      return res.json(cache.get(id));
-    }
+    const results = [];
 
-    // 🔄 try providers one by one
-    for (const provider of PROVIDERS) {
+    for (let p of PROVIDERS) {
       try {
-        const r = await axios.get(`${BASE}/${provider}/watch/${id}`);
+        const r = await axios.get(`${p.base}/watch/${id}`);
         const sources = r.data.sources;
+        if (!sources || !sources.length) continue;
 
-        if (!sources || sources.length === 0) continue;
+        const stream = sources.find(s => s.url.includes(".m3u8"))?.url || sources[0].url;
 
-        const stream =
-          sources.find(s => s.url.includes(".m3u8"))?.url ||
-          sources[0].url;
-
-        const data = {
-          stream: `/proxy?url=${encodeURIComponent(stream)}`,
-          provider
-        };
-
-        // cache it
-        cache.set(id, data);
-        setTimeout(() => cache.delete(id), CACHE_TIME);
-
-        console.log(`✅ ${provider} worked`);
-        return res.json(data);
-
-      } catch (err) {
-        console.log(`❌ ${provider} failed`);
-      }
+        results.push({
+          provider: p.name,
+          url: `http://localhost:${PORT}/proxy?url=${encodeURIComponent(stream)}`
+        });
+      } catch {}
     }
 
-    throw new Error("No providers worked");
+    if (!results.length) return res.status(404).json({ error: "No streams found" });
 
-  } catch (e) {
-    res.status(500).json({ error: "No stream found" });
+    cache.set(id, { streams: results });
+    setTimeout(() => cache.delete(id), CACHE_TIME);
+
+    res.json({ streams: results });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch streams" });
   }
 });
 
-
-// 🔥 ADVANCED PROXY (handles m3u8 + ts segments)
+// 🔥 Proxy endpoint
 app.get("/proxy", async (req, res) => {
   try {
     const url = req.query.url;
-
     if (!url) return res.status(400).send("Missing URL");
 
     const response = await axios.get(url, {
-      responseType: "arraybuffer",
+      responseType: "stream",
       headers: {
         "Referer": "https://vidstreaming.io/",
-        "Origin": "https://vidstreaming.io",
-        "User-Agent": "Mozilla/5.0"
+        "Origin": "https://vidstreaming.io"
       }
     });
 
-    const contentType = response.headers["content-type"];
-
-    // 🔥 If m3u8 → rewrite URLs
-    if (contentType.includes("application/vnd.apple.mpegurl")) {
-      let body = response.data.toString();
-
-      // rewrite segment URLs to go through proxy
-      body = body.replace(
-        /(https?:\/\/[^\s]+)/g,
-        (match) => `/proxy?url=${encodeURIComponent(match)}`
-      );
-
-      res.setHeader("Content-Type", contentType);
-      return res.send(body);
-    }
-
-    // 🔥 Video chunks (.ts)
-    res.setHeader("Content-Type", contentType);
-    res.send(response.data);
-
+    res.setHeader("Content-Type", response.headers["content-type"]);
+    response.data.pipe(res);
   } catch (err) {
-    console.log("Proxy error:", err.message);
-    res.status(500).send("Proxy failed");
+    console.error(err);
+    res.status(500).send("Proxy error");
   }
 });
 
-
-// 🚀 Start server
-app.listen(3000, () => {
-  console.log("🔥 Server running on http://localhost:3000");
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
