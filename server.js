@@ -1,47 +1,112 @@
 const express = require("express");
 const axios = require("axios");
+
 const app = express();
 
-const BASE = "https://api.consumet.org/anime/zoro";
+// 🔹 Providers
+const PROVIDERS = [
+  "zoro",
+  "gogoanime",
+  "animepahe"
+];
 
-// 🔹 Get direct stream
+const BASE = "https://api.consumet.org/anime";
+
+// 🔹 Cache
+const cache = new Map();
+const CACHE_TIME = 60 * 1000;
+
+// 🔥 MULTI-PROVIDER STREAM
 app.get("/stream/:id", async (req, res) => {
+  const id = req.params.id;
+
   try {
-    const r = await axios.get(`${BASE}/watch/${req.params.id}`);
-    const sources = r.data.sources;
+    // ✅ cache
+    if (cache.has(id)) {
+      return res.json(cache.get(id));
+    }
 
-    const stream =
-      sources.find(s => s.url.includes(".m3u8"))?.url ||
-      sources[0].url;
+    // 🔄 try providers one by one
+    for (const provider of PROVIDERS) {
+      try {
+        const r = await axios.get(`${BASE}/${provider}/watch/${id}`);
+        const sources = r.data.sources;
 
-    res.json({
-      stream: `http://localhost:3000/proxy?url=${encodeURIComponent(stream)}`
-    });
+        if (!sources || sources.length === 0) continue;
+
+        const stream =
+          sources.find(s => s.url.includes(".m3u8"))?.url ||
+          sources[0].url;
+
+        const data = {
+          stream: `/proxy?url=${encodeURIComponent(stream)}`,
+          provider
+        };
+
+        // cache it
+        cache.set(id, data);
+        setTimeout(() => cache.delete(id), CACHE_TIME);
+
+        console.log(`✅ ${provider} worked`);
+        return res.json(data);
+
+      } catch (err) {
+        console.log(`❌ ${provider} failed`);
+      }
+    }
+
+    throw new Error("No providers worked");
 
   } catch (e) {
-    res.status(500).json({ error: "stream failed" });
+    res.status(500).json({ error: "No stream found" });
   }
 });
 
-// 🔥 PROXY endpoint (KEY PART)
+
+// 🔥 ADVANCED PROXY (handles m3u8 + ts segments)
 app.get("/proxy", async (req, res) => {
   try {
     const url = req.query.url;
 
+    if (!url) return res.status(400).send("Missing URL");
+
     const response = await axios.get(url, {
-      responseType: "stream",
+      responseType: "arraybuffer",
       headers: {
         "Referer": "https://vidstreaming.io/",
-        "Origin": "https://vidstreaming.io"
+        "Origin": "https://vidstreaming.io",
+        "User-Agent": "Mozilla/5.0"
       }
     });
 
-    res.setHeader("Content-Type", response.headers["content-type"]);
-    response.data.pipe(res);
+    const contentType = response.headers["content-type"];
+
+    // 🔥 If m3u8 → rewrite URLs
+    if (contentType.includes("application/vnd.apple.mpegurl")) {
+      let body = response.data.toString();
+
+      // rewrite segment URLs to go through proxy
+      body = body.replace(
+        /(https?:\/\/[^\s]+)/g,
+        (match) => `/proxy?url=${encodeURIComponent(match)}`
+      );
+
+      res.setHeader("Content-Type", contentType);
+      return res.send(body);
+    }
+
+    // 🔥 Video chunks (.ts)
+    res.setHeader("Content-Type", contentType);
+    res.send(response.data);
 
   } catch (err) {
-    res.status(500).send("Proxy error");
+    console.log("Proxy error:", err.message);
+    res.status(500).send("Proxy failed");
   }
 });
 
-app.listen(3000, () => console.log("Server running"));
+
+// 🚀 Start server
+app.listen(3000, () => {
+  console.log("🔥 Server running on http://localhost:3000");
+});
