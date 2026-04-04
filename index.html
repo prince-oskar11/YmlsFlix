@@ -421,21 +421,24 @@
 
         // PLAYER ENGINE
         async function openPlayer(a, ep = 1) {
-            if(a) currentAnime = a; 
-            currentEp = ep;
-            
-            document.getElementById('playerView').classList.remove('hidden');
-            document.getElementById('playerTitle').innerText = (currentAnime.title.english || currentAnime.title.romaji) + " — Episode " + ep;
-            document.getElementById('playerLoader').classList.remove('hidden');
-            
-            const tBtn = document.getElementById('trailerBtn');
-            if(currentAnime.trailer?.site === 'youtube') {
-                tBtn.classList.remove('hidden');
-                tBtn.onclick = () => { 
-                    document.getElementById('trailerFrame').src = `https://www.youtube.com/embed/${currentAnime.trailer.id}?autoplay=1`; 
-                    document.getElementById('trailerOverlay').style.display = 'flex'; 
-                    plyrInstance.pause(); 
-                };
+        async function openPlayer(a, ep = 1) {
+  if(a) currentAnime = a; 
+  currentEp = ep;
+
+  document.getElementById('playerView').classList.remove('hidden');
+  document.getElementById('playerTitle').innerText = (currentAnime.title.english || currentAnime.title.romaji) + " — Episode " + ep;
+  document.getElementById('playerLoader').classList.remove('hidden');
+
+  // Set the video URL here
+  const videoUrl = 'https://anipub.xyz/path-to-video.mp4'; // Replace with your actual URL
+  document.getElementById('player').src = videoUrl;
+
+  // Reload the player if needed
+  if(plyrInstance) {
+    plyrInstance.reload();
+    plyrInstance.play();
+  }
+
             } else tBtn.classList.add('hidden');
 
             try {
