@@ -56,6 +56,10 @@
     outline: 3px solid #ef4444;
     outline-offset: -3px;
   }
+  .hide {
+    display: none;
+    transition: all 0.3s ease;
+  }
 </style>
 </head>
 <body>
@@ -669,6 +673,20 @@
             for(let y=2026; y>=2000; y--) yH += `<button onclick="fetchByFilter('', ${y})" class="genre-btn">${y}</button>`;
             document.getElementById('yearList').innerHTML = yH;
         }
+      let lastScrollTop = 0;
+  window.addEventListener('scroll', () => {
+    const nav = document.querySelector('nav');
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+    if (scrollTop > lastScrollTop) {
+      // Scrolling down - hide nav
+      nav.classList.add('hide');
+    } else {
+      // Scrolling up - show nav
+      nav.classList.remove('hide');
+    }
+    lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+  });
     </script>
 </body>
     </html>
