@@ -45,12 +45,16 @@ async function fetchStreams(epId, mode = "sub") {
 
 // 🔹 Endpoint: get streams for an episode
 app.get("/stream/:id", async (req, res) => {
+app.get('/stream/ani', async (req, res) => {
+  const url = 'https://anipub.xyz/path-to-video.mp4'; // replace with actual video URL
   try {
-    const mode = req.query.mode || "sub";
-    const streams = await fetchStreams(req.params.id, mode);
-    res.json({ streams });
+    const response = await axios.get(url, {
+      responseType: 'stream'
+    });
+    res.setHeader('Content-Type', response.headers['content-type']);
+    response.data.pipe(res);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).send('Error streaming video');
   }
 });
 
