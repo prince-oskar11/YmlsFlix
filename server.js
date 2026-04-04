@@ -45,8 +45,21 @@ async function fetchStreams(epId, mode = "sub") {
 
 // 🔹 Endpoint: get streams for an episode
 app.get("/stream/:id", async (req, res) => {
+  try {
+    const epId = req.params.id;
+    const mode = req.query.mode || "sub";
+
+    // You can implement your fetch logic here, for example:
+    const streams = await fetchStreams(epId, mode);
+    res.json({ streams });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 🔹 Endpoint: serve a fixed example video (replace with your actual video URL)
 app.get('/stream/ani', async (req, res) => {
-  const url = 'https://anipub.xyz/path-to-video.mp4'; // replace with actual video URL
+  const url = 'https://anipub.xyz/path-to-video.mp4'; // <-- Replace with your actual video URL
   try {
     const response = await axios.get(url, {
       responseType: 'stream'
@@ -58,7 +71,7 @@ app.get('/stream/ani', async (req, res) => {
   }
 });
 
-// 🔹 Endpoint: get episode info by number
+// 🔹 Endpoint: get episode info by number (for your API)
 app.get("/episode/:num", async (req, res) => {
   try {
     const epNum = req.params.num;
@@ -75,7 +88,7 @@ app.get("/episode/:num", async (req, res) => {
   }
 });
 
-// 🔥 Advanced proxy endpoint
+// 🔥 Your proxy endpoint
 app.get("/proxy", async (req, res) => {
   try {
     const url = req.query.url;
@@ -97,9 +110,7 @@ app.get("/proxy", async (req, res) => {
   }
 });
 
-app.listen(3000, () => console.log("Server running on http://localhost:3000"));
-
-// Fetch MyAnimeList status for a given MALID
+// 🔹 Fetch MAL status
 app.get('/myanimelist/status/:malID', async (req, res) => {
   const malID = req.params.malID;
   const url = `https://api.myanimelist.net/v2/anime/${malID}/my_list_status`;
@@ -107,7 +118,7 @@ app.get('/myanimelist/status/:malID', async (req, res) => {
   try {
     const response = await axios.get(url, {
       headers: {
-        'Authorization': 'Bearer YOUR_MAL_ACCESS_TOKEN', // Replace with your MAL API token
+        'Authorization': 'Bearer YOUR_MAL_ACCESS_TOKEN', // <-- Replace with your MAL token
       }
     });
     res.json(response.data);
@@ -115,3 +126,6 @@ app.get('/myanimelist/status/:malID', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch MAL data' });
   }
 });
+
+// Start your server
+app.listen(3000, () => console.log("Server running on http://localhost:3000"));
