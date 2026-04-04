@@ -195,6 +195,10 @@
         </div>
         <div id="wishlistGrid" class="grid-full"></div>
     </div>
+  <div id="page-genre" class="page-view container mx-auto p-6 hidden">
+  <h2 class="text-2xl font-black uppercase text-red-600 mb-6 border-l-8 border-red-600 pl-6 tracking-tighter">Genre Page</h2>
+  <div id="genreContent">Select a genre to see content.</div>
+</div>
 
     <div id="playerView" class="fixed inset-0 z-[4000] bg-[#05070a] hidden overflow-y-auto">
         <div class="glass p-5 sticky top-0 flex justify-between items-center z-50">
@@ -666,12 +670,17 @@
             setMode('sub');
         }
 
+      function showGenrePage(genre) {
+    showPage('genre');
+    document.getElementById('genreContent').innerHTML = `Showing content for genre: <strong>${genre}</strong>`;
+      }
+
         function genFilters() {
-            const g = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Sports", "Supernatural", "Thriller", "Psychological"];
-            document.getElementById('genreList').innerHTML = g.map(x => `<button onclick="fetchByFilter('${x}', null)" class="genre-btn">${x}</button>`).join('');
-            let yH = ''; 
-            for(let y=2026; y>=2000; y--) yH += `<button onclick="fetchByFilter('', ${y})" class="genre-btn">${y}</button>`;
-            document.getElementById('yearList').innerHTML = yH;
+    const g = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Sports", "Supernatural", "Thriller", "Psychological"];
+    document.getElementById('genreList').innerHTML = g.map(x => `<button onclick="showGenrePage('${x}')" class="genre-btn">${x}</button>`).join('');
+    let yH = ''; 
+    for(let y=2026; y>=2000; y--) yH += `<button onclick="fetchByFilter('', ${y})" class="genre-btn">${y}</button>`;
+    document.getElementById('yearList').innerHTML = yH;
         }
       let lastScrollTop = 0;
   window.addEventListener('scroll', () => {
