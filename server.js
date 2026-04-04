@@ -109,23 +109,3 @@ app.get("/proxy", async (req, res) => {
     res.status(500).send("Proxy error");
   }
 });
-
-// 🔹 Fetch MAL status
-app.get('/myanimelist/status/:malID', async (req, res) => {
-  const malID = req.params.malID;
-  const url = `https://api.myanimelist.net/v2/anime/${malID}/my_list_status`;
-
-  try {
-    const response = await axios.get(url, {
-      headers: {
-        'Authorization': 'Bearer YOUR_MAL_ACCESS_TOKEN', // <-- Replace with your MAL token
-      }
-    });
-    res.json(response.data);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch MAL data' });
-  }
-});
-
-// Start your server
-app.listen(3000, () => console.log("Server running on http://localhost:3000"));
