@@ -96,18 +96,7 @@
             </div>
         </div>
     </div>
-  <!-- Input for MAL ID and button to fetch status -->
-<div class="fixed bottom-4 right-4 bg-gray-800 p-4 rounded-lg shadow-lg z-[9999] flex items-center gap-2">
-  <input type="text" id="malIDInput" placeholder="Enter MAL ID" class="p-2 rounded bg-gray-700 border border-gray-600 text-white" />
-  <button onclick="fetchMALStatus()" class="bg-red-600 px-4 py-2 rounded font-bold hover:bg-red-500">Get MAL Status</button>
-</div>
-
-<!-- Area to display MAL status -->
-<div id="malStatusDisplay" class="fixed bottom-20 right-4 bg-gray-900 p-4 rounded-lg shadow-lg z-[9999]" style="max-width: 300px;">
-  <h4 class="text-white font-bold mb-2">MAL Status</h4>
-  <pre id="malStatusText" class="text-sm text-gray-300">No data</pre>
-</div>
-
+  
     <nav class="fixed top-0 w-full z-[2500] glass p-5">
         <div class="container mx-auto flex items-center justify-between">
             <h1 class="text-2xl font-black logo-text cursor-pointer tracking-tighter" onclick="showPage('home')">YMLSFLIX PRO</h1>
@@ -680,12 +669,6 @@
             setMode('sub');
         }
 
-      async function fetchMALStatus() {
-    const malID = document.getElementById('malIDInput').value.trim();
-    if (!malID) {
-      alert('Please enter a MAL ID');
-      return;
-    }
     document.getElementById('malStatusText').innerText = 'Loading...';
 
     try {
