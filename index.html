@@ -96,7 +96,7 @@
             </div>
         </div>
     </div>
-  
+
     <nav class="fixed top-0 w-full z-[2500] glass p-5">
         <div class="container mx-auto flex items-center justify-between">
             <h1 class="text-2xl font-black logo-text cursor-pointer tracking-tighter" onclick="showPage('home')">YMLSFLIX PRO</h1>
@@ -410,24 +410,21 @@
 
         // PLAYER ENGINE
         async function openPlayer(a, ep = 1) {
-        async function openPlayer(a, ep = 1) {
-  if(a) currentAnime = a; 
-  currentEp = ep;
-
-  document.getElementById('playerView').classList.remove('hidden');
-  document.getElementById('playerTitle').innerText = (currentAnime.title.english || currentAnime.title.romaji) + " — Episode " + ep;
-  document.getElementById('playerLoader').classList.remove('hidden');
-
-  // Set the video URL here
-  const videoUrl = 'https://anipub.xyz/path-to-video.mp4'; // Replace with your actual URL
-  document.getElementById('player').src = videoUrl;
-
-  // Reload the player if needed
-  if(plyrInstance) {
-    plyrInstance.reload();
-    plyrInstance.play();
-  }
-
+            if(a) currentAnime = a; 
+            currentEp = ep;
+            
+            document.getElementById('playerView').classList.remove('hidden');
+            document.getElementById('playerTitle').innerText = (currentAnime.title.english || currentAnime.title.romaji) + " — Episode " + ep;
+            document.getElementById('playerLoader').classList.remove('hidden');
+            
+            const tBtn = document.getElementById('trailerBtn');
+            if(currentAnime.trailer?.site === 'youtube') {
+                tBtn.classList.remove('hidden');
+                tBtn.onclick = () => { 
+                    document.getElementById('trailerFrame').src = `https://www.youtube.com/embed/${currentAnime.trailer.id}?autoplay=1`; 
+                    document.getElementById('trailerOverlay').style.display = 'flex'; 
+                    plyrInstance.pause(); 
+                };
             } else tBtn.classList.add('hidden');
 
             try {
@@ -669,17 +666,6 @@
             setMode('sub');
         }
 
-    document.getElementById('malStatusText').innerText = 'Loading...';
-
-    try {
-      const res = await fetch(`/myanimelist/status/${malID}`);
-      const data = await res.json();
-      document.getElementById('malStatusText').innerText = JSON.stringify(data, null, 2);
-    } catch (e) {
-      document.getElementById('malStatusText').innerText = 'Error fetching data';
-      console.error(e);
-    }
-      }
         function genFilters() {
             const g = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Sports", "Supernatural", "Thriller", "Psychological"];
             document.getElementById('genreList').innerHTML = g.map(x => `<button onclick="fetchByFilter('${x}', null)" class="genre-btn">${x}</button>`).join('');
