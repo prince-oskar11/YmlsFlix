@@ -680,6 +680,23 @@
             setMode('sub');
         }
 
+      async function fetchMALStatus() {
+    const malID = document.getElementById('malIDInput').value.trim();
+    if (!malID) {
+      alert('Please enter a MAL ID');
+      return;
+    }
+    document.getElementById('malStatusText').innerText = 'Loading...';
+
+    try {
+      const res = await fetch(`/myanimelist/status/${malID}`);
+      const data = await res.json();
+      document.getElementById('malStatusText').innerText = JSON.stringify(data, null, 2);
+    } catch (e) {
+      document.getElementById('malStatusText').innerText = 'Error fetching data';
+      console.error(e);
+    }
+      }
         function genFilters() {
             const g = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Sports", "Supernatural", "Thriller", "Psychological"];
             document.getElementById('genreList').innerHTML = g.map(x => `<button onclick="fetchByFilter('${x}', null)" class="genre-btn">${x}</button>`).join('');
