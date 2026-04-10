@@ -71,6 +71,12 @@
             <div class="space-y-3">
                 <button id="choicePlay" class="btn-red"><i class="fa fa-play mr-2"></i> Start Streaming</button>
                 <button id="choiceWish" class="btn-red bg-gray-800 text-gray-400 hover:text-white">Add to Wishlist</button>
+               <button 
+    onclick="showSynopsis()" 
+    class="bg-red-600 flex-1 py-5 rounded-2xl font-black text-xs uppercase shadow-xl hover:bg-red-500 transition-all"
+  >
+    Show Synopsis
+  </button>
                 <button onclick="document.getElementById('choiceOverlay').style.display='none'" class="text-gray-600 font-bold text-[10px] uppercase mt-4 tracking-[0.2em] block w-full">Dismiss</button>
             </div>
         </div>
@@ -164,12 +170,6 @@
                 <div class="flex gap-4">
                     <button id="heroPlayBtn" class="bg-white text-black px-14 py-5 rounded-full font-black text-[11px] uppercase shadow-2xl hover:bg-red-600 hover:text-white transition-all active:scale-95">Stream Now</button>
                     <button id="heroTrailerBtn" class="bg-white/10 backdrop-blur-md text-white border border-white/20 px-8 py-5 rounded-full font-black text-[11px] uppercase hover:bg-white/20 transition-all">Trailer</button>
-                   <button 
-    onclick="showSynopsis()" 
-    class="bg-red-600 flex-1 py-5 rounded-2xl font-black text-xs uppercase shadow-xl hover:bg-red-500 transition-all"
-  >
-    Show Synopsis
-                   </button>
                 </div>
             </div>
         </header>
