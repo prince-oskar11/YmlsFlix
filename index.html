@@ -242,35 +242,60 @@
         let currentUser = JSON.parse(localStorage.getItem('ymls_active_user'));
         let playMode = 'sub', currentAnime = null, currentEp = 1, currentServers = [], lastTap = 0, deferredPrompt, plyrInstance, hlsInstance;
 
-        let focusIndex = 0;
   let items = [];
+let focusIndex = 0;
 
-  function updateFocusable() {
+function updateFocusable() {
     // Select elements you want to be focusable
     items = [...document.querySelectorAll('.card, button')];
+
     if (items.length === 0) return;
+
+    // Keep focusIndex within bounds
     if (focusIndex >= items.length) focusIndex = items.length - 1;
+
     highlightFocus();
-  }
+}
 
   function highlightFocus() {
     items.forEach((el, i) => {
-      el.classList.toggle('focused', i === focusIndex);
+        const isFocused = i === focusIndex;
+        el.classList.toggle('focused', isFocused);
+        if (isFocused) {
+            el.setAttribute('tabindex', '-1'); // Make sure the element is focusable
+            el.focus(); // Move actual keyboard focus
+        }
     });
-  }
+}
 
   function navigate(dir) {
     updateFocusable();
+
     if (items.length === 0) return;
 
-    if (dir === 'right') focusIndex++;
-    if (dir === 'left') focusIndex--;
-    if (dir === 'down') focusIndex += 5; // adjust based on your layout
-    if (dir === 'up') focusIndex -= 5;
+    // Adjust focusIndex based on direction
+    switch (dir) {
+        case 'right':
+            focusIndex++;
+            break;
+        case 'left':
+            focusIndex--;
+            break;
+        case 'down':
+            focusIndex += 5; // adjust based on your layout
+            break;
+        case 'up':
+            focusIndex -= 5;
+            break;
+        default:
+            break;
+    }
 
+    // Clamp focusIndex within bounds
     focusIndex = Math.max(0, Math.min(items.length - 1, focusIndex));
+
     highlightFocus();
-  }
+}
 
   function selectItem() {
     if (items[focusIndex]) {
@@ -279,14 +304,32 @@
   }
 
   document.addEventListener('keydown', (e) => {
-    switch (e.key) {
-      case 'ArrowRight': navigate('right'); break;
-      case 'ArrowLeft': navigate('left'); break;
-      case 'ArrowDown': navigate('down'); break;
-      case 'ArrowUp': navigate('up'); break;
-      case 'Enter': selectItem(); break;
-    }
-  });
+  switch (e.key) {
+    case 'ArrowRight':
+      e.preventDefault();
+      navigate('right');
+      break;
+    case 'ArrowLeft':
+      e.preventDefault();
+      navigate('left');
+      break;
+    case 'ArrowDown':
+      e.preventDefault();
+      navigate('down');
+      break;
+    case 'ArrowUp':
+      e.preventDefault();
+      navigate('up');
+      break;
+    case 'Enter':
+      e.preventDefault();
+      selectItem();
+      break;
+    default:
+      // Optional: handle other keys or do nothing
+      break;
+  }
+});
 
         // AUTHENTICATION LOGIC
         function handleAuth(mode) {
