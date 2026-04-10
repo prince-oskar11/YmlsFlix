@@ -522,39 +522,58 @@ function updateFocusable() {
     `).join('');
       }
         function switchServer(idx) {
-    if (hlsInstance) hlsInstance.destroy();
+  if (hlsInstance) hlsInstance.destroy();
 
-    const video = document.getElementById('player');
-    const url = currentServers[idx]?.url;
+  const video = document.getElementById('player');
+  const url = currentServers[idx]?.url;
 
-    if (!url) {
-        alert("Invalid stream");
-        return;
-    }
+  if (!url) {
+    alert("Invalid stream");
+    return;
+  }
 
-    console.log("Playing stream:", url);
+  console.log("Playing stream:", url);
 
-    if (Hls.isSupported()) {
-        hlsInstance = new Hls();
+  // Try to initialize HLS.js if supported
+  if (Hls.isSupported()) {
+    hlsInstance = new Hls();
+    hlsInstance.loadSource(url);
+    hlsInstance.attachMedia(video);
 
-        hlsInstance.loadSource(url);
-        hlsInstance.attachMedia(video);
+    hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+      document.getElementById('playerLoader').classList.add('hidden');
+      video.play().catch(() => {
+        alert("Unable to play this stream");
+      });
+    });
 
-        hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
-            document.getElementById('playerLoader').classList.add('hidden');
-            video.play();
-        });
+    hlsInstance.on(Hls.Events.ERROR, (event, data) => {
+      console.error("HLS ERROR:", data);
+      alert("Error in stream playback. Trying fallback...");
+      // Optional: fallback to native player
+      fallbackToNativePlayer(url);
+    });
+  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    // Native support for HLS
+    video.src = url;
+    video.load();
+    video.play().catch(() => {
+      alert("Unable to play this stream");
+    });
+  } else {
+    alert("Your browser does not support this stream format");
+  }
+}
 
-        hlsInstance.on(Hls.Events.ERROR, (event, data) => {
-            console.error("HLS ERROR:", data);
-        });
-
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = url;
-        video.addEventListener('loadedmetadata', () => video.play());
-    }
-        }
-
+// Optional: fallback function for unsupported HLS
+function fallbackToNativePlayer(url) {
+  const video = document.getElementById('player');
+  video.src = url;
+  video.load();
+  video.play().catch(() => {
+    alert("Failed to play stream");
+  });
+}
         // GRID RENDERING LOGIC
         // Function to fetch ratings from Jikan API using anime title
   async function fetchRatingsForAnime(animeList) {
