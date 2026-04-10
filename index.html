@@ -69,14 +69,21 @@
             <img id="choiceImg" class="w-40 h-56 mx-auto rounded-2xl mb-6 object-cover shadow-2xl border-2 border-gray-800/50" />
             <h3 id="choiceTitle" class="text-white font-black uppercase text-xs mb-8 leading-tight tracking-wide"></h3>
             <div class="space-y-3">
+              <div id="synopsisModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+  <div class="bg-[#0f1117] p-6 rounded-lg max-w-xl w-full text-white relative">
+    <button onclick="closeSynopsis()" class="absolute top-2 right-2 text-gray-400 font-bold text-xl">&times;</button>
+    <h3 class="text-xl font-bold mb-4">Synopsis</h3>
+    <p id="synopsisText" class="text-sm"></p>
+  </div>
+              </div>
                 <button id="choicePlay" class="btn-red"><i class="fa fa-play mr-2"></i> Start Streaming</button>
                 <button id="choiceWish" class="btn-red bg-gray-800 text-gray-400 hover:text-white">Add to Wishlist</button>
                <button 
-    onclick="showSynopsis()" 
-    class="bg-red-600 flex-1 py-5 rounded-2xl font-black text-xs uppercase shadow-xl hover:bg-red-500 transition-all"
-  >
-    Show Synopsis
-  </button>
+  onclick="showSynopsis()" 
+  class="bg-red-600 flex-1 py-5 rounded-2xl font-black text-xs uppercase shadow-xl hover:bg-red-500 transition-all"
+>
+  Show Synopsis
+               </button>
                 <button onclick="document.getElementById('choiceOverlay').style.display='none'" class="text-gray-600 font-bold text-[10px] uppercase mt-4 tracking-[0.2em] block w-full">Dismiss</button>
             </div>
         </div>
@@ -248,9 +255,21 @@
         let playMode = 'sub', currentAnime = null, currentEp = 1, currentServers = [], lastTap = 0, deferredPrompt, plyrInstance, hlsInstance;
 
       function showSynopsis() {
-  const synopsis = "This is the synopsis of the current episode or show. It provides a brief overview of the plot.";
-  alert(synopsis);
-      }
+  if (currentAnime && currentAnime.synopsis) {
+    document.getElementById('synopsisText').innerText = currentAnime.synopsis;
+    document.getElementById('synopsisModal').classList.remove('hidden');
+  } else {
+    alert("No synopsis available.");
+  }
+}
+
+function closeSynopsis() {
+  document.getElementById('synopsisModal').classList.add('hidden');
+}
+
+function closeSynopsis() {
+  document.getElementById('synopsisModal').classList.add('hidden');
+}
       
   let items = [];
 let focusIndex = 0;
