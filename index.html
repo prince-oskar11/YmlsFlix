@@ -164,6 +164,12 @@
                 <div class="flex gap-4">
                     <button id="heroPlayBtn" class="bg-white text-black px-14 py-5 rounded-full font-black text-[11px] uppercase shadow-2xl hover:bg-red-600 hover:text-white transition-all active:scale-95">Stream Now</button>
                     <button id="heroTrailerBtn" class="bg-white/10 backdrop-blur-md text-white border border-white/20 px-8 py-5 rounded-full font-black text-[11px] uppercase hover:bg-white/20 transition-all">Trailer</button>
+                   <button 
+    onclick="showSynopsis()" 
+    class="bg-red-600 flex-1 py-5 rounded-2xl font-black text-xs uppercase shadow-xl hover:bg-red-500 transition-all"
+  >
+    Show Synopsis
+                   </button>
                 </div>
             </div>
         </header>
@@ -225,12 +231,6 @@
             <div id="serverList" class="flex gap-3 overflow-x-auto no-scrollbar mb-10 pb-2"></div>
             <div class="flex flex-col sm:flex-row gap-4 mb-14">
                 <button id="trailerBtn" class="bg-indigo-600 flex-1 py-5 rounded-2xl font-black text-xs uppercase shadow-xl hover:bg-indigo-500 transition-all"><i class="fa fa-video-camera mr-2"></i>Official Trailer</button>
-                <button 
-  onclick="showSynopsis()" 
-  class="bg-red-600 flex-1 py-5 rounded-2xl font-black text-xs uppercase shadow-xl hover:bg-red-500 transition-all"
->
-  Show Synopsis
-                </button>
             </div>
             <div class="flex items-center justify-between mb-6">
                 <h2 class="text-[11px] font-black uppercase text-gray-500 tracking-[0.3em]">Episode Selector</h2>
