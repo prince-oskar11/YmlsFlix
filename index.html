@@ -239,22 +239,12 @@
     
     <script>
         const API = 'https://graphql.anilist.co';
-
-const STREAM_APIS = [
-  "https://api.consumet.org/anime/gogoanime",
-  "https://api.consumet.org/anime/zoro"
+      const STREAM_APIS = ["https://api.consumet.org/anime/gogoanime",
+                           "https://api.consumet.org/anime/zoro"
 ];
-      function normalizeTitle(title) {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-      }
         let currentUser = JSON.parse(localStorage.getItem('ymls_active_user'));
         let playMode = 'sub', currentAnime = null, currentEp = 1, currentServers = [], lastTap = 0, deferredPrompt, plyrInstance, hlsInstance;
 
-      
       let items = [];
 let focusIndex = 0;
 
