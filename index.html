@@ -72,13 +72,7 @@
             <div class="space-y-3">
                 <button id="choicePlay" class="btn-red"><i class="fa fa-play mr-2"></i> Start Streaming</button>
                 <button id="choiceWish" class="btn-red bg-gray-800 text-gray-400 hover:text-white">Add to Wishlist</button>
-               <button 
-  onclick="Synopsis-Info()" 
-  class="bg-red-600 flex-1 py-5 rounded-2xl font-black text-xs uppercase shadow-xl hover:bg-red-500 transition-all"
->
-  Show Synopsis
-               </button>
-                <button onclick="document.getElementById('choiceOverlay').style.display='none'" class="text-gray-600 font-bold text-[10px] uppercase mt-4 tracking-[0.2em] block w-full">Dismiss</button>
+               <button onclick="document.getElementById('choiceOverlay').style.display='none'" class="text-gray-600 font-bold text-[10px] uppercase mt-4 tracking-[0.2em] block w-full">Dismiss</button>
             </div>
         </div>
     </div>
@@ -248,20 +242,8 @@
         let currentUser = JSON.parse(localStorage.getItem('ymls_active_user'));
         let playMode = 'sub', currentAnime = null, currentEp = 1, currentServers = [], lastTap = 0, deferredPrompt, plyrInstance, hlsInstance;
 
-      function showSynopsis() {
-  if (currentAnime && currentAnime.synopsis) {
-    document.getElementById('synopsisText').innerText = currentAnime.synopsis;
-    document.getElementById('synopsisModal').classList.remove('hidden');
-  } else {
-    alert("No synopsis available.");
-  }
-}
-
-function closeSynopsis() {
-  document.getElementById('synopsisModal').classList.add('hidden');
-}
-
-  let items = [];
+      
+      let items = [];
 let focusIndex = 0;
 
 function updateFocusable() {
