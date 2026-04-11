@@ -70,9 +70,11 @@
             <img id="choiceImg" class="w-40 h-56 mx-auto rounded-2xl mb-6 object-cover shadow-2xl border-2 border-gray-800/50" />
             <h3 id="choiceTitle" class="text-white font-black uppercase text-xs mb-8 leading-tight tracking-wide"></h3>
             <div class="space-y-3">
-                <button id="choicePlay" class="btn-red"><i class="fa fa-play mr-2"></i> Start Streaming</button>
-                <button id="choiceWish" class="btn-red bg-gray-800 text-gray-400 hover:text-white">Add to Wishlist</button>
-               <button onclick="document.getElementById('choiceOverlay').style.display='none'" class="text-gray-600 font-bold text-[10px] uppercase mt-4 tracking-[0.2em] block w-full">Dismiss</button>
+  <button id="choicePlay" class="btn-red"><i class="fa fa-play mr-2"></i> Start Streaming</button>
+  <button id="choiceWish" class="btn-red bg-gray-800 text-gray-400 hover:text-white">Add to Wishlist</button>
+  <button onclick="closeChoice()" class="text-gray-600 font-bold text-[10px] uppercase mt-4 tracking-[0.2em] block w-full">Dismiss</button>
+  <!-- New button for trailer -->
+  <button id="choiceTrailer" class="btn-red mt-2"><i class="fa fa-video-camera mr-2"></i> Watch Trailer</button>
             </div>
         </div>
     </div>
@@ -414,20 +416,29 @@ function updateFocusable() {
 
         // DUAL WISHLIST SYSTEM
         function showChoice(a) {
-            document.getElementById('choiceOverlay').style.display = 'flex';
-            document.getElementById('choiceImg').src = a.coverImage.large;
-            document.getElementById('choiceTitle').innerText = a.title.english || a.title.romaji;
-            
-            document.getElementById('choicePlay').onclick = () => { 
-                document.getElementById('choiceOverlay').style.display='none'; 
-                openPlayer(a); 
-            };
-            
-            document.getElementById('choiceWish').onclick = () => { 
-                document.getElementById('choiceOverlay').style.display='none'; 
-                toggleWish(a); 
-            };
-        }
+  document.getElementById('choiceOverlay').style.display = 'flex';
+  document.getElementById('choiceImg').src = a.coverImage.large;
+  document.getElementById('choiceTitle').innerText = a.title.english || a.title.romaji;
+
+  // Set button actions
+  document.getElementById('choicePlay').onclick = () => { 
+    document.getElementById('choiceOverlay').style.display='none'; 
+    openPlayer(a); 
+  };
+  document.getElementById('choiceWish').onclick = () => { 
+    document.getElementById('choiceOverlay').style.display='none'; 
+    toggleWish(a); 
+  };
+  document.getElementById('choiceTrailer').onclick = () => {
+    document.getElementById('choiceOverlay').style.display='none';
+    if (a.trailer?.id) {
+      document.getElementById('trailerFrame').src = `https://www.youtube.com/embed/${a.trailer.id}?autoplay=1`;
+      document.getElementById('trailerOverlay').style.display = 'flex';
+    } else {
+      alert('Trailer not available.');
+    }
+  };
+}
 
         function toggleWish(a, e = null) {
             if(e) e.stopPropagation();
