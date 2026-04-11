@@ -670,7 +670,7 @@
 
         function genFilters() {
           // Close dropdown
-          document.getElementById('genreDrop').classList.remove('show');
+document.getElementById('genreDrop').classList.remove('show');
             const g = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Sports", "Supernatural", "Thriller", "Psychological"];
             document.getElementById('genreList').innerHTML = g.map(x => `<button onclick="fetchByFilter('${x}', null)" class="genre-btn">${x}</button>`).join('');
             let yH = ''; 
