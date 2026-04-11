@@ -60,6 +60,12 @@
     display: none;
     transition: all 0.3s ease;
   }
+  /* Quick fix for trailer button clickability */
+  #trailerBtn {
+    position: relative;
+    z-index: 6000; /* ensure it's above overlay layers */
+    pointer-events: auto; /* make sure it's clickable */
+  }
   
 </style>
 </head>
