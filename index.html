@@ -522,46 +522,99 @@ function updateFocusable() {
     `).join('');
       }
         function switchServer(idx) {
-  if (hlsInstance) hlsInstance.destroy();
+  if (hlsInstance) {
+    hlsInstance.destroy();
+    hlsInstance = null;
+  }
 
   const video = document.getElementById('player');
-  const url = currentServers[idx]?.url;
+  const source = currentServers[idx];
 
-  if (!url) {
-    alert("Invalid stream");
+  if (!source || !source.url) {
+    alert("Invalid stream source");
     return;
   }
 
-  console.log("Playing stream:", url);
+  const url = source.url;
+  console.log("Attempting to play stream:", url);
+  document.getElementById('playerLoader').classList.remove('hidden');
 
-  // Try to initialize HLS.js if supported
-  if (Hls.isSupported()) {
-    hlsInstance = new Hls();
-    hlsInstance.loadSource(url);
-    hlsInstance.attachMedia(video);
-
-    hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+  // Check if URL is accessible (optional, but recommended)
+  validateStreamURL(url).then(isValid => {
+    if (!isValid) {
+      alert("Stream URL is not accessible or invalid");
       document.getElementById('playerLoader').classList.add('hidden');
-      video.play().catch(() => {
-        alert("Unable to play this stream");
-      });
-    });
+      return;
+    }
 
-    hlsInstance.on(Hls.Events.ERROR, (event, data) => {
-      console.error("HLS ERROR:", data);
-      alert("Error in stream playback. Trying fallback...");
-      // Optional: fallback to native player
-      fallbackToNativePlayer(url);
-    });
-  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-    // Native support for HLS
+    // Use HLS.js if supported
+    if (Hls.isSupported()) {
+      try {
+        hlsInstance = new Hls();
+        hlsInstance.loadSource(url);
+        hlsInstance.attachMedia(video);
+
+        hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+          document.getElementById('playerLoader').classList.add('hidden');
+          video.play().catch(() => {
+            alert("Unable to autoplay stream");
+          });
+        });
+
+        hlsInstance.on(Hls.Events.ERROR, (event, data) => {
+          console.error("HLS error:", data);
+          alert('Stream playback error occurred.');
+          // Optionally fallback
+          fallbackToNativePlayer(url);
+        });
+      } catch (e) {
+        console.error("HLS error:", e);
+        fallbackToNativePlayer(url);
+      }
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      // Native support
+      try {
+        video.src = url;
+        video.load();
+        video.play().catch(() => {
+          alert("Unable to autoplay stream");
+        });
+        document.getElementById('playerLoader').classList.add('hidden');
+      } catch (e) {
+        console.error("Native playback error:", e);
+        alert('Cannot play this stream.');
+        document.getElementById('playerLoader').classList.add('hidden');
+      }
+    } else {
+      alert("Your browser does not support this stream format");
+      document.getElementById('playerLoader').classList.add('hidden');
+    }
+  });
+}
+
+// Helper function to validate URL accessibility
+async function validateStreamURL(url) {
+  try {
+    const response = await fetch(url, { method: 'HEAD' });
+    return response.ok;
+  } catch (err) {
+    console.warn("Stream URL validation failed:", err);
+    return false;
+  }
+}
+
+// Fallback function if HLS.js fails
+function fallbackToNativePlayer(url) {
+  const video = document.getElementById('player');
+  try {
     video.src = url;
     video.load();
     video.play().catch(() => {
-      alert("Unable to play this stream");
+      alert("Failed to play stream");
     });
-  } else {
-    alert("Your browser does not support this stream format");
+  } catch (e) {
+    console.error("Fallback error:", e);
+    alert("Unable to play this stream.");
   }
 }
 
