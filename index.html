@@ -483,9 +483,11 @@
       const response = await fetch(`https://api.jikan.moe/v4/anime?q=${searchTitle}&limit=1`);
       const data = await response.json();
 
-      anime.rating = data.data?.[0]?.score
-        ? data.data[0].score.toFixed(1)
-        : 'N/A';
+      if (data.data && data.data.length > 0 && data.data[0].score !== null) {
+        anime.rating = data.data[0].score.toFixed(1);
+      } else {
+        anime.rating = 'N/A';
+      }
     } catch {
       anime.rating = 'N/A';
     }
@@ -667,6 +669,8 @@
         }
 
         function genFilters() {
+          // Close dropdown
+          document.getElementById('genreDrop').classList.remove('show');
             const g = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Sports", "Supernatural", "Thriller", "Psychological"];
             document.getElementById('genreList').innerHTML = g.map(x => `<button onclick="fetchByFilter('${x}', null)" class="genre-btn">${x}</button>`).join('');
             let yH = ''; 
