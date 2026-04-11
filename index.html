@@ -521,7 +521,7 @@ function updateFocusable() {
         </button>
     `).join('');
       }
-        function switchServer(idx) {
+        async function switchServer(idx) {
   if (hlsInstance) {
     hlsInstance.destroy();
     hlsInstance = null;
@@ -539,58 +539,55 @@ function updateFocusable() {
   console.log("Attempting to play stream:", url);
   document.getElementById('playerLoader').classList.remove('hidden');
 
-  // Check if URL is accessible (optional, but recommended)
-  validateStreamURL(url).then(isValid => {
-    if (!isValid) {
-      alert("Stream URL is not accessible or invalid");
-      document.getElementById('playerLoader').classList.add('hidden');
-      return;
-    }
+  // Validate URL
+  const isValid = await validateStreamURL(url);
+  if (!isValid) {
+    alert("Stream URL is not accessible or invalid");
+    document.getElementById('playerLoader').classList.add('hidden');
+    return;
+  }
 
-    // Use HLS.js if supported
-    if (Hls.isSupported()) {
-      try {
-        hlsInstance = new Hls();
-        hlsInstance.loadSource(url);
-        hlsInstance.attachMedia(video);
+  // Use HLS.js if supported
+  if (Hls.isSupported()) {
+    try {
+      hlsInstance = new Hls();
+      hlsInstance.loadSource(url);
+      hlsInstance.attachMedia(video);
 
-        hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
-          document.getElementById('playerLoader').classList.add('hidden');
-          video.play().catch(() => {
-            alert("Unable to autoplay stream");
-          });
-        });
-
-        hlsInstance.on(Hls.Events.ERROR, (event, data) => {
-          console.error("HLS error:", data);
-          alert('Stream playback error occurred.');
-          // Optionally fallback
-          fallbackToNativePlayer(url);
-        });
-      } catch (e) {
-        console.error("HLS error:", e);
-        fallbackToNativePlayer(url);
-      }
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      // Native support
-      try {
-        video.src = url;
-        video.load();
+      hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+        document.getElementById('playerLoader').classList.add('hidden');
         video.play().catch(() => {
           alert("Unable to autoplay stream");
         });
-        document.getElementById('playerLoader').classList.add('hidden');
-      } catch (e) {
-        console.error("Native playback error:", e);
-        alert('Cannot play this stream.');
-        document.getElementById('playerLoader').classList.add('hidden');
-      }
-    } else {
-      alert("Your browser does not support this stream format");
+      });
+
+      hlsInstance.on(Hls.Events.ERROR, (event, data) => {
+        console.error("HLS error:", data);
+        alert('Stream playback error occurred.');
+        fallbackToNativePlayer(url);
+      });
+    } catch (e) {
+      console.error("HLS error:", e);
+      fallbackToNativePlayer(url);
+    }
+  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    try {
+      video.src = url;
+      video.load();
+      video.play().catch(() => {
+        alert("Unable to autoplay stream");
+      });
+      document.getElementById('playerLoader').classList.add('hidden');
+    } catch (e) {
+      console.error("Native playback error:", e);
+      alert('Cannot play this stream.');
       document.getElementById('playerLoader').classList.add('hidden');
     }
-  });
-}
+  } else {
+    alert("Your browser does not support this stream format");
+    document.getElementById('playerLoader').classList.add('hidden');
+  }
+        }
 
 // Helper function to validate URL accessibility
 async function validateStreamURL(url) {
@@ -616,16 +613,6 @@ function fallbackToNativePlayer(url) {
     console.error("Fallback error:", e);
     alert("Unable to play this stream.");
   }
-}
-
-// Optional: fallback function for unsupported HLS
-function fallbackToNativePlayer(url) {
-  const video = document.getElementById('player');
-  video.src = url;
-  video.load();
-  video.play().catch(() => {
-    alert("Failed to play stream");
-  });
 }
         // GRID RENDERING LOGIC
         // Function to fetch ratings from Jikan API using anime title
