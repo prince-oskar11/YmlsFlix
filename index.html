@@ -74,7 +74,8 @@
   <button id="choiceTrailer" class="btn-red mt-2"><i class="fa fa-video-camera mr-2"></i> Watch Trailer</button>
   <button id="choicePlay" class="btn-red"><i class="fa fa-play mr-2"></i> Start Streaming</button>
   <button id="choiceWish" class="btn-red bg-gray-800 text-gray-400 hover:text-white">Add to Wishlist</button>
-  <button onclick="closeChoice()" class="text-gray-600 font-bold text-[10px] uppercase mt-4 tracking-[0.2em] block w-full">Dismiss</button>
+  <!-- Dismiss Button -->
+      <button onclick="closeChoice()" class="text-gray-600 font-bold text-[10px] uppercase mt-4 tracking-[0.2em] block w-full">Dismiss</button>
   </div>
         </div>
     </div>
@@ -469,46 +470,28 @@ function updateFocusable() {
         async function openPlayer(a, ep = 1) {
     if (a) currentAnime = a;
     currentEp = ep;
-
     document.getElementById('playerView').classList.remove('hidden');
     document.getElementById('playerTitle').innerText =
         (currentAnime.title.english || currentAnime.title.romaji) + " — Episode " + ep;
-
     document.getElementById('playerLoader').classList.remove('hidden');
-
     const query = normalizeTitle(currentAnime.title.english || currentAnime.title.romaji);
-
     let streamFound = false;
-
     for (let api of STREAM_APIS) {
         try {
             console.log("Trying API:", api);
-
             const search = await fetch(`${api}/${query}`).then(r => r.json());
-
             if (!search.results || !search.results.length) continue;
-
             const animeMatch = search.results[0];
-
             const info = await fetch(`${api}/info/${animeMatch.id}`).then(r => r.json());
-
             const epObj = info.episodes.find(e => e.number == ep);
-
             if (!epObj) continue;
-
-            const links = await fetch(`${api}/watch/${epObj.id}`).then(r => r.json());
-
+          const links = await fetch(`${api}/watch/${epObj.id}`).then(r => r.json());
             if (!links.sources || !links.sources.length) continue;
-
             currentServers = links.sources;
-
             renderServers();
-
             switchServer(0);
-
             streamFound = true;
             break;
-
         } catch (err) {
             console.warn("API failed:", api, err);
         }
@@ -547,16 +530,23 @@ function updateFocusable() {
   }
 
   const url = source.url;
-  console.log("Attempting to play stream:", url);
   document.getElementById('playerLoader').classList.remove('hidden');
 
-  // Validate URL
-  const isValid = await validateStreamURL(url);
-  if (!isValid) {
-    alert("Stream URL is not accessible or invalid");
-    document.getElementById('playerLoader').classList.add('hidden');
-    return;
+          // Function to close trailer overlay
+  function closeTrailer() {
+    document.getElementById('trailerOverlay').style.display='none';
+    document.getElementById('trailerFrame').src="";
   }
+  // Helper function to validate URL accessibility
+async function validateStreamURL(url) {
+  try {
+    const response = await fetch(url, { method: 'HEAD' });
+    return response.ok;
+  } catch (err) {
+    console.warn("Stream URL validation failed:", err);
+    return false;
+  }
+}
 
   // Use HLS.js if supported
   if (Hls.isSupported()) {
@@ -568,7 +558,7 @@ function updateFocusable() {
       hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
         document.getElementById('playerLoader').classList.add('hidden');
         video.play().catch(() => {
-          alert("Unable to autoplay stream");
+          console.warn("Autoplay prevented, user interaction needed");
         });
       });
 
@@ -586,7 +576,7 @@ function updateFocusable() {
       video.src = url;
       video.load();
       video.play().catch(() => {
-        alert("Unable to autoplay stream");
+        console.warn("Autoplay prevented");
       });
       document.getElementById('playerLoader').classList.add('hidden');
     } catch (e) {
@@ -598,7 +588,7 @@ function updateFocusable() {
     alert("Your browser does not support this stream format");
     document.getElementById('playerLoader').classList.add('hidden');
   }
-        }
+}
 
 // Helper function to validate URL accessibility
 async function validateStreamURL(url) {
@@ -816,7 +806,10 @@ function fallbackToNativePlayer(url) {
             } 
             setMode('sub');
         }
-
+      
+      function closeChoice() {
+  document.getElementById('choiceOverlay').style.display='none';
+}
         function genFilters() {
             const g = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Sports", "Supernatural", "Thriller", "Psychological"];
             document.getElementById('genreList').innerHTML = g.map(x => `<button onclick="fetchByFilter('${x}', null)" class="genre-btn">${x}</button>`).join('');
