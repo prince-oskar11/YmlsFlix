@@ -349,22 +349,33 @@
 
         // AUTO-SYNC LOGIC (Checks for new episodes)
         async function checkAutoSync() {
-            let hist = JSON.parse(localStorage.getItem('ymls_hist')) || [];
-            if(!hist.length) return;
-            
-            const ids = hist.map(a => a.id);
-            const q = `query($ids:[Int]){Page{media(id_in:$ids){id episodes nextAiringEpisode{episode}}}}`;
-            const r = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({query:q, variables:{ids}})}).then(res=>res.json());
-            
-            r.data.Page.media.forEach(updated => {
-                let local = hist.find(h => h.id === updated.id);
-                if(local && updated.episodes > local.episodes) {
-                    local.hasNew = true;
-                }
-            });
-            localStorage.setItem('ymls_hist', JSON.stringify(hist));
-            renderWithRatings(hist, 'continueGrid');
+  try {
+    let hist = JSON.parse(localStorage.getItem('ymls_hist')) || [];
+    if (!hist.length) return;
+
+    const ids = hist.map(a => a.id);
+    const q = `query($ids:[Int]){Page{media(id_in:$ids){id episodes nextAiringEpisode{episode}}}}`;
+    const response = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: q, variables: { ids } })
+    });
+    const resJson = await response.json();
+
+    if (resJson.data && resJson.data.Page && resJson.data.Page.media) {
+      resJson.data.Page.media.forEach(updated => {
+        let local = hist.find(h => h.id === updated.id);
+        if (local && updated.episodes > local.episodes) {
+          local.hasNew = true;
         }
+      });
+      localStorage.setItem('ymls_hist', JSON.stringify(hist));
+      renderWithRatings(hist, 'continueGrid');
+    }
+  } catch (error) {
+    console.error('Auto sync failed:', error);
+  }
+}
 
         // DUAL WISHLIST SYSTEM
         function showChoice(a) {
